@@ -7,6 +7,7 @@ export PVector,
        updated,
        append,
        pop,
+       shiftof,
        Zero,
        One,
        Two,
@@ -48,7 +49,7 @@ abstract TrieCase
 macro triecase(case::Symbol, shift::Int)
     abstract_case = symbol(string("T", case))
     case = esc(case)
-    shiftfn = esc(:shift)
+    shiftfn = esc(:shiftof)
     quote
         type $abstract_case <: TrieCase end
         $case = $abstract_case()
@@ -69,7 +70,6 @@ immutable Trie
     arr::Array
 end
 
-getindex(t::Trie, i::Int) = t.arr[i]
 setindex!(t::Trie, o, i::Int) = setindex!(t.arr, o, i)
 endof(t::Trie) = endof(t.arr)
 length(t::Trie) = length(t.arr)
@@ -79,28 +79,36 @@ copy(t::Trie, n::Int) = Trie(t.case, copy(t.arr, n))
 # Operations
 # ==========
 
+and31(n::Int) = let anded = n & 31
+    anded == 0 ? 32 : anded
+end
+
+shiftinc(n::Int, case) = let shifted = n >>> shiftof(case)
+    n % 32 == 0 ? shifted : shifted + 1
+end
+
 # getindex
 #
 getindex(::TZero, t::Trie, i::Int) = outofbounds(i)
 
-getindex(::TOne, t::Trie, i::Int) = t
+getindex(::TOne, t::Trie, i::Int) = t.arr
 
-macro defgetindex(case)
+macro defgetindex(case, prev)
     getindexfn = esc(:getindex)
     quote
         typ = typeof($case)
         function $getindexfn(::typ, t::Trie, i::Int)
-            a = t[(i >>> shift($case)) & 31]
+            a = Trie($prev, t.arr[and31(shiftinc(i, $case))])
             getindex(a, i)
         end
     end
 end
 
-@defgetindex Two
-@defgetindex Three
-@defgetindex Four
-@defgetindex Five
-@defgetindex Six
+@defgetindex Two One
+@defgetindex Three Two
+@defgetindex Four Three
+@defgetindex Five Four
+@defgetindex Six Five
 
 # update
 #
@@ -108,7 +116,7 @@ update(::TZero, t::Trie, i::Int, o) = outofbounds(i)
 
 function update(::TOne, t::Trie, i::Int, o)
     t2 = copy(t)
-    t2[i & 31] = o
+    t2[and31(i)] = o
     t2
 end
 
@@ -118,8 +126,8 @@ macro defupdate(case)
         typ = typeof($case)
         function $updatefn(::typ, t::Trie, i::Int, o)
             t2 = copy(t)
-            t2[(i >>> shift($case)) & 31] =
-                update(t2[(i >>> shift($case)) & 31], i, o)
+            t2.arr[and31(shiftinc(i, $case))] =
+                update(t2.arr[and31(shiftinc(i, $case))], i, o)
             t2
         end
     end
@@ -142,127 +150,127 @@ function append(::TTwo, t::Trie, tail::Array)
         Trie(Three, Any[t.arr, Any[tail]])
     else
         t2 = copy(t, length(t) + 1)
-        t2[end] = tail
+        t2.arr[end] = tail
         t2
     end
 end
 
 function append(::TThree, t::Trie, tail::Array)
-    if length(t[end]) >= 32
+    if length(t.arr[end]) >= 32
         if length(t) >= 32
             Trie(Four, Any[t.arr, Any[Any[tail]]])
         else
             t2 = copy(t, length(t) + 1)
-            t2[end] = Any[tail]
+            t2.arr[end] = Any[tail]
             t2
         end
     else
         t2 = copy(t)
-        t2[end] = copy(t2[end], length(t2[end]) + 1)
-        t2[end][end] = tail
+        t2.arr[end] = copy(t2.arr[end], length(t2.arr[end]) + 1)
+        t2.arr[end][end] = tail
         t2
     end
 end
 
 function append(::TFour, t::Trie, tail::Array)
-    if length(t[end][end]) >= 32
-        if length(t[end]) >= 32
+    if length(t.arr[end][end]) >= 32
+        if length(t.arr[end]) >= 32
             if length(t) >= 32
                 Trie(Five, Any[t.arr, Any[Any[Any[tail]]]])
             else
                 t2 = copy(t, length(t) + 1)
-                t2[end] = Any[Any[tail]]
+                t2.arr[end] = Any[Any[tail]]
                 t2
             end
         else
             t2 = copy(t)
-            t2[end] = copy(t2[end], length(t2[end]) + 1)
-            t2[end][end] = Any[tail]
+            t2.arr[end] = copy(t2.arr[end], length(t2.arr[end]) + 1)
+            t2.arr[end][end] = Any[tail]
             t2
         end
     else
         t2 = copy(t)
-        t2[end] = copy(t2[end])
-        t2[end][end] = copy(t2[end][end], length(t2[end][end]) + 1)
-        t2[end][end][end] = tail
+        t2.arr[end] = copy(t2.arr[end])
+        t2.arr[end][end] = copy(t2.arr[end][end], length(t2.arr[end][end]) + 1)
+        t2.arr[end][end][end] = tail
         t2
     end
 end
 
 function append(::TFive, t::Trie, tail::Array)
-    if length(t[end][end][end]) >= 32
-        if length(t[end][end]) >= 32
-            if length(t[end]) >= 32
+    if length(t.arr[end][end][end]) >= 32
+        if length(t.arr[end][end]) >= 32
+            if length(t.arr[end]) >= 32
                 if length(t) >= 32
                     Trie(Six, Any[t.arr, Any[Any[Any[Any[tail]]]]])
                 else
                     t2 = copy(t, length(t) + 1)
-                    t2[end] = Any[Any[Any[tail]]]
+                    t2.arr[end] = Any[Any[Any[tail]]]
                     t2
                 end
             else
                 t2 = copy(t)
-                t2[end] = copy(t2[end], length(t2[end]) + 1)
-                t2[end][end] = Any[Any[tail]]
+                t2.arr[end] = copy(t2.arr[end], length(t2.arr[end]) + 1)
+                t2.arr[end][end] = Any[Any[tail]]
                 t2
             end
         else
             t2 = copy(t)
-            t2[end] = copy(t2[end])
-            t2[end][end] = copy(t2[end][end], length(t2[end][end]) + 1)
-            t2[end][end][end] = Any[tail]
+            t2.arr[end] = copy(t2.arr[end])
+            t2.arr[end][end] = copy(t2.arr[end][end], length(t2.arr[end][end]) + 1)
+            t2.arr[end][end][end] = Any[tail]
             t2
         end
     else
         t2 = copy(t)
-        t2[end] = copy(t2[end])
-        t2[end][end] = copy(t2[end][end])
-        t2[end][end][end] = copy(t2[end][end][end], length(t2[end][end][end]) + 1)
-        t2[end][end][end][end] = tail
+        t2.arr[end] = copy(t2.arr[end])
+        t2.arr[end][end] = copy(t2.arr[end][end])
+        t2.arr[end][end][end] = copy(t2.arr[end][end][end], length(t2.arr[end][end][end]) + 1)
+        t2.arr[end][end][end][end] = tail
         t2
     end
 end
 
 function append(::TSix, t::Trie, tail::Array)
-    if length(t[end][end][end][end]) >= 32
-        if length(t[end][end][end]) >= 32
-            if length(t[end][end]) >= 32
-                if length(t[end]) >= 32
+    if length(t.arr[end][end][end][end]) >= 32
+        if length(t.arr[end][end][end]) >= 32
+            if length(t.arr[end][end]) >= 32
+                if length(t.arr[end]) >= 32
                     if length(t) >= 32
                         error("PVector at max size")
                     else
                         t2 = copy(t, length(t) + 1)
-                        t2[end] = Any[Any[Any[Any[tail]]]]
+                        t2.arr[end] = Any[Any[Any[Any[tail]]]]
                         t2
                     end
                 else
                     t2 = copy(t)
-                    t2[end] = copy(t2[end], length(t2[end]) + 1)
-                    t2[end][end] = Any[Any[Any[tail]]]
+                    t2.arr[end] = copy(t2.arr[end], length(t2.arr[end]) + 1)
+                    t2.arr[end][end] = Any[Any[Any[tail]]]
                     t2
                 end
             else
                 t2 = copy(t)
-                t2[end] = copy(t2[end])
-                t2[end][end] = copy(t2[end][end], length(t2[end][end]) + 1)
-                t2[end][end][end] = Any[Any[tail]]
+                t2.arr[end] = copy(t2.arr[end])
+                t2.arr[end][end] = copy(t2.arr[end][end], length(t2.arr[end][end]) + 1)
+                t2.arr[end][end][end] = Any[Any[tail]]
                 t2
             end
         else
             t2 = copy(t)
-            t2[end] = copy(t2[end])
-            t2[end][end] = copy(t2[end][end])
-            t2[end][end][end] = copy(t2[end][end][end], length(t2[end][end][end]) + 1)
-            t2[end][end][end][end] = Any[tail]
+            t2.arr[end] = copy(t2.arr[end])
+            t2.arr[end][end] = copy(t2.arr[end][end])
+            t2.arr[end][end][end] = copy(t2.arr[end][end][end], length(t2.arr[end][end][end]) + 1)
+            t2.arr[end][end][end][end] = Any[tail]
             t2
         end
     else
         t2 = copy(t)
-        t2[end] = copy(t2[end])
-        t2[end][end] = copy(t2[end][end])
-        t2[end][end][end] = copy(t2[end][end][end], length(t2[end][end][end]))
-        t2[end][end][end][end] = copy(t2[end][end][end][end], length(t2[end][end][end][end]) + 1)
-        t2[end][end][end][end][end] = tail
+        t2.arr[end] = copy(t2.arr[end])
+        t2.arr[end][end] = copy(t2.arr[end][end])
+        t2.arr[end][end][end] = copy(t2.arr[end][end][end], length(t2.arr[end][end][end]))
+        t2.arr[end][end][end][end] = copy(t2.arr[end][end][end][end], length(t2.arr[end][end][end][end]) + 1)
+        t2.arr[end][end][end][end][end] = tail
         t2
     end
 end
@@ -275,15 +283,15 @@ pop(::TOne, t::Trie) = (Zero, t)
 
 function pop(::TTwo, t::Trie)
     if length(trie) == 2
-        (t[1], t[end])
+        (t[1], t.arr[end])
     else
         t2 = copy(t, length(t) - 1)
-        (t2, t[end])
+        (t2, t.arr[end])
     end
 end
 
 # TrieCase dispatch
-shift(t::Trie) = shift(t.case)
+shiftof(t::Trie) = shiftof(t.case)
 getindex(t::Trie, i::Int) = getindex(t.case, t, i)
 update(t::Trie, i::Int, o) = update(t.case, t, i, o)
 append(t::Trie, tail::Array) = append(t.case, t, tail)
@@ -297,31 +305,31 @@ immutable PVector
     trie::Trie
     tail::Array
     tailoff::Int
+
+    PVector() = new(0, Trie(Zero, Any[]), Any[], 0)
+    PVector(len::Int, trie::Trie, tail::Array) = new(len, trie, tail, len - length(tail))
 end
-PVector() = new(0, Trie(Zero, Any[]), Any[])
-PVector(len::Int, trie::Trie, tail::Array) =
-    new(len, trie, tail, len - length(tail))
 
 bounds_check(pv::PVector, i::Int) =
     i >= 1 && i <= pv.len || error("Index out of bounds: $i")
 
 function getindex(pv::PVector, i::Int)
     bounds_check(pv, i)
-    if i >= pv.tailoff
-        pv.tail[i & 31]
+    if i > pv.tailoff
+        pv.tail[and31(i)]
     else
-        pv.trie[i][i & 31]
+        pv.trie[i][and31(i)]
     end
 end
 
 function updated(pv::PVector, i::Int, obj)
     bounds_check(pv, i)
-    if i >= tailoff
+    if i >= pv.tailoff
         newtail = pv.tail[1:end]
-        newtail[i & 31] = obj
+        newtail[and31(i)] = obj
         PVector(pv.len, pv.trie, newtail)
     else
-        t2 = update(pv.trie, i, o)
+        t2 = update(pv.trie, i, obj)
         PVector(pv.len, t2, pv.tail)
     end
 end
