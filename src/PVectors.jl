@@ -79,13 +79,9 @@ copy(t::Trie, n::Int) = Trie(t.case, copy(t.arr, n))
 # Operations
 # ==========
 
-and31(n::Int) = let anded = n & 31
-    anded == 0 ? 32 : anded
-end
+and31(n::Int) = (n & 31)
 
-shiftinc(n::Int, case) = let shifted = n >>> shiftof(case)
-    n % 32 == 0 ? shifted : shifted + 1
-end
+shift(n::Int, case) = (n >>> shiftof(case))
 
 # getindex
 #
@@ -98,7 +94,7 @@ macro defgetindex(case, prev)
     quote
         typ = typeof($case)
         function $getindexfn(::typ, t::Trie, i::Int)
-            a = Trie($prev, t.arr[and31(shiftinc(i, $case))])
+            a = Trie($prev, t.arr[and31(shift(i, $case)) + 1])
             getindex(a, i)
         end
     end
@@ -126,8 +122,8 @@ macro defupdate(case)
         typ = typeof($case)
         function $updatefn(::typ, t::Trie, i::Int, o)
             t2 = copy(t)
-            t2.arr[and31(shiftinc(i, $case))] =
-                update(t2.arr[and31(shiftinc(i, $case))], i, o)
+            t2.arr[and31(shift(i, $case))] =
+                update(t2.arr[and31(shift(i, $case))], i, o)
             t2
         end
     end
@@ -314,11 +310,15 @@ bounds_check(pv::PVector, i::Int) =
     i >= 1 && i <= pv.len || error("Index out of bounds: $i")
 
 function getindex(pv::PVector, i::Int)
+    # The bitwise math works out by assuming that Arrays index from 0, not 1.
+    # Due to this, we'll decrement i and increment it only when we access
+    # Array elements.
+    i2 = i-1
     bounds_check(pv, i)
     if i > pv.tailoff
-        pv.tail[and31(i)]
+        pv.tail[and31(i2)+1]
     else
-        pv.trie[i][and31(i)]
+        pv.trie[i2][and31(i2)+1]
     end
 end
 
@@ -383,7 +383,7 @@ function show(io::IO, pv::PVector)
         print(io, "..., ")
         print_elements(io, pv, length(pv)-20:length(pv)-1)
     end
-    if length(pv) > 1
+    if length(pv) >= 1
         print(io, "$(pv[end])]")
     else
         print(io, "]")
