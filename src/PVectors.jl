@@ -2,18 +2,19 @@
 #
 module PVectors
 
-export Zero,
+export PVector,
+       # Base.getindex,
+       updated,
+       append,
+       pop,
+       Zero,
        One,
        Two,
        Three,
        Four,
        Five,
        Six,
-       Trie,
-       apply,
-       update,
-       append,
-       pop
+       Trie
 
 import Base: getindex, setindex!, length, copy, endof
 
@@ -78,28 +79,28 @@ copy(t::Trie, n::Int) = Trie(t.case, copy(t.arr, n))
 # Operations
 # ==========
 
-# apply
+# getindex
 #
-apply(::TZero, t::Trie, i::Int) = outofbounds(i)
+getindex(::TZero, t::Trie, i::Int) = outofbounds(i)
 
-apply(::TOne, t::Trie, i::Int) = t
+getindex(::TOne, t::Trie, i::Int) = t
 
-macro defapply(case)
-    applyfn = esc(:apply)
+macro defgetindex(case)
+    getindexfn = esc(:getindex)
     quote
         typ = typeof($case)
-        function $applyfn(::typ, t::Trie, i::Int)
+        function $getindexfn(::typ, t::Trie, i::Int)
             a = t[(i >>> shift($case)) & 31]
-            apply(a, i)
+            getindex(a, i)
         end
     end
 end
 
-@defapply Two
-@defapply Three
-@defapply Four
-@defapply Five
-@defapply Six
+@defgetindex Two
+@defgetindex Three
+@defgetindex Four
+@defgetindex Five
+@defgetindex Six
 
 # update
 #
@@ -281,10 +282,9 @@ function pop(::TTwo, t::Trie)
     end
 end
 
-
 # TrieCase dispatch
 shift(t::Trie) = shift(t.case)
-apply(t::Trie, i::Int) = apply(t.case, t, i)
+getindex(t::Trie, i::Int) = getindex(t.case, t, i)
 update(t::Trie, i::Int, o) = update(t.case, t, i, o)
 append(t::Trie, tail::Array) = append(t.case, t, tail)
 pop(t::Trie) = pop(t.case, t)
@@ -295,41 +295,40 @@ pop(t::Trie) = pop(t.case, t)
 immutable PVector
     len::Int
     trie::Trie
-    tail::Array{Any, 1}
+    tail::Array
     tailoff::Int
-
-    PVector(len::Int, trie::Trie, tail::Array{Any, 1}) =
-        new(len, trie, tail, length - length(tail))
 end
+PVector() = new(0, Trie(Zero, Any[]), Any[])
+PVector(len::Int, trie::Trie, tail::Array) =
+    new(len, trie, tail, len - length(tail))
 
 bounds_check(pv::PVector, i::Int) =
     i >= 1 && i <= pv.len || error("Index out of bounds: $i")
 
-function apply(pv::PVector, i::Int)
+function getindex(pv::PVector, i::Int)
     bounds_check(pv, i)
-    if i >= tailoff
+    if i >= pv.tailoff
         pv.tail[i & 31]
     else
         pv.trie[i][i & 31]
     end
 end
 
-function update(pv::PVector, i::Int, obj)
+function updated(pv::PVector, i::Int, obj)
     bounds_check(pv, i)
     if i >= tailoff
         newtail = pv.tail[1:end]
         newtail[i & 31] = obj
         PVector(pv.len, pv.trie, newtail)
     else
-        pv.trie[i] = obj
-        PVector(pv.len, pv.trie, pv.tail)
+        t2 = update(pv.trie, i, o)
+        PVector(pv.len, t2, pv.tail)
     end
 end
 
 function append(pv::PVector, obj)
     if length(pv.tail) < 32
-        tail2 = Array(Any, length(pv.tail) + 1)
-        copy(pv.tail, tail2)
+        tail2 = copy(pv.tail, length(pv.tail) + 1)
         tail2[end] = obj
 
         PVector(pv.len + 1, pv.trie, tail2)
