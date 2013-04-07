@@ -360,4 +360,34 @@ function pop(pv::PVector)
     end
 end
 
+# Non-core Base functions
+# =======================
+
+import Base: show, length, endof
+
+length(pv::PVector) = pv.len
+endof(pv::PVector) = pv.len
+
+function print_elements(io, pv, range)
+    for i=range
+        print(io, "$(pv[i]), ")
+    end
+end
+
+function show(io::IO, pv::PVector)
+    print(io, "PVector[")
+    if length(pv) < 50
+        print_elements(io, pv, 1:length(pv)-1)
+    else
+        print_elements(io, pv, 1:20)
+        print(io, "..., ")
+        print_elements(io, pv, length(pv)-20:length(pv)-1)
+    end
+    if length(pv) > 1
+        print(io, "$(pv[end])]")
+    else
+        print(io, "]")
+    end
+end
+
 end # module PVector
