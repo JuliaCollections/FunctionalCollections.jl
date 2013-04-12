@@ -22,6 +22,8 @@ end
         pv[2500] => 2500
         pv[5000] => 5000
         pv[5001] => :throws
+
+        PersistentVector(1:32)[33] => :throws
     end
 
     @fact peek(PersistentVector(1:1000)) => 1000

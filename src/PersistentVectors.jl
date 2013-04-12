@@ -15,7 +15,7 @@ const shiftby = 5
 const trielen = 2^shiftby
 const andval  = trielen - 1
 
-type BitmappedTrie
+immutable BitmappedTrie
     self::Array
     shift::Int
     length::Int
@@ -25,6 +25,18 @@ BitmappedTrie() = BitmappedTrie(Any[], 0, 0, trielen)
 
 Base.length(bt::BitmappedTrie) = bt.length
 Base.endof(bt::BitmappedTrie) = bt.length
+
+similar(bt::BitmappedTrie) =
+    BitmappedTrie(Any[], bt.shift, 0, bt.maxlength)
+
+promoted(bt::BitmappedTrie) =
+    BitmappedTrie(Any[bt], bt.shift + shiftby, bt.length, bt.maxlength * trielen)
+
+demoted(bt::BitmappedTrie) =
+    BitmappedTrie(Any[], bt.shift - shiftby, 0, int(bt.maxlength / trielen))
+
+withself(bt::BitmappedTrie, self::Array, lenshift::Int) =
+    BitmappedTrie(self, bt.shift, length(bt) + lenshift, bt.maxlength)
 
 # Copy elements from one Array to another, up to `n` elements.
 #
@@ -41,76 +53,48 @@ copy_to_len{T}(from::Array{T}, len::Int) =
     copy_to(from, Array(T, len), min(len, length(from)))
 
 function append(bt::BitmappedTrie, el)
-    # There are 6 append cases:
-    #
-    # `bt` is a leaf (shift == 0) and it has room to spare. Add the new element.
-    #
-    # `bt` is a leaf but it doesn't have room to spare. Insert it and a similar
-    # Trie into a promoted Trie, and add the element to the newly created,
-    # empty similar Trie.
-    #
-    # `bt` isn't a leaf, but it's empty. Construct a child and allow it to
-    # perform the insert.
-    #
-    # `bt` isn't a leaf, it's not empty, but it's last child is full. Construct
-    # a new child and allow it to perform the insert.
-    #
-    # `bt` isn't a leaf, it's not empty, and it's last child has room to spare.
-    # Allow the child to insert the element.
-    #
-    # `bt` isn't a leaf but it doesn't have room to spare. Construct a promoted
-    # Trie as if it were a leaf.
-    #
     if bt.shift == 0
         if length(bt) < trielen
             newself = copy_to_len(bt.self, 1 + length(bt))
             newself[end] = el
-            return BitmappedTrie(newself, bt.shift, 1 + length(bt), bt.maxlength)
+            withself(bt, newself, 1)
+        else
+            append(promoted(bt), el)
         end
     else
         if length(bt) == 0
-            bt2 = BitmappedTrie(Any[],
-                                bt.shift - shiftby,
-                                0,
-                                int(bt.maxlength / trielen))
-            return BitmappedTrie(BitmappedTrie[append(bt2, el)],
-                                 bt.shift,
-                                 1 + length(bt),
-                                 bt.maxlength)
+            withself(bt, Any[append(demoted(bt), el)], 1)
         elseif length(bt) < bt.maxlength
             if length(bt.self[end]) == bt.self[end].maxlength
                 newself = copy_to_len(bt.self, 1 + length(bt.self))
-                newself[end] = append(BitmappedTrie(Any[],
-                                                    bt.shift - shiftby,
-                                                    0,
-                                                    int(bt.maxlength / trielen)),
-                                      el)
-                return BitmappedTrie(newself, bt.shift, 1 + length(bt), bt.maxlength)
+                newself[end] = append(demoted(bt), el)
+                withself(bt, newself, 1)
             else
                 newself = bt.self[1:end]
                 newself[end] = append(bt.self[end], el)
-                return BitmappedTrie(newself, bt.shift, 1 + length(bt), bt.maxlength)
+                withself(bt, newself, 1)
             end
+        else
+            append(promoted(bt), el)
         end
     end
-    # Construct a promoted BitmappedTrie
-    bt2 = BitmappedTrie(Any[], bt.shift, 0, bt.maxlength)
-    BitmappedTrie(BitmappedTrie[bt, append(bt2, el)],
-                  bt.shift + shiftby,
-                  1 + length(bt),
-                  bt.maxlength * trielen)
 end
 push = append
 
-function Base.getindex(bt::BitmappedTrie, i::Int)
+function get(bt::BitmappedTrie, i::Int)
     # Decrement i so that the bitwise math works out. It will be incremented
     # before indexing into Arrays.
     i -= 1
     if bt.shift == 0
         bt.self[(i & andval) + 1]
     else
-        bt.self[((i >>> bt.shift) & andval) + 1][i + 1]
+        get(bt.self[((i >>> bt.shift) & andval) + 1], i + 1)
     end
+end
+
+function Base.getindex(bt::BitmappedTrie, i::Int)
+    i <= length(bt) || error(BoundsError())
+    get(bt, i)
 end
 
 function update(bt::BitmappedTrie, i::Int, element)
@@ -134,11 +118,11 @@ peek(bt::BitmappedTrie) = bt[end]
 #
 function pop(bt::BitmappedTrie)
     if bt.shift == 0
-        BitmappedTrie(bt.self[1:end-1], 0, bt.length - 1, bt.maxlength)
+        withself(bt, bt.self[1:end-1], -1)
     else
         newself = bt.self[1:end]
         newself[end] = pop(newself[end])
-        BitmappedTrie(newself, bt.shift, bt.length - 1, bt.maxlength)
+        withself(bt, newself, -1)
     end
 end
 
