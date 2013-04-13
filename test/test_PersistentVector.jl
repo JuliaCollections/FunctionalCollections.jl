@@ -13,6 +13,40 @@ function PersistentVectors.TransientVector(r::Range1)
     tv
 end
 
+@facts "Transient Vectors" begin
+
+    @fact "length" begin
+        length(TransientVector(1:32)) => 32
+        length(TransientVector(1:10000)) => 10000
+    end
+
+    @fact "accessing elements" begin
+        tv = TransientVector(1:5000)
+
+        tv[1]    => 1
+        tv[32]   => 32
+        tv[500]  => 500
+        tv[2500] => 2500
+        tv[5000] => 5000
+        tv[5001] => :throws
+
+        TransientVector(1:32)[33] => :throws
+    end
+
+    @fact "transient => persistent" begin
+        tv = TransientVector()
+        push!(tv, 1)
+        length(tv) => 1
+
+        pv = persist!(tv)
+        typeof(pv) => PersistentVector
+
+        # Cannot mutate transient after call to persist!
+        push!(tv, 2) => :throws
+    end
+
+end
+
 @facts "Persistent Vectors" begin
 
     @fact "length" begin
@@ -49,38 +83,17 @@ end
         is(pv2.self[1], pv) => true
     end
 
-end
+    @fact "Base.==" begin
+        v1 = PersistentVector(1:1000)
+        v2 = PersistentVector(1:1000)
 
-@facts "Transient Vectors" begin
-
-    @fact "length" begin
-        length(TransientVector(1:32)) => 32
-        length(TransientVector(1:10000)) => 10000
+        is(v1.self, v2.self) => false
+        v1 => v2
     end
 
-    @fact "accessing elements" begin
-        tv = TransientVector(1:5000)
-
-        tv[1]    => 1
-        tv[32]   => 32
-        tv[500]  => 500
-        tv[2500] => 2500
-        tv[5000] => 5000
-        tv[5001] => :throws
-
-        TransientVector(1:32)[33] => :throws
-    end
-
-    @fact "transient => persistent" begin
-        tv = TransientVector()
-        push!(tv, 1)
-        length(tv) => 1
-
-        pv = persist!(tv)
-        typeof(pv) => PersistentVector
-
-        # Cannot mutate transient after call to persist!
-        push!(tv, 2) => :throws
+    @fact "Base.map" begin
+        v1 = PersistentVector(1:5)
+        map((x)->x+1, v1) => PersistentVector([2, 3, 4, 5, 6])
     end
 
 end

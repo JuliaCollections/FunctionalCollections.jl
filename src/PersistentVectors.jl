@@ -30,6 +30,14 @@ BitmappedTrie() = BitmappedTrie(Any[], 0, 0, trielen)
 Base.length(bt::Trie) = bt.length
 Base.endof(bt::Trie) = bt.length
 
+import Base.==
+function ==(t1::Trie, t2::Trie)
+    t1.length    == t2.length    &&
+    t1.shift     == t2.shift     &&
+    t1.maxlength == t2.maxlength &&
+    t1.self      == t2.self
+end
+
 similar(bt::Trie) =
     typeof(bt)(Any[], bt.shift, 0, bt.maxlength)
 
@@ -194,6 +202,18 @@ end
 #
 typealias PersistentVector BitmappedTrie
 typealias TransientVector TransientBitmappedTrie
+
+function PersistentVector(self::Array)
+    if length(self) <= trielen
+        PersistentVector(self, 0, length(self), trielen)
+    else
+        tv = TransientVector()
+        for el in self
+            push!(tv, el)
+        end
+        persist!(tv)
+    end
+end
 
 # Slow iteration
 Base.start(pv::PersistentVector) = 1
