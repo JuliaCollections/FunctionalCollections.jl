@@ -1,6 +1,8 @@
 module PersistentVectors
 
 export PersistentVector,
+       TransientVector,
+       persist!,
        append, push,
        # Base.getindex,
        update,
@@ -15,7 +17,9 @@ const shiftby = 5
 const trielen = 2^shiftby
 const andval  = trielen - 1
 
-immutable BitmappedTrie
+abstract Trie
+
+immutable BitmappedTrie <: Trie
     self::Array
     shift::Int
     length::Int
@@ -23,20 +27,45 @@ immutable BitmappedTrie
 end
 BitmappedTrie() = BitmappedTrie(Any[], 0, 0, trielen)
 
-Base.length(bt::BitmappedTrie) = bt.length
-Base.endof(bt::BitmappedTrie) = bt.length
+Base.length(bt::Trie) = bt.length
+Base.endof(bt::Trie) = bt.length
 
-similar(bt::BitmappedTrie) =
-    BitmappedTrie(Any[], bt.shift, 0, bt.maxlength)
+similar(bt::Trie) =
+    typeof(bt)(Any[], bt.shift, 0, bt.maxlength)
 
-promoted(bt::BitmappedTrie) =
-    BitmappedTrie(Any[bt], bt.shift + shiftby, bt.length, bt.maxlength * trielen)
+promoted(bt::Trie) =
+    typeof(bt)(Any[bt], bt.shift + shiftby, bt.length, bt.maxlength * trielen)
 
-demoted(bt::BitmappedTrie) =
-    BitmappedTrie(Any[], bt.shift - shiftby, 0, int(bt.maxlength / trielen))
+demoted(bt::Trie) =
+    typeof(bt)(Any[], bt.shift - shiftby, 0, int(bt.maxlength / trielen))
 
-withself(bt::BitmappedTrie, self::Array, lenshift::Int) =
-    BitmappedTrie(self, bt.shift, length(bt) + lenshift, bt.maxlength)
+withself(bt::Trie, self::Array) = withself(bt, self, 0)
+withself(bt::Trie, self::Array, lenshift::Int) =
+    typeof(bt)(self, bt.shift, length(bt) + lenshift, bt.maxlength)
+
+type TransientBitmappedTrie <: Trie
+    self::Array
+    shift::Int
+    length::Int
+    maxlength::Int
+    persistent::Bool
+
+end
+TransientBitmappedTrie(self::Array, shift::Int, length::Int, maxlength::Int) =
+    TransientBitmappedTrie(self, shift, length, maxlength, false)
+TransientBitmappedTrie() = TransientBitmappedTrie(Any[], 0, 0, trielen)
+
+function persist!(tbt::TransientBitmappedTrie)
+    tbt.persistent = true
+    BitmappedTrie(tbt.self, tbt.shift, tbt.length, tbt.maxlength)
+end
+
+function promote!(tbt::TransientBitmappedTrie)
+    tbt.self = Any[withself(tbt, tbt.self)]
+    tbt.shift += shiftby
+    tbt.maxlength *= trielen
+    tbt
+end
 
 # Copy elements from one Array to another, up to `n` elements.
 #
@@ -81,7 +110,41 @@ function append(bt::BitmappedTrie, el)
 end
 push = append
 
-function get(bt::BitmappedTrie, i::Int)
+function append(tbt::TransientBitmappedTrie, el)
+    if tbt.shift == 0
+        if length(tbt) < tbt.maxlength
+            push!(tbt.self, el)
+            tbt.length += 1
+            tbt
+        else
+            append(promote!(tbt), el)
+        end
+    else
+        if length(tbt) == 0
+            tbt.self = Any[append(demoted(tbt), el)]
+            tbt.length += 1
+            tbt
+        elseif length(tbt) < tbt.maxlength
+            if length(tbt.self[end]) == tbt.self[end].maxlength
+                push!(tbt.self, append(demoted(tbt), el))
+                tbt.length += 1
+                tbt
+            else
+                append(tbt.self[end], el)
+                tbt.length += 1
+                tbt
+            end
+        else
+            append(promote!(tbt), el)
+        end
+    end
+end
+function Base.push!(tbt::TransientBitmappedTrie, el)
+    tbt.persistent && error("Cannot mutate Transient after call to persist!")
+    append(tbt, el)
+end
+
+function get(bt::Trie, i::Int)
     # Decrement i so that the bitwise math works out. It will be incremented
     # before indexing into Arrays.
     i -= 1
@@ -92,7 +155,7 @@ function get(bt::BitmappedTrie, i::Int)
     end
 end
 
-function Base.getindex(bt::BitmappedTrie, i::Int)
+function Base.getindex(bt::Trie, i::Int)
     i <= length(bt) || error(BoundsError())
     get(bt, i)
 end
@@ -130,6 +193,7 @@ end
 # may change, with the Vector becoming more of a wrapper.
 #
 typealias PersistentVector BitmappedTrie
+typealias TransientVector TransientBitmappedTrie
 
 function print_elements(io, pv, range)
     for i=range
@@ -137,20 +201,23 @@ function print_elements(io, pv, range)
     end
 end
 
-function Base.show(io::IO, pv::PersistentVector)
-    print(io, "Persistent[")
-    if length(pv) < 50
-        print_elements(io, pv, 1:length(pv)-1)
+function print_trie(io::IO, t::Trie, head::String)
+    print(io, "$head[")
+    if length(t) < 50
+        print_elements(io, t, 1:length(t)-1)
     else
-        print_elements(io, pv, 1:25)
+        print_elements(io, t, 1:25)
         print(io, "..., ")
-        print_elements(io, pv, length(pv)-25:length(pv)-1)
+        print_elements(io, t, length(t)-25:length(t)-1)
     end
-    if length(pv) >= 1
-        print(io, "$(pv[end])]")
+    if length(t) >= 1
+        print(io, "$(t[end])]")
     else
         print(io, "]")
     end
 end
+
+Base.show(io::IO, pv::PersistentVector) = print_trie(io, pv, "Persistent")
+Base.show(io::IO, tv::TransientVector) = print_trie(io, tv, "Transient")
 
 end # module PersistentVectors

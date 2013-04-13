@@ -7,15 +7,23 @@ function PersistentVectors.PersistentVector(r::Range1)
     pv
 end
 
+function PersistentVectors.TransientVector(r::Range1)
+    tv = TransientVector()
+    for i=r push!(tv, i) end
+    tv
+end
+
 @facts "Persistent Vectors" begin
 
-    @fact length(PersistentVector(1:32)) => 32
-    @fact length(PersistentVector(1:10000)) => 10000
-    @fact length(pop(PersistentVector(1:1000))) => 999
+    @fact "length" begin
+        length(PersistentVector(1:32)) => 32
+        length(PersistentVector(1:10000)) => 10000
+        length(pop(PersistentVector(1:1000))) => 999
+    end
 
-    pv = PersistentVector(1:5000)
+    @fact "accessing elements" begin
+        pv = PersistentVector(1:5000)
 
-    @fact "about accessing elements" begin
         pv[1]    => 1
         pv[32]   => 32
         pv[500]  => 500
@@ -26,13 +34,53 @@ end
         PersistentVector(1:32)[33] => :throws
     end
 
-    @fact peek(PersistentVector(1:1000)) => 1000
-    @fact PersistentVector(1:1000)[end]  => 1000
+    @fact "accessing last" begin
+        peek(PersistentVector(1:1000)) => 1000
+        PersistentVector(1:1000)[end]  => 1000
+    end
 
-    @fact update(PersistentVector(1:1000), 500, "foo")[500] => "foo"
+    @fact "updating" begin
+        update(PersistentVector(1:1000), 500, "foo")[500] => "foo"
+    end
 
-    pv = PersistentVector(1:32)
-    pv2 = append(pv, 33)
-    @fact pv2.self[1] => pv
+    @fact "structural sharing" begin
+        pv = PersistentVector(1:32)
+        pv2 = append(pv, 33)
+        is(pv2.self[1], pv) => true
+    end
+
+end
+
+@facts "Transient Vectors" begin
+
+    @fact "length" begin
+        length(TransientVector(1:32)) => 32
+        length(TransientVector(1:10000)) => 10000
+    end
+
+    @fact "accessing elements" begin
+        tv = TransientVector(1:5000)
+
+        tv[1]    => 1
+        tv[32]   => 32
+        tv[500]  => 500
+        tv[2500] => 2500
+        tv[5000] => 5000
+        tv[5001] => :throws
+
+        TransientVector(1:32)[33] => :throws
+    end
+
+    @fact "transient => persistent" begin
+        tv = TransientVector()
+        push!(tv, 1)
+        length(tv) => 1
+
+        pv = persist!(tv)
+        typeof(pv) => PersistentVector
+
+        # Cannot mutate transient after call to persist!
+        push!(tv, 2) => :throws
+    end
 
 end
