@@ -51,30 +51,6 @@ withself(bt::Trie, self::Array) = withself(bt, self, 0)
 withself(bt::Trie, self::Array, lenshift::Int) =
     typeof(bt)(self, bt.shift, length(bt) + lenshift, bt.maxlength)
 
-type TransientBitmappedTrie <: Trie
-    self::Array
-    shift::Int
-    length::Int
-    maxlength::Int
-    persistent::Bool
-end
-TransientBitmappedTrie(self::Array, shift::Int, length::Int, maxlength::Int) =
-    TransientBitmappedTrie(self, shift, length, maxlength, false)
-TransientBitmappedTrie() = TransientBitmappedTrie(Any[], 0, 0, trielen)
-
-function persist!(tbt::TransientBitmappedTrie)
-    tbt.persistent = true
-    self = tbt.shift == 0 ? tbt.self : map(persist!, tbt.self)
-    BitmappedTrie(self, tbt.shift, tbt.length, tbt.maxlength)
-end
-
-function promote!(tbt::TransientBitmappedTrie)
-    tbt.self = Any[withself(tbt, tbt.self)]
-    tbt.shift += shiftby
-    tbt.maxlength *= trielen
-    tbt
-end
-
 # Copy elements from one Array to another, up to `n` elements.
 #
 function copy_to(from::Array, to::Array, n::Int)
@@ -118,6 +94,75 @@ function append(bt::BitmappedTrie, el)
 end
 push = append
 
+function get(bt::Trie, i::Int)
+    # Decrement i so that the bitwise math works out. It will be incremented
+    # before indexing into Arrays.
+    i -= 1
+    if bt.shift == 0
+        bt.self[(i & andval) + 1]
+    else
+        get(bt.self[((i >>> bt.shift) & andval) + 1], i + 1)
+    end
+end
+
+function Base.getindex(bt::Trie, i::Int)
+    i <= length(bt) || error(BoundsError())
+    get(bt, i)
+end
+
+function update(bt::BitmappedTrie, i::Int, element)
+    i -= 1
+    if bt.shift == 0
+        newself = bt.self[1:end]
+        newself[(i & andval) + 1] = element
+    else
+        newself = bt.self[1:end]
+        idx = ((i >>> bt.shift) & andval) + 1
+        newself[idx] = update(newself[idx], i + 1, element)
+    end
+    BitmappedTrie(newself, bt.shift, bt.length, bt.maxlength)
+end
+
+peek(bt::BitmappedTrie) = bt[end]
+
+# Pop is usually destructive, but that doesn't make sense for an immutable
+# structure, so `pop` is defined to return a Trie without its last
+# element. Use `peek` to access the last element.
+#
+function pop(bt::BitmappedTrie)
+    if bt.shift == 0
+        withself(bt, bt.self[1:end-1], -1)
+    else
+        newself = bt.self[1:end]
+        newself[end] = pop(newself[end])
+        withself(bt, newself, -1)
+    end
+end
+
+type TransientBitmappedTrie <: Trie
+    self::Array
+    shift::Int
+    length::Int
+    maxlength::Int
+    persistent::Bool
+end
+TransientBitmappedTrie(self::Array, shift::Int, length::Int, maxlength::Int) =
+    TransientBitmappedTrie(self, shift, length, maxlength, false)
+TransientBitmappedTrie() = TransientBitmappedTrie(Any[], 0, 0, trielen)
+
+function persist!(tbt::TransientBitmappedTrie)
+    tbt.persistent = true
+    self = tbt.shift == 0 ? tbt.self : map(persist!, tbt.self)
+    BitmappedTrie(self, tbt.shift, tbt.length, tbt.maxlength)
+end
+
+function promote!(tbt::TransientBitmappedTrie)
+    tbt.self = Any[withself(tbt, tbt.self)]
+    tbt.shift += shiftby
+    tbt.maxlength *= trielen
+    tbt
+end
+
 function Base.push!(tbt::TransientBitmappedTrie, el)
     tbt.persistent && error("Cannot mutate Transient after call to persist!")
     if tbt.shift == 0
@@ -149,35 +194,6 @@ function Base.push!(tbt::TransientBitmappedTrie, el)
     end
 end
 
-function get(bt::Trie, i::Int)
-    # Decrement i so that the bitwise math works out. It will be incremented
-    # before indexing into Arrays.
-    i -= 1
-    if bt.shift == 0
-        bt.self[(i & andval) + 1]
-    else
-        get(bt.self[((i >>> bt.shift) & andval) + 1], i + 1)
-    end
-end
-
-function Base.getindex(bt::Trie, i::Int)
-    i <= length(bt) || error(BoundsError())
-    get(bt, i)
-end
-
-function update(bt::BitmappedTrie, i::Int, element)
-    i -= 1
-    if bt.shift == 0
-        newself = bt.self[1:end]
-        newself[(i & andval) + 1] = element
-    else
-        newself = bt.self[1:end]
-        idx = ((i >>> bt.shift) & andval) + 1
-        newself[idx] = update(newself[idx], i + 1, element)
-    end
-    BitmappedTrie(newself, bt.shift, bt.length, bt.maxlength)
-end
-
 function Base.setindex!(tbt::TransientBitmappedTrie, el, i::Real)
     i -= 1
     if tbt.shift == 0
@@ -187,22 +203,6 @@ function Base.setindex!(tbt::TransientBitmappedTrie, el, i::Real)
         tbt.self[idx][i + 1] = el
     end
     el
-end
-
-peek(bt::BitmappedTrie) = bt[end]
-
-# Pop is usually destructive, but that doesn't make sense for an immutable
-# structure, so `pop` is defined to return a Trie without its last
-# element. Use `peek` to access the last element.
-#
-function pop(bt::BitmappedTrie)
-    if bt.shift == 0
-        withself(bt, bt.self[1:end-1], -1)
-    else
-        newself = bt.self[1:end]
-        newself[end] = pop(newself[end])
-        withself(bt, newself, -1)
-    end
 end
 
 # In this initial implementation, a PersistentVector is a BitmappedTrie. This
