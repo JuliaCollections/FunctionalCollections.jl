@@ -182,6 +182,17 @@ function update(bt::BitmappedTrie, i::Int, element)
     BitmappedTrie(newself, bt.shift, bt.length, bt.maxlength)
 end
 
+function Base.setindex!(tbt::TransientBitmappedTrie, el, i::Real)
+    i -= 1
+    if tbt.shift == 0
+        tbt.self[(i & andval) + 1] = el
+    else
+        idx = ((i >>> tbt.shift) & andval) + 1
+        tbt.self[idx][i + 1] = el
+    end
+    el
+end
+
 peek(bt::BitmappedTrie) = bt[end]
 
 # Pop is usually destructive, but that doesn't make sense for an immutable

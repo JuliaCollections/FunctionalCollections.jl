@@ -33,6 +33,13 @@ end
         TransientVector(1:32)[33] => :throws
     end
 
+    @fact "updating" begin
+        tv = TransientVector(1:5000)
+
+        (tv[1000] = "foo") => "foo"
+        tv[1000] => "foo"
+    end
+
     @fact "transient => persistent" begin
         tv = TransientVector()
         push!(tv, 1)
