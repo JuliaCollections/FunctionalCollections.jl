@@ -118,38 +118,35 @@ function append(bt::BitmappedTrie, el)
 end
 push = append
 
-function append!(tbt::TransientBitmappedTrie, el)
+function Base.push!(tbt::TransientBitmappedTrie, el)
+    tbt.persistent && error("Cannot mutate Transient after call to persist!")
     if tbt.shift == 0
         if length(tbt) < tbt.maxlength
             push!(tbt.self, el)
             tbt.length += 1
             tbt
         else
-            append!(promote!(tbt), el)
+            push!(promote!(tbt), el)
         end
     else
         if length(tbt) == 0
-            tbt.self = Any[append!(demoted(tbt), el)]
+            tbt.self = Any[push!(demoted(tbt), el)]
             tbt.length += 1
             tbt
         elseif length(tbt) < tbt.maxlength
             if length(tbt.self[end]) == tbt.self[end].maxlength
-                push!(tbt.self, append!(demoted(tbt), el))
+                push!(tbt.self, push!(demoted(tbt), el))
                 tbt.length += 1
                 tbt
             else
-                append!(tbt.self[end], el)
+                push!(tbt.self[end], el)
                 tbt.length += 1
                 tbt
             end
         else
-            append!(promote!(tbt), el)
+            push!(promote!(tbt), el)
         end
     end
-end
-function Base.push!(tbt::TransientBitmappedTrie, el)
-    tbt.persistent && error("Cannot mutate Transient after call to persist!")
-    append!(tbt, el)
 end
 
 function get(bt::Trie, i::Int)
