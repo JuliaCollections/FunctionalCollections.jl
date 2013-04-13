@@ -76,12 +76,6 @@ function promote!(tbt::TransientBitmappedTrie)
     tbt
 end
 
-# An Array of Trie Arrays. Order is guaranteed.
-#
-function leaves(t::Trie)
-    t.shift == 0 && Array[t.self]
-end
-
 # Copy elements from one Array to another, up to `n` elements.
 #
 function copy_to(from::Array, to::Array, n::Int)
