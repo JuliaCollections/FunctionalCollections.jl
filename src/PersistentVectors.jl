@@ -195,6 +195,19 @@ end
 typealias PersistentVector BitmappedTrie
 typealias TransientVector TransientBitmappedTrie
 
+# Slow iteration
+Base.start(pv::PersistentVector) = 1
+Base.done(pv::PersistentVector, i::Int) = i > pv.length
+Base.next(pv::PersistentVector, i::Int) = (pv[i], i+1)
+
+function Base.map(f::Function, pv::PersistentVector)
+    tv = TransientVector()
+    for el in pv
+        push!(tv, f(el))
+    end
+    persist!(tv)
+end
+
 function print_elements(io, pv, range)
     for i=range
         print(io, "$(pv[i]), ")
