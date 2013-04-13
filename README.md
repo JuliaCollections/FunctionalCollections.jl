@@ -81,7 +81,7 @@ julia> for i=1:1000000
        end
 
 # When you're done building your TransientVector, you can make it
-# persistent in constant time.
+# persistent in nearly constant time.
 julia> v = persist!(t)
 Persistent[1, 2, 3, 4, 5, ..., 999996, 999997, 999998, 999999, 1000000]
 

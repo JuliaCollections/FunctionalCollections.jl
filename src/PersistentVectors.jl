@@ -65,7 +65,8 @@ TransientBitmappedTrie() = TransientBitmappedTrie(Any[], 0, 0, trielen)
 
 function persist!(tbt::TransientBitmappedTrie)
     tbt.persistent = true
-    BitmappedTrie(tbt.self, tbt.shift, tbt.length, tbt.maxlength)
+    self = tbt.shift == 0 ? tbt.self : map(persist!, tbt.self)
+    BitmappedTrie(self, tbt.shift, tbt.length, tbt.maxlength)
 end
 
 function promote!(tbt::TransientBitmappedTrie)
@@ -73,6 +74,12 @@ function promote!(tbt::TransientBitmappedTrie)
     tbt.shift += shiftby
     tbt.maxlength *= trielen
     tbt
+end
+
+# An Array of Trie Arrays. Order is guaranteed.
+#
+function leaves(t::Trie)
+    t.shift == 0 && Array[t.self]
 end
 
 # Copy elements from one Array to another, up to `n` elements.

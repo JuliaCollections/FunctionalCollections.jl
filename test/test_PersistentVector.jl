@@ -1,16 +1,16 @@
 using FactCheck
 using PersistentVectors
 
-function PersistentVectors.PersistentVector(r::Range1)
-    pv = PersistentVector()
-    for i=r pv=append(pv, i) end
-    pv
-end
-
 function PersistentVectors.TransientVector(r::Range1)
     tv = TransientVector()
     for i=r push!(tv, i) end
     tv
+end
+
+function Base.Array(r::Range1)
+    arr = Array(Int, r)
+    for i=r arr[i] = i end
+    arr
 end
 
 @facts "Transient Vectors" begin
@@ -43,11 +43,23 @@ end
 
         # Cannot mutate transient after call to persist!
         push!(tv, 2) => :throws
+
+        tv = TransientVector(1:1000)
+        pv = persist!(tv)
+        typeof(pv.self[1]) => PersistentVector
+        tv.self[1].persistent => true
     end
 
 end
 
+PersistentVectors.PersistentVector(r::Range1) = persist!(TransientVector(r))
+
 @facts "Persistent Vectors" begin
+
+    @fact "range constructor" begin
+        typeof(PersistentVector(1:1000)) => PersistentVector
+        typeof(pop(PersistentVector(1:1000))) => PersistentVector
+    end
 
     @fact "length" begin
         length(PersistentVector(1:32)) => 32
@@ -89,6 +101,14 @@ end
 
         is(v1.self, v2.self) => false
         v1 => v2
+    end
+
+    @fact "iteration" begin
+        arr2 = Int[]
+        for i in PersistentVector(1:10000)
+            push!(arr2, i)
+        end
+        1:10000 => arr2
     end
 
     @fact "Base.map" begin
