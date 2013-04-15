@@ -236,6 +236,14 @@ function Base.map(f::Function, pv::PersistentVector)
     persist!(tv)
 end
 
+function Base.hash(pv::PersistentVector)
+    h = hash(length(pv))
+    for el in pv
+        h = Base.bitmix(h, int(hash(el)))
+    end
+    uint(h)
+end
+
 function print_elements(io, pv, range)
     for i=range
         print(io, "$(pv[i]), ")
