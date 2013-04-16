@@ -124,4 +124,8 @@ PersistentDataStructures.PersistentVector(r::Range1) = persist!(TransientVector(
         map((x)->x+1, v1) => PersistentVector([2, 3, 4, 5, 6])
     end
 
+    @fact "Base.hash" begin
+        hash(PersistentVector(1:1000)) => hash(PersistentVector(1:1000))
+    end
+
 end
