@@ -1,14 +1,3 @@
-module PersistentVectors
-
-export PersistentVector,
-       TransientVector,
-       persist!,
-       append, push,
-       # Base.getindex,
-       update,
-       peek,
-       pop
-
 # `shiftby` is equal to the number of bits required to represent index information
 # for one level of the BitmappedTrie.
 #
@@ -268,5 +257,3 @@ end
 
 Base.show(io::IO, pv::PersistentVector) = print_trie(io, pv, "Persistent")
 Base.show(io::IO, tv::TransientVector) = print_trie(io, tv, "Transient")
-
-end # module PersistentVectors

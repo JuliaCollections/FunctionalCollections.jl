@@ -1,7 +1,7 @@
 using FactCheck
-using PersistentVectors
+using PersistentDataStructures
 
-function PersistentVectors.TransientVector(r::Range1)
+function PersistentDataStructures.TransientVector(r::Range1)
     tv = TransientVector()
     for i=r push!(tv, i) end
     tv
@@ -59,7 +59,7 @@ end
 
 end
 
-PersistentVectors.PersistentVector(r::Range1) = persist!(TransientVector(r))
+PersistentDataStructures.PersistentVector(r::Range1) = persist!(TransientVector(r))
 
 @facts "Persistent Vectors" begin
 
