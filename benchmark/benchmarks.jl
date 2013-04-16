@@ -3,7 +3,7 @@ using PersistentDataStructures
 
 function appending(::Type{PersistentVector})
     function ()
-        v = PersistentVector()
+        v = PersistentVector{Int}()
         for i=1:50000
             v = append(v, i)
         end
@@ -11,7 +11,7 @@ function appending(::Type{PersistentVector})
 end
 function appending(::Type{TransientVector})
     function ()
-        v = TransientVector()
+        v = TransientVector{Int}()
         for i=1:50000
             v = push!(v, i)
         end
@@ -19,7 +19,7 @@ function appending(::Type{TransientVector})
 end
 function appending(::Type{Array})
     function ()
-        a = Any[]
+        a = Int[]
         for i=1:50000
             a = push!(a, i)
         end
@@ -30,23 +30,23 @@ println("Appending")
 println(compare(Function[appending(PersistentVector), appending(TransientVector), appending(Array)], 20))
 
 function vec(r::Range1)
-    v = TransientVector()
+    v = TransientVector{Int}()
     for i=r
         push!(v, i)
     end
     persist!(v)
 end
 
-function iterating(pv::PersistentVector)
+function iterating{T}(pv::PersistentVector{T})
     function ()
-        for el::Int in pv
+        for el::T in pv
             nothing
         end
     end
 end
-function iterating(arr::Array)
+function iterating{T}(arr::Array{T})
     function ()
-        for el::Int in arr
+        for el::T in arr
             nothing
         end
     end
@@ -55,14 +55,14 @@ end
 println("Iterating")
 println(compare(Function[iterating(vec(1:1000000)), iterating(Array(Int, 1000000))], 20))
 
-function indexing(v::PersistentVector)
+function indexing{T}(v::PersistentVector{T})
     function ()
         for _ in 500000
             v[rand(1:length(v))]
         end
     end
 end
-function indexing(a::Array)
+function indexing{T}(a::Array{T})
     function ()
         for _ in 500000
             a[rand(1:length(a))]

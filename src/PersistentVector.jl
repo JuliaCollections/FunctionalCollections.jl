@@ -1,11 +1,14 @@
 abstract BitmappedVector
 
-immutable PersistentVector <: BitmappedVector
+immutable PersistentVector{T} <: BitmappedVector
     trie::BitmappedTrie
-    tail::Array
+    tail::Array{T}
     length::Int
+
+    PersistentVector(trie::BitmappedTrie, tail::Array{T}, length::Int) =
+        new(trie, tail, length)
+    PersistentVector() = new(BitmappedTrie(), T[], 0)
 end
-PersistentVector() = PersistentVector(BitmappedTrie(), Any[], 0)
 
 mask(v::BitmappedVector, i::Int) = i & (trielen - 1)
 
@@ -29,67 +32,73 @@ end
 
 peek(v::BitmappedVector) = v[end]
 
-function append(v::PersistentVector, el)
+function append{T}(v::PersistentVector{T}, el)
     if length(v.tail) < trielen
         newtail = copy_to_len(v.tail, 1 + length(v.tail))
         newtail[end] = el
-        PersistentVector(v.trie, newtail, 1 + v.length)
+        PersistentVector{T}(v.trie, newtail, 1 + v.length)
     else
-        PersistentVector(append(v.trie, v.tail), Any[el], 1 + v.length)
+        PersistentVector{T}(append(v.trie, v.tail), T[el], 1 + v.length)
     end
 end
 
-function update(v::PersistentVector, i::Int, el)
+function update{T}(v::PersistentVector{T}, i::Int, el::T)
     boundscheck!(v, i)
     if i > v.length - length(v.tail)
         newtail = v.tail[1:end]
         newtail[mask(v, i - 1) + 1] = el
-        PersistentVector(v.trie, newtail, v.length)
+        PersistentVector{T}(v.trie, newtail, v.length)
     else
         newnode = v.trie[i][1:end]
         newnode[mask(v, i - 1) + 1] = el
-        PersistentVector(update(v.trie, i, newnode), v.tail, v.length)
+        PersistentVector{T}(update(v.trie, i, newnode), v.tail, v.length)
     end
 end
 
-function pop(v::PersistentVector)
+function pop{T}(v::PersistentVector{T})
     if isempty(v.tail)
         newtail = peek(v.trie)[1:end]
         pop!(newtail)
-        PersistentVector(pop(v.trie), newtail, v.length - 1)
+        PersistentVector{T}(pop(v.trie), newtail, v.length - 1)
     else
         newtail = v.tail[1:end]
         pop!(newtail)
-        PersistentVector(v.trie, newtail, v.length - 1)
+        PersistentVector{T}(v.trie, newtail, v.length - 1)
     end
 end
 
-type TransientVector <: BitmappedVector
+type TransientVector{T} <: BitmappedVector
     trie::TransientBitmappedTrie
-    tail::Array
+    tail::Array{T}
     length::Int
     persistent::Bool
-end
-TransientVector() = TransientVector(TransientBitmappedTrie(), Any[], 0, false)
 
-function persist!(tv::TransientVector)
+    TransientVector(trie::TransientBitmappedTrie,
+                    tail::Array{T},
+                    length::Int,
+                    persistent::Bool) = new(trie, tail, length, persistent)
+    TransientVector() = new(TransientBitmappedTrie(), Any[], 0, false)
+end
+
+
+function persist!{T}(tv::TransientVector{T})
     tv.persistent = true
-    PersistentVector(persist!(tv.trie), tv.tail, tv.length)
+    PersistentVector{T}(persist!(tv.trie), tv.tail, tv.length)
 end
 
-function Base.push!(v::TransientVector, el)
+function Base.push!{T}(v::TransientVector{T}, el::T)
     transientcheck!(v)
     v.length += 1
     if length(v.tail) < trielen
         push!(v.tail, el)
     else
         push!(v.trie, v.tail)
-        v.tail = Any[el]
+        v.tail = T[el]
     end
     v
 end
 
-function Base.setindex!(v::TransientVector, el, i::Real)
+function Base.setindex!{T}(v::TransientVector, el::T, i::Real)
     transientcheck!(v)
     boundscheck!(v, i)
     if i > v.length - length(v.tail)
@@ -100,11 +109,11 @@ function Base.setindex!(v::TransientVector, el, i::Real)
     el
 end
 
-function PersistentVector(self::Array)
+function PersistentVector{T}(self::Array{T})
     if length(self) <= trielen
-        PersistentVector(BitmappedTrie(), self, length(self))
+        PersistentVector{T}(BitmappedTrie(), self, length(self))
     else
-        tv = TransientVector()
+        tv = TransientVector{T}()
         for el in self
             push!(tv, el)
         end
@@ -117,17 +126,17 @@ Base.start(pv::PersistentVector) = 1
 Base.done(pv::PersistentVector, i::Int) = i > pv.length
 Base.next(pv::PersistentVector, i::Int) = (pv[i], i+1)
 
-function Base.map(f::Function, pv::PersistentVector)
-    tv = TransientVector()
-    for el in pv
+function Base.map{T}(f::Function, pv::PersistentVector{T})
+    tv = TransientVector{T}()
+    for el::T in pv
         push!(tv, f(el))
     end
     persist!(tv)
 end
 
-function Base.hash(pv::PersistentVector)
+function Base.hash{T}(pv::PersistentVector{T})
     h = hash(length(pv))
-    for el in pv
+    for el::T in pv
         h = Base.bitmix(h, int(hash(el)))
     end
     uint(h)

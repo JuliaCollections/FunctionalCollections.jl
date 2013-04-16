@@ -43,7 +43,7 @@ withself(bt::Trie, self::Array, lenshift::Int) =
 
 # Copy elements from one Array to another, up to `n` elements.
 #
-function copy_to(from::Array, to::Array, n::Int)
+function copy_to{T}(from::Array{T}, to::Array{T}, n::Int)
     for i=1:n
         to[i] = from[i]
     end
