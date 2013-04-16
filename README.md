@@ -1,13 +1,18 @@
-**Persistent Vectors**
+**Persistent Data Strucrues**
 
-Functional and persistent vectors for Julia. This is a work in progress
-and is currently not optimized for performance.
+Functional and persistent data structures for Julia. This is a work in
+progress and is currently not optimized for performance.
 
+### Implemented:
+
+:white_check_mark: **PersistentVector**
+:x: **PersistentHashMap**
+:x: **PersistentSet**
 
 ### Usage
 
 ```.jl
-julia> using PersistentVectors
+julia> using PersistentDataStructures
 
 # A PersistentVector is an immutable, sequential, random-access data
 # structure: a functional Array.
