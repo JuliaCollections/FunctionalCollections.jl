@@ -52,9 +52,10 @@ end
         push!(tv, 2) => :throws
 
         tv = TransientVector(1:1000)
+        typeof(tv.trie) => PersistentDataStructures.TransientBitmappedTrie
         pv = persist!(tv)
-        typeof(pv.self[1]) => PersistentVector
-        tv.self[1].persistent => true
+        typeof(pv.trie) => PersistentDataStructures.BitmappedTrie
+        tv.persistent => true
     end
 
 end
@@ -99,14 +100,14 @@ PersistentDataStructures.PersistentVector(r::Range1) = persist!(TransientVector(
     @fact "structural sharing" begin
         pv = PersistentVector(1:32)
         pv2 = append(pv, 33)
-        is(pv2.self[1], pv) => true
+        is(pv2.trie[1], pv.tail) => true
     end
 
     @fact "Base.==" begin
         v1 = PersistentVector(1:1000)
         v2 = PersistentVector(1:1000)
 
-        is(v1.self, v2.self) => false
+        is(v1.trie, v2.trie) => false
         v1 => v2
     end
 

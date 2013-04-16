@@ -1,5 +1,5 @@
-using PersistentVectors
 using Benchmark
+using PersistentDataStructures
 
 function appending(::Type{PersistentVector})
     function ()

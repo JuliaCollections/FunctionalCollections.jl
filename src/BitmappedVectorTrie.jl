@@ -4,7 +4,6 @@
 # Here, `shiftby` is 5, which means that the BitmappedTrie Arrays will be length 32.
 const shiftby = 5
 const trielen = 2^shiftby
-const andval  = trielen - 1
 
 abstract Trie
 
@@ -14,7 +13,9 @@ immutable BitmappedTrie <: Trie
     length::Int
     maxlength::Int
 end
-BitmappedTrie() = BitmappedTrie(Any[], 0, 0, trielen)
+BitmappedTrie() = BitmappedTrie(Any[], shiftby, 0, trielen)
+
+mask(bt::Trie, i::Int) = (i >>> bt.shift) & (trielen - 1)
 
 Base.length(bt::Trie) = bt.length
 Base.endof(bt::Trie) = bt.length
@@ -55,7 +56,7 @@ copy_to_len{T}(from::Array{T}, len::Int) =
     copy_to(from, Array(T, len), min(len, length(from)))
 
 function append(bt::BitmappedTrie, el)
-    if bt.shift == 0
+    if bt.shift == shiftby
         if length(bt) < trielen
             newself = copy_to_len(bt.self, 1 + length(bt))
             newself[end] = el
@@ -83,30 +84,23 @@ function append(bt::BitmappedTrie, el)
 end
 push = append
 
-function get(bt::Trie, i::Int)
-    # Decrement i so that the bitwise math works out. It will be incremented
-    # before indexing into Arrays.
-    i -= 1
-    if bt.shift == 0
-        bt.self[(i & andval) + 1]
-    else
-        get(bt.self[((i >>> bt.shift) & andval) + 1], i + 1)
-    end
-end
-
 function Base.getindex(bt::Trie, i::Int)
-    i <= length(bt) || error(BoundsError())
-    get(bt, i)
+    i -= 1
+    if bt.shift == shiftby
+        bt.self[mask(bt, i) + 1]
+    else
+        bt.self[mask(bt, i) + 1][i + 1]
+    end
 end
 
 function update(bt::BitmappedTrie, i::Int, element)
     i -= 1
-    if bt.shift == 0
+    if bt.shift == shiftby
         newself = bt.self[1:end]
-        newself[(i & andval) + 1] = element
+        newself[mask(bt, i) + 1] = element
     else
         newself = bt.self[1:end]
-        idx = ((i >>> bt.shift) & andval) + 1
+        idx = mask(bt, i) + 1
         newself[idx] = update(newself[idx], i + 1, element)
     end
     BitmappedTrie(newself, bt.shift, bt.length, bt.maxlength)
@@ -119,7 +113,7 @@ peek(bt::BitmappedTrie) = bt[end]
 # element. Use `peek` to access the last element.
 #
 function pop(bt::BitmappedTrie)
-    if bt.shift == 0
+    if bt.shift == shiftby
         withself(bt, bt.self[1:end-1], -1)
     else
         newself = bt.self[1:end]
@@ -137,11 +131,14 @@ type TransientBitmappedTrie <: Trie
 end
 TransientBitmappedTrie(self::Array, shift::Int, length::Int, maxlength::Int) =
     TransientBitmappedTrie(self, shift, length, maxlength, false)
-TransientBitmappedTrie() = TransientBitmappedTrie(Any[], 0, 0, trielen)
+TransientBitmappedTrie() = TransientBitmappedTrie(Any[], shiftby, 0, trielen)
+
+transientcheck!(t) =
+    t.persistent && error("Cannot mutate Transient after call to persist!")
 
 function persist!(tbt::TransientBitmappedTrie)
     tbt.persistent = true
-    self = tbt.shift == 0 ? tbt.self : map(persist!, tbt.self)
+    self = tbt.shift == shiftby ? tbt.self : map(persist!, tbt.self)
     BitmappedTrie(self, tbt.shift, tbt.length, tbt.maxlength)
 end
 
@@ -153,8 +150,8 @@ function promote!(tbt::TransientBitmappedTrie)
 end
 
 function Base.push!(tbt::TransientBitmappedTrie, el)
-    tbt.persistent && error("Cannot mutate Transient after call to persist!")
-    if tbt.shift == 0
+    transientcheck!(tbt)
+    if tbt.shift == shiftby
         if length(tbt) < tbt.maxlength
             push!(tbt.self, el)
             tbt.length += 1
@@ -184,12 +181,12 @@ function Base.push!(tbt::TransientBitmappedTrie, el)
 end
 
 function Base.setindex!(tbt::TransientBitmappedTrie, el, i::Real)
+    transientcheck!(tbt)
     i -= 1
-    if tbt.shift == 0
-        tbt.self[(i & andval) + 1] = el
+    if tbt.shift == shiftby
+        tbt.self[mask(bt, i) + 1] = el
     else
-        idx = ((i >>> tbt.shift) & andval) + 1
-        tbt.self[idx][i + 1] = el
+        tbt.self[mask(tbt, i) + 1][i + 1] = el
     end
     el
 end
