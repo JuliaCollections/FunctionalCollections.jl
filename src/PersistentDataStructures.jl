@@ -10,5 +10,6 @@ export PersistentVector,
        pop
 
 include("BitmappedVectorTrie.jl")
+include("PersistentVector.jl")
 
 end # module PersistentDataStructures
