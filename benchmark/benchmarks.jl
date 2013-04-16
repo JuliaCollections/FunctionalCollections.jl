@@ -27,7 +27,7 @@ function appending(::Type{Array})
 end
 
 println("Appending")
-println(compare(Function[appending(PersistentVector), appending(TransientVector), appending(Array)], 20))
+println(compare([appending(PersistentVector), appending(TransientVector), appending(Array)], 20))
 
 function vec(r::Range1)
     v = TransientVector{Int}()
@@ -37,23 +37,26 @@ function vec(r::Range1)
     persist!(v)
 end
 
-function iterating{T}(pv::PersistentVector{T})
+const pv = vec(1:1000000)
+const arr = Array(Int, 1000000)
+
+function iterating(::Type{PersistentVector})
     function ()
-        for el::T in pv
+        for el in pv
             nothing
         end
     end
 end
-function iterating{T}(arr::Array{T})
+function iterating(::Type{Array})
     function ()
-        for el::T in arr
+        for el in arr
             nothing
         end
     end
 end
 
 println("Iterating")
-println(compare(Function[iterating(vec(1:1000000)), iterating(Array(Int, 1000000))], 20))
+println(compare([iterating(PersistentVector), iterating(Array)], 20))
 
 function indexing{T}(v::PersistentVector{T})
     function ()
@@ -71,7 +74,7 @@ function indexing{T}(a::Array{T})
 end
 
 println("Indexing")
-println(compare(Function[indexing(vec(1:1000000)), indexing(Array(Int, 1000000))], 20))
+println(compare([indexing(vec(1:1000000)), indexing(Array(Int, 1000000))], 20))
 
 function popping(::Type{PersistentVector})
     v = vec(1:100000)
@@ -92,7 +95,7 @@ function popping(::Type{Array})
 end
 
 println("Popping")
-println(compare(Function[popping(PersistentVector), popping(Array)], 20))
+println(compare([popping(PersistentVector), popping(Array)], 20))
 
 function updating(v::PersistentVector)
     function ()
@@ -110,4 +113,4 @@ function updating(a::Array)
 end
 
 println("Updating")
-println(compare(Function[updating(vec(1:100000)), updating(Array(Int, 100000))], 20))
+println(compare([updating(vec(1:100000)), updating(Array(Int, 100000))], 20))

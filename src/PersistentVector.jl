@@ -121,7 +121,6 @@ function PersistentVector{T}(self::Array{T})
     end
 end
 
-# Slow iteration
 Base.start(pv::PersistentVector) = 1
 Base.done(pv::PersistentVector, i::Int) = i > pv.length
 Base.next(pv::PersistentVector, i::Int) = (pv[i], i+1)
@@ -164,5 +163,5 @@ function print_vec(io::IO, t, head::String)
     end
 end
 
-Base.show(io::IO, pv::PersistentVector) = print_vec(io, pv, "Persistent")
-Base.show(io::IO, tv::TransientVector) = print_vec(io, tv, "Transient")
+Base.show{T}(io::IO, pv::PersistentVector{T}) = print_vec(io, pv, "Persistent{$T}")
+Base.show{T}(io::IO, tv::TransientVector{T}) = print_vec(io, tv, "Transient{$T}")
