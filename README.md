@@ -5,9 +5,11 @@ progress and is currently not optimized for performance.
 
 ### Implemented:
 
-:white_check_mark: **PersistentVector**
-:x: **PersistentHashMap**
-:x: **PersistentSet**
+:white_check_mark:   **PersistentVector**
+
+:x:   **PersistentHashMap**
+
+:x:   **PersistentSet**
 
 ### Usage
 
