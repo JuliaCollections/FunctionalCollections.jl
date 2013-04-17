@@ -7,7 +7,7 @@ immutable PersistentVector{T} <: BitmappedVector
 
     PersistentVector(trie::BitmappedTrie, tail::Array{T}, length::Int) =
         new(trie, tail, length)
-    PersistentVector() = new(BitmappedTrie(), T[], 0)
+    PersistentVector() = new(Leaf{Array{T, 1}}(), T[], 0)
 end
 
 mask(i::Int) = ((i - 1) & (trielen - 1)) + 1
@@ -67,7 +67,7 @@ end
 
 function PersistentVector{T}(self::Array{T})
     if length(self) <= trielen
-        PersistentVector{T}(BitmappedTrie(), self, length(self))
+        PersistentVector{T}(Leaf{Array{T, 1}}(), self, length(self))
     else
         v = PersistentVector{T}()
         for el in self
@@ -77,18 +77,24 @@ function PersistentVector{T}(self::Array{T})
     end
 end
 
-Base.start{T}(v::PersistentVector{T}) = (1, v.length <= 32 ? v.tail : v.trie[1])
-Base.done{T}(v::PersistentVector{T}, state) = state[1] > v.length
-function Base.next{T}(v::PersistentVector{T}, state)
-    i, leaf = state
-    m = mask(i)
-    value = leaf[m]
-    i += 1
-    if m == 32
-        leaf = i > v.length - length(v.tail) ? v.tail : v.trie[i]
-    end
-    return value, (i, leaf)
-end
+# Stefan and I thought this version might be faster, but it's not. (For now.)
+#
+# Base.start{T}(v::PersistentVector{T}) = (1, v.length <= 32 ? v.tail : v.trie[1])
+# Base.done{T}(v::PersistentVector{T}, state) = state[1] > v.length
+# function Base.next{T}(v::PersistentVector{T}, state)
+#     i, leaf = state
+#     m = mask(i)
+#     value = leaf[m]
+#     i += 1
+#     if m == 32
+#         leaf = i > v.length - length(v.tail) ? v.tail : v.trie[i]
+#     end
+#     return value, (i, leaf)
+# end
+
+Base.start(v::PersistentVector) = 1
+Base.done(v::PersistentVector, i::Int) = i > length(v)
+Base.next(v::PersistentVector, i::Int) = (v[i], i + 1)
 
 function Base.map{T}(f::Function, pv::PersistentVector{T})
     v = PersistentVector{T}()

@@ -5,41 +5,58 @@
 const shiftby = 5
 const trielen = 2^shiftby
 
-abstract Trie
+abstract BitmappedTrie{T}
 
-immutable BitmappedTrie{A} <: Trie
-    self::A
+immutable Node{T} <: BitmappedTrie{T}
+    self::Array{BitmappedTrie{T}, 1}
     shift::Int
     length::Int
     maxlength::Int
 end
-BitmappedTrie() = BitmappedTrie(Any[], shiftby, 0, trielen)
+Node{T}() = Node{T}(BitmappedTrie{T}[], shiftby*2, 0, trielen)
 
-mask(bt::Trie, i::Int) = (((i - 1) >>> bt.shift) & (trielen - 1)) + 1
+immutable Leaf{T} <: BitmappedTrie{T}
+    self::Array{T, 1}
 
-Base.length(bt::Trie) = bt.length
-Base.endof(bt::Trie) = bt.length
-
-import Base.==
-function ==(t1::Trie, t2::Trie)
-    t1.length    == t2.length    &&
-    t1.shift     == t2.shift     &&
-    t1.maxlength == t2.maxlength &&
-    t1.self      == t2.self
+    Leaf(self::Array) = new(self)
+    Leaf() = new(T[])
 end
 
-similar(bt::Trie) =
-    typeof(bt)(Any[], bt.shift, 0, bt.maxlength)
+shift(n::Node) = n.shift
+maxlength(n::Node) = n.maxlength
+Base.length(n::Node) = n.length
 
-promoted(bt::Trie) =
-    typeof(bt)(Any[bt], bt.shift + shiftby, bt.length, bt.maxlength * trielen)
+shift(::Leaf) = 5
+maxlength(l::Leaf) = trielen
+Base.length(l::Leaf) = length(l.self)
 
-demoted(bt::Trie) =
-    typeof(bt)(Any[], bt.shift - shiftby, 0, int(bt.maxlength / trielen))
+mask(t::BitmappedTrie, i::Int) = (((i - 1) >>> shift(t)) & (trielen - 1)) + 1
 
-withself(bt::Trie, self::Array) = withself(bt, self, 0)
-withself(bt::Trie, self::Array, lenshift::Int) =
-    typeof(bt)(self, bt.shift, length(bt) + lenshift, bt.maxlength)
+Base.endof(t::BitmappedTrie) = length(t)
+
+import Base.==
+function ==(t1::BitmappedTrie, t2::BitmappedTrie)
+    length(t1)    == length(t2)    &&
+    shift(t1)     == shift(t2)     &&
+    maxlength(t1) == maxlength(t2) &&
+    t1.self       == t2.self
+end
+
+promoted{T}(n::BitmappedTrie{T}) =
+    Node{T}(BitmappedTrie{T}[n], shift(n) + shiftby, length(n), maxlength(n) * trielen)
+
+demoted{T}(n::Node{T}) =
+    if shift(n) == shiftby * 2
+        Leaf{T}(T[])
+    else
+        Node{T}(BitmappedTrie{T}[], shift(n) - shiftby, 0, int(maxlength(n) / trielen))
+    end
+
+withself{T}(n::Node{T}, self::Array) = withself(n, self, 0)
+withself{T}(n::Node{T}, self::Array, lenshift::Int) =
+    Node{T}(self, shift(n), length(n) + lenshift, maxlength(n))
+
+withself{T}(l::Leaf{T}, self::Array) = Leaf{T}(self)
 
 # Copy elements from one Array to another, up to `n` elements.
 #
@@ -55,53 +72,48 @@ end
 copy_to_len{T}(from::Array{T}, len::Int) =
     copy_to(from, Array(T, len), min(len, length(from)))
 
-function append(bt::BitmappedTrie, el)
-    if bt.shift == shiftby
-        if length(bt) < trielen
-            newself = copy_to_len(bt.self, 1 + length(bt))
-            newself[end] = el
-            withself(bt, newself, 1)
+function append{T}(l::Leaf{T}, el::T)
+    if length(l) < maxlength(l)
+        newself = copy_to_len(l.self, 1 + length(l))
+        newself[end] = el
+        withself(l, newself)
+    else
+        append(promoted(l), el)
+    end
+end
+function append{T}(n::Node{T}, el::T)
+    if length(n) == 0
+        child = append(demoted(n), el)
+        withself(n, BitmappedTrie{T}[child], 1)
+    elseif length(n) < maxlength(n)
+        if length(n.self[end]) == maxlength(n.self[end])
+            newself = copy_to_len(n.self, 1 + length(n.self))
+            newself[end] = append(demoted(n), el)
+            withself(n, newself, 1)
         else
-            append(promoted(bt), el)
+            newself = n.self[:]
+            newself[end] = append(newself[end], el)
+            withself(n, newself, 1)
         end
     else
-        if length(bt) == 0
-            withself(bt, Any[append(demoted(bt), el)], 1)
-        elseif length(bt) < bt.maxlength
-            if length(bt.self[end]) == bt.self[end].maxlength
-                newself = copy_to_len(bt.self, 1 + length(bt.self))
-                newself[end] = append(demoted(bt), el)
-                withself(bt, newself, 1)
-            else
-                newself = bt.self[1:end]
-                newself[end] = append(bt.self[end], el)
-                withself(bt, newself, 1)
-            end
-        else
-            append(promoted(bt), el)
-        end
+        append(promoted(n), el)
     end
 end
 push = append
 
-function Base.getindex(bt::Trie, i::Int)
-    if bt.shift == shiftby
-        bt.self[mask(bt, i)]
-    else
-        bt.self[mask(bt, i)][i]
-    end
-end
+Base.getindex(l::Leaf, i::Int) = l.self[mask(l, i)]
+Base.getindex(n::Node, i::Int) = n.self[mask(n, i)][i]
 
-function update(bt::BitmappedTrie, i::Int, element)
-    if bt.shift == shiftby
-        newself = bt.self[1:end]
-        newself[mask(bt, i)] = element
-    else
-        newself = bt.self[1:end]
-        idx = mask(bt, i)
-        newself[idx] = update(newself[idx], i, element)
-    end
-    BitmappedTrie(newself, bt.shift, bt.length, bt.maxlength)
+function update{T}(l::Leaf{T}, i::Int, el::T)
+    newself = l.self[:]
+    newself[mask(l, i)] = el
+    Leaf{T}(newself)
+end
+function update{T}(n::Node{T}, i::Int, el::T)
+    newself = n.self[:]
+    idx = mask(n, i)
+    newself[idx] = update(newself[idx], i, el)
+    withself(n, newself)
 end
 
 peek(bt::BitmappedTrie) = bt[end]
@@ -110,12 +122,9 @@ peek(bt::BitmappedTrie) = bt[end]
 # structure, so `pop` is defined to return a Trie without its last
 # element. Use `peek` to access the last element.
 #
-function pop(bt::BitmappedTrie)
-    if bt.shift == shiftby
-        withself(bt, bt.self[1:end-1], -1)
-    else
-        newself = bt.self[1:end]
-        newself[end] = pop(newself[end])
-        withself(bt, newself, -1)
-    end
+pop(l::Leaf) = withself(l, l.self[1:end-1])
+function pop(n::Node)
+    newself = n.self[:]
+    newself[end] = pop(newself[end])
+    withself(n, newself, -1)
 end
