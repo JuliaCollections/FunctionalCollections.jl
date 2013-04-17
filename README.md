@@ -18,22 +18,22 @@ julia> using PersistentDataStructures
 
 # A PersistentVector is an immutable, sequential, random-access data
 # structure: a functional Array.
-julia> v = PersistentVector()
-Persistent[]
+julia> v = PersistentVector{Int}()
+Persistent{Int64}[]
 
 # "Changing" a PersistentVector does *not* mutate it, but instead
 # returns a new PersistentVector.
 julia> v2 = append(v, 1)
-Persistent[1]
+Persistent{Int64}[1]
 
 julia> v
-Persistent[]
+Persistent{Int64}[]
 
 julia> peek(v2)
 1
 
 julia> pop(v2)
-Persistent[]
+Persistent{Int64}[]
 
 julia> is(v, pop(pv))
 false
@@ -42,7 +42,7 @@ julia> v == pop(v)
 true
 
 # Elements of a PersistentVector can be accessed randomly.
-julia> v = PersistentVector
+julia> v = PersistentVector{Int64}()
 
 julia> for i=1:10000 v=append(v, i) end
 
@@ -57,31 +57,31 @@ BoundsError()
 
 # Since a PersistentVector cannot be mutated, it does not implement
 # setindex!; instead, use update.
-julia> v2 = update(v, 5000, "foo")
+julia> v2 = update(v, 5000, 1)
 Persistent[1, 2, 3, 4, 5, ..., 49996, 49997, 49998, 49999, 50000]
 
 julia> v2[5000]
-"foo"
+1
 
 julia> v[5000]
 5000
 
 # PersistentVectors are iterables as well
-julia> for el in Persistent(["foo", "bar", "baz"])
+julia> for el in PersistentVector{ASCIIString}(["foo", "bar", "baz"])
            println(el)
        end
 foo
 bar
 baz
 
-julia> map((x)->x+1, Persistent([1,2,3]))
-Persistent[2,3,4]
+julia> map((x)->x+1, PersistentVector{Int}([1,2,3]))
+Persistent{Int64}[2,3,4]
 
 # Building large PersistentVectors is slow, since each "change" creates
 # a new one. You can get around this by using TransientVectors, which
 # are temporarily mutable.
-julia> t = TransientVector()
-Transient[]
+julia> t = TransientVector{Int}()
+Transient{Int64}[]
 
 julia> for i=1:1000000
            push!(t, i)
@@ -90,7 +90,7 @@ julia> for i=1:1000000
 # When you're done building your TransientVector, you can make it
 # persistent in nearly constant time.
 julia> v = persist!(t)
-Persistent[1, 2, 3, 4, 5, ..., 999996, 999997, 999998, 999999, 1000000]
+Persistent{Int64}[1, 2, 3, 4, 5, ..., 999996, 999997, 999998, 999999, 1000000]
 
 # You cannot mutate a TransientVector after it's been made persistent,
 # since it shares structure with the newly created PersistentVector.

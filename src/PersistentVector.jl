@@ -57,12 +57,10 @@ end
 
 function pop{T}(v::PersistentVector{T})
     if isempty(v.tail)
-        newtail = peek(v.trie)[1:end]
-        pop!(newtail)
+        newtail = peek(v.trie)[1:end-1]
         PersistentVector{T}(pop(v.trie), newtail, v.length - 1)
     else
-        newtail = v.tail[1:end]
-        pop!(newtail)
+        newtail = v.tail[1:end-1]
         PersistentVector{T}(v.trie, newtail, v.length - 1)
     end
 end

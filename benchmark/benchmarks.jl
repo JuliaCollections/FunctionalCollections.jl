@@ -1,10 +1,12 @@
 using Benchmark
 using PersistentDataStructures
 
+const rands = rand(1:1000000, 100000)
+
 function appending(::Type{PersistentVector})
     function ()
         v = PersistentVector{Int}()
-        for i=1:50000
+        for i=1:250000
             v = append(v, i)
         end
     end
@@ -12,7 +14,7 @@ end
 function appending(::Type{TransientVector})
     function ()
         v = TransientVector{Int}()
-        for i=1:50000
+        for i=1:250000
             v = push!(v, i)
         end
     end
@@ -20,7 +22,7 @@ end
 function appending(::Type{Array})
     function ()
         a = Int[]
-        for i=1:50000
+        for i=1:250000
             a = push!(a, i)
         end
     end
@@ -37,20 +39,22 @@ function vec(r::Range1)
     persist!(v)
 end
 
-const pv = vec(1:1000000)
-const arr = Array(Int, 1000000)
-
 function iterating(::Type{PersistentVector})
+    pv = vec(1:500000)
     function ()
+        sum = 0
         for el in pv
-            nothing
+            sum += el
         end
     end
 end
 function iterating(::Type{Array})
+    arr = Int[]
+    for i=1:500000 push!(arr, i) end
     function ()
+        sum = 0
         for el in arr
-            nothing
+            sum += el
         end
     end
 end
@@ -60,15 +64,15 @@ println(compare([iterating(PersistentVector), iterating(Array)], 20))
 
 function indexing{T}(v::PersistentVector{T})
     function ()
-        for _ in 500000
-            v[rand(1:length(v))]
+        for idx in rands
+            v[idx]
         end
     end
 end
 function indexing{T}(a::Array{T})
     function ()
-        for _ in 500000
-            a[rand(1:length(a))]
+        for idx in rands
+            a[idx]
         end
     end
 end
@@ -97,20 +101,20 @@ end
 println("Popping")
 println(compare([popping(PersistentVector), popping(Array)], 20))
 
-function updating(v::PersistentVector)
+function updating(v::PersistentVector{Int})
     function ()
-        for _ in 500000
-            update(v, rand(1:length(v)), 1)
+        for idx in rands
+            update(v, idx, 1)
         end
     end
 end
-function updating(a::Array)
+function updating(a::Array{Int})
     function ()
-        for _ in 500000
-            a[rand(1:length(a))] = 1
+        for idx in rands
+            a[idx] = 1
         end
     end
 end
 
 println("Updating")
-println(compare([updating(vec(1:100000)), updating(Array(Int, 100000))], 20))
+println(compare([updating(vec(1:1000000)), updating(Array(Int, 1000000))], 20))
