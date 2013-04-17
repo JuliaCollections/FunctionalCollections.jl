@@ -7,15 +7,15 @@ const trielen = 2^shiftby
 
 abstract Trie
 
-immutable BitmappedTrie <: Trie
-    self::Array
+immutable BitmappedTrie{A} <: Trie
+    self::A
     shift::Int
     length::Int
     maxlength::Int
 end
-BitmappedTrie() = BitmappedTrie(Any[], shiftby, 0, trielen)
+BitmappedTrie(T::Type) = BitmappedTrie(T[], shiftby, 0, trielen)
 
-mask(bt::Trie, i::Int) = (i >>> bt.shift) & (trielen - 1)
+mask(bt::Trie, i::Int) = (((i - 1) >>> bt.shift) & (trielen - 1)) + 1
 
 Base.length(bt::Trie) = bt.length
 Base.endof(bt::Trie) = bt.length
@@ -85,23 +85,21 @@ end
 push = append
 
 function Base.getindex(bt::Trie, i::Int)
-    i -= 1
     if bt.shift == shiftby
-        bt.self[mask(bt, i) + 1]
+        bt.self[mask(bt, i)]
     else
-        bt.self[mask(bt, i) + 1][i + 1]
+        bt.self[mask(bt, i)][i]
     end
 end
 
 function update(bt::BitmappedTrie, i::Int, element)
-    i -= 1
     if bt.shift == shiftby
         newself = bt.self[1:end]
-        newself[mask(bt, i) + 1] = element
+        newself[mask(bt, i)] = element
     else
         newself = bt.self[1:end]
-        idx = mask(bt, i) + 1
-        newself[idx] = update(newself[idx], i + 1, element)
+        idx = mask(bt, i)
+        newself[idx] = update(newself[idx], i, element)
     end
     BitmappedTrie(newself, bt.shift, bt.length, bt.maxlength)
 end
@@ -182,11 +180,10 @@ end
 
 function Base.setindex!(tbt::TransientBitmappedTrie, el, i::Real)
     transientcheck!(tbt)
-    i -= 1
     if tbt.shift == shiftby
-        tbt.self[mask(bt, i) + 1] = el
+        tbt.self[mask(bt, i)] = el
     else
-        tbt.self[mask(tbt, i) + 1][i + 1] = el
+        tbt.self[mask(tbt, i)][i] = el
     end
     el
 end

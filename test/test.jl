@@ -54,7 +54,7 @@ end
         tv = transient(1:1000)
         typeof(tv.trie) => PersistentDataStructures.TransientBitmappedTrie
         pv = persist!(tv)
-        typeof(pv.trie) => PersistentDataStructures.BitmappedTrie
+        isa(pv.trie, PersistentDataStructures.BitmappedTrie) => true
         tv.persistent => true
     end
 

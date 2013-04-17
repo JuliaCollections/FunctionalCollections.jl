@@ -49,8 +49,7 @@ function iterating(::Type{PersistentVector})
     end
 end
 function iterating(::Type{Array})
-    arr = Int[]
-    for i=1:500000 push!(arr, i) end
+    arr = [1:500000]
     function ()
         sum = 0
         for el in arr

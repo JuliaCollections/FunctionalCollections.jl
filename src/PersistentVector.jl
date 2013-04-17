@@ -10,7 +10,7 @@ immutable PersistentVector{T} <: BitmappedVector
     PersistentVector() = new(BitmappedTrie(), T[], 0)
 end
 
-mask(v::BitmappedVector, i::Int) = i & (trielen - 1)
+mask(i::Int) = ((i - 1) & (trielen - 1)) + 1
 
 boundscheck!(v::BitmappedVector, i::Int) =
     0 < i <= v.length || error(BoundsError(), " :: Index $i out of bounds ($(v.length))")
@@ -24,9 +24,9 @@ import Base.==
 function Base.getindex(v::BitmappedVector, i::Int)
     boundscheck!(v, i)
     if i > v.length - length(v.tail)
-        v.tail[mask(v, i - 1) + 1]
+        v.tail[mask(i)]
     else
-        v.trie[i][mask(v, i - 1) + 1]
+        v.trie[i][mask(i)]
     end
 end
 
@@ -46,11 +46,11 @@ function update{T}(v::PersistentVector{T}, i::Int, el::T)
     boundscheck!(v, i)
     if i > v.length - length(v.tail)
         newtail = v.tail[1:end]
-        newtail[mask(v, i - 1) + 1] = el
+        newtail[mask(i)] = el
         PersistentVector{T}(v.trie, newtail, v.length)
     else
         newnode = v.trie[i][1:end]
-        newnode[mask(v, i - 1) + 1] = el
+        newnode[mask(i)] = el
         PersistentVector{T}(update(v.trie, i, newnode), v.tail, v.length)
     end
 end
@@ -100,16 +100,16 @@ function Base.setindex!{T}(v::TransientVector, el::T, i::Real)
     transientcheck!(v)
     boundscheck!(v, i)
     if i > v.length - length(v.tail)
-        v.tail[mask(v, i - 1) + 1] = el
+        v.tail[mask(i)] = el
     else
-        v.trie[i][mask(v, i - 1) + 1] = el
+        v.trie[i][mask(i)] = el
     end
     el
 end
 
 function PersistentVector{T}(self::Array{T})
     if length(self) <= trielen
-        PersistentVector{T}(BitmappedTrie(), self, length(self))
+        PersistentVector{T}(BitmappedTrie(T), self, length(self))
     else
         tv = TransientVector{T}()
         for el in self
@@ -119,13 +119,22 @@ function PersistentVector{T}(self::Array{T})
     end
 end
 
-Base.start(pv::PersistentVector) = 1
-Base.done(pv::PersistentVector, i::Int) = i > pv.length
-Base.next(pv::PersistentVector, i::Int) = (pv[i], i+1)
+Base.start{T}(v::PersistentVector{T}) = (1, v.length <= 32 ? v.tail : v.trie[1])
+Base.done{T}(v::PersistentVector{T}, state) = state[1] > v.length
+function Base.next{T}(v::PersistentVector{T}, state)
+    i, leaf = state
+    m = mask(i)
+    value = leaf[m]
+    i += 1
+    if m == 32
+        leaf = i > v.length - length(v.tail) ? v.tail : v.trie[i]
+    end
+    return value, (i, leaf)
+end
 
 function Base.map{T}(f::Function, pv::PersistentVector{T})
     tv = TransientVector{T}()
-    for el::T in pv
+    for el in pv
         push!(tv, f(el))
     end
     persist!(tv)
@@ -133,7 +142,7 @@ end
 
 function Base.hash{T}(pv::PersistentVector{T})
     h = hash(length(pv))
-    for el::T in pv
+    for el in pv
         h = Base.bitmix(h, int(hash(el)))
     end
     uint(h)
