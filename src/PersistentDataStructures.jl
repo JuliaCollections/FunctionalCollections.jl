@@ -1,8 +1,6 @@
 module PersistentDataStructures
 
 export PersistentVector,
-       TransientVector,
-       persist!,
        append, push,
        # Base.getindex,
        update,

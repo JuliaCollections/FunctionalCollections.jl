@@ -65,57 +65,15 @@ function pop{T}(v::PersistentVector{T})
     end
 end
 
-type TransientVector{T} <: BitmappedVector
-    trie::TransientBitmappedTrie
-    tail::Array{T}
-    length::Int
-    persistent::Bool
-
-    TransientVector(trie::TransientBitmappedTrie,
-                    tail::Array{T},
-                    length::Int,
-                    persistent::Bool) = new(trie, tail, length, persistent)
-    TransientVector() = new(TransientBitmappedTrie(), Any[], 0, false)
-end
-
-
-function persist!{T}(tv::TransientVector{T})
-    tv.persistent = true
-    PersistentVector{T}(persist!(tv.trie), tv.tail, tv.length)
-end
-
-function Base.push!{T}(v::TransientVector{T}, el::T)
-    transientcheck!(v)
-    v.length += 1
-    if length(v.tail) < trielen
-        push!(v.tail, el)
-    else
-        push!(v.trie, v.tail)
-        v.tail = T[el]
-    end
-    v
-end
-
-function Base.setindex!{T}(v::TransientVector, el::T, i::Real)
-    transientcheck!(v)
-    boundscheck!(v, i)
-    if i > v.length - length(v.tail)
-        v.tail[mask(i)] = el
-    else
-        v.trie[i][mask(i)] = el
-    end
-    el
-end
-
 function PersistentVector{T}(self::Array{T})
     if length(self) <= trielen
-        PersistentVector{T}(BitmappedTrie(T), self, length(self))
+        PersistentVector{T}(BitmappedTrie(), self, length(self))
     else
-        tv = TransientVector{T}()
+        v = PersistentVector{T}()
         for el in self
-            push!(tv, el)
+            v = append(v, el)
         end
-        persist!(tv)
+        v
     end
 end
 
@@ -133,11 +91,11 @@ function Base.next{T}(v::PersistentVector{T}, state)
 end
 
 function Base.map{T}(f::Function, pv::PersistentVector{T})
-    tv = TransientVector{T}()
+    v = PersistentVector{T}()
     for el in pv
-        push!(tv, f(el))
+        v = append(v, f(el))
     end
-    persist!(tv)
+    v
 end
 
 function Base.hash{T}(pv::PersistentVector{T})
@@ -171,4 +129,3 @@ function print_vec(io::IO, t, head::String)
 end
 
 Base.show{T}(io::IO, pv::PersistentVector{T}) = print_vec(io, pv, "Persistent{$T}")
-Base.show{T}(io::IO, tv::TransientVector{T}) = print_vec(io, tv, "Transient{$T}")

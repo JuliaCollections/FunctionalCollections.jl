@@ -76,24 +76,4 @@ baz
 
 julia> map((x)->x+1, PersistentVector{Int}([1,2,3]))
 Persistent{Int64}[2,3,4]
-
-# Building large PersistentVectors is slow, since each "change" creates
-# a new one. You can get around this by using TransientVectors, which
-# are temporarily mutable.
-julia> t = TransientVector{Int}()
-Transient{Int64}[]
-
-julia> for i=1:1000000
-           push!(t, i)
-       end
-
-# When you're done building your TransientVector, you can make it
-# persistent in nearly constant time.
-julia> v = persist!(t)
-Persistent{Int64}[1, 2, 3, 4, 5, ..., 999996, 999997, 999998, 999999, 1000000]
-
-# You cannot mutate a TransientVector after it's been made persistent,
-# since it shares structure with the newly created PersistentVector.
-julia> push!(t, 1000001)
-Error: Cannot mutate Transient after call to persist!
 ```

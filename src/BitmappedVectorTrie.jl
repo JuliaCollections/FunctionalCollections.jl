@@ -13,7 +13,7 @@ immutable BitmappedTrie{A} <: Trie
     length::Int
     maxlength::Int
 end
-BitmappedTrie(T::Type) = BitmappedTrie(T[], shiftby, 0, trielen)
+BitmappedTrie() = BitmappedTrie(Any[], shiftby, 0, trielen)
 
 mask(bt::Trie, i::Int) = (((i - 1) >>> bt.shift) & (trielen - 1)) + 1
 
@@ -118,72 +118,4 @@ function pop(bt::BitmappedTrie)
         newself[end] = pop(newself[end])
         withself(bt, newself, -1)
     end
-end
-
-type TransientBitmappedTrie <: Trie
-    self::Array
-    shift::Int
-    length::Int
-    maxlength::Int
-    persistent::Bool
-end
-TransientBitmappedTrie(self::Array, shift::Int, length::Int, maxlength::Int) =
-    TransientBitmappedTrie(self, shift, length, maxlength, false)
-TransientBitmappedTrie() = TransientBitmappedTrie(Any[], shiftby, 0, trielen)
-
-transientcheck!(t) =
-    t.persistent && error("Cannot mutate Transient after call to persist!")
-
-function persist!(tbt::TransientBitmappedTrie)
-    tbt.persistent = true
-    self = tbt.shift == shiftby ? tbt.self : map(persist!, tbt.self)
-    BitmappedTrie(self, tbt.shift, tbt.length, tbt.maxlength)
-end
-
-function promote!(tbt::TransientBitmappedTrie)
-    tbt.self = Any[withself(tbt, tbt.self)]
-    tbt.shift += shiftby
-    tbt.maxlength *= trielen
-    tbt
-end
-
-function Base.push!(tbt::TransientBitmappedTrie, el)
-    transientcheck!(tbt)
-    if tbt.shift == shiftby
-        if length(tbt) < tbt.maxlength
-            push!(tbt.self, el)
-            tbt.length += 1
-            tbt
-        else
-            push!(promote!(tbt), el)
-        end
-    else
-        if length(tbt) == 0
-            tbt.self = Any[push!(demoted(tbt), el)]
-            tbt.length += 1
-            tbt
-        elseif length(tbt) < tbt.maxlength
-            if length(tbt.self[end]) == tbt.self[end].maxlength
-                push!(tbt.self, push!(demoted(tbt), el))
-                tbt.length += 1
-                tbt
-            else
-                push!(tbt.self[end], el)
-                tbt.length += 1
-                tbt
-            end
-        else
-            push!(promote!(tbt), el)
-        end
-    end
-end
-
-function Base.setindex!(tbt::TransientBitmappedTrie, el, i::Real)
-    transientcheck!(tbt)
-    if tbt.shift == shiftby
-        tbt.self[mask(bt, i)] = el
-    else
-        tbt.self[mask(tbt, i)][i] = el
-    end
-    el
 end

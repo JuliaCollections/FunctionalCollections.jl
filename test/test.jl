@@ -1,10 +1,10 @@
 using FactCheck
 using PersistentDataStructures
 
-function transient(r::Range1)
-    tv = TransientVector{Int}()
-    for i=r push!(tv, i) end
-    tv
+function vec(r::Range1)
+    v = PersistentVector{Int}()
+    for i=r v=append(v, i) end
+    v
 end
 
 function Base.Array(r::Range1)
@@ -12,55 +12,6 @@ function Base.Array(r::Range1)
     for i=r arr[i] = i end
     arr
 end
-
-@facts "Transient Vectors" begin
-
-    @fact "length" begin
-        length(transient(1:32)) => 32
-        length(transient(1:10000)) => 10000
-    end
-
-    @fact "accessing elements" begin
-        tv = transient(1:5000)
-
-        tv[1]    => 1
-        tv[32]   => 32
-        tv[500]  => 500
-        tv[2500] => 2500
-        tv[5000] => 5000
-        tv[5001] => :throws
-
-        transient(1:32)[33] => :throws
-    end
-
-    @fact "updating" begin
-        tv = transient(1:5000)
-
-        (tv[1000] = 1) => 1
-        tv[1000] => 1
-    end
-
-    @fact "transient => persistent" begin
-        tv = TransientVector{Int}()
-        push!(tv, 1)
-        length(tv) => 1
-
-        pv = persist!(tv)
-        typeof(pv) => PersistentVector{Int}
-
-        # Cannot mutate transient after call to persist!
-        push!(tv, 2) => :throws
-
-        tv = transient(1:1000)
-        typeof(tv.trie) => PersistentDataStructures.TransientBitmappedTrie
-        pv = persist!(tv)
-        isa(pv.trie, PersistentDataStructures.BitmappedTrie) => true
-        tv.persistent => true
-    end
-
-end
-
-vec(r::Range1) = persist!(transient(r))
 
 @facts "Persistent Vectors" begin
 

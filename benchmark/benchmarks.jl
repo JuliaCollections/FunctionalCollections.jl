@@ -11,14 +11,6 @@ function appending(::Type{PersistentVector})
         end
     end
 end
-function appending(::Type{TransientVector})
-    function ()
-        v = TransientVector{Int}()
-        for i=1:250000
-            v = push!(v, i)
-        end
-    end
-end
 function appending(::Type{Array})
     function ()
         a = Int[]
@@ -29,15 +21,9 @@ function appending(::Type{Array})
 end
 
 println("Appending")
-println(compare([appending(PersistentVector), appending(TransientVector), appending(Array)], 20))
+println(compare([appending(PersistentVector), appending(Array)], 20))
 
-function vec(r::Range1)
-    v = TransientVector{Int}()
-    for i=r
-        push!(v, i)
-    end
-    persist!(v)
-end
+vec(r::Range1) = PersistentVector([r])
 
 function iterating(::Type{PersistentVector})
     pv = vec(1:500000)
