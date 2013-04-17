@@ -77,24 +77,28 @@ function PersistentVector{T}(self::Array{T})
     end
 end
 
-# Stefan and I thought this version might be faster, but it's not. (For now.)
-#
-# Base.start{T}(v::PersistentVector{T}) = (1, v.length <= 32 ? v.tail : v.trie[1])
-# Base.done{T}(v::PersistentVector{T}, state) = state[1] > v.length
-# function Base.next{T}(v::PersistentVector{T}, state)
-#     i, leaf = state
-#     m = mask(i)
-#     value = leaf[m]
-#     i += 1
-#     if m == 32
-#         leaf = i > v.length - length(v.tail) ? v.tail : v.trie[i]
-#     end
-#     return value, (i, leaf)
-# end
+immutable ItrState{T}
+    index::Int
+    leaf::Vector{T}
+end
 
-Base.start(v::PersistentVector) = 1
-Base.done(v::PersistentVector, i::Int) = i > length(v)
-Base.next(v::PersistentVector, i::Int) = (v[i], i + 1)
+Base.start{T}(v::PersistentVector{T}) = ItrState(1, v.length <= 32 ? v.tail : v.trie[1])
+Base.done{T}(v::PersistentVector{T}, state::ItrState{T}) = state.index > v.length
+function Base.next{T}(v::PersistentVector{T}, state::ItrState{T})
+    i = state.index
+    leaf = state.leaf
+    m = mask(i)
+    value = leaf[m]
+    i += 1
+    if m == 32
+        leaf = i > v.length - length(v.tail) ? v.tail : v.trie[i]
+    end
+    return value, ItrState(i, leaf)
+end
+
+# Base.start(v::PersistentVector) = 1
+# Base.done(v::PersistentVector, i::Int) = i > length(v)
+# Base.next(v::PersistentVector, i::Int) = (v[i], i + 1)
 
 function Base.map{T}(f::Function, pv::PersistentVector{T})
     v = PersistentVector{T}()
