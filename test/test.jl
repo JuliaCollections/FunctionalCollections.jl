@@ -159,6 +159,10 @@ typealias PAM PersistentArrayMap
         PAM((1, "one")) => not(PAM((2, "two")))
     end
 
+    @fact "kwargs construction" begin
+        PAM(x=1, y=2, z=3) => PAM((:x, 1), (:y, 2), (:z, 3))
+    end
+
     @fact "map" begin
         m = PAM((1, 1), (2, 2), (3, 3))
 

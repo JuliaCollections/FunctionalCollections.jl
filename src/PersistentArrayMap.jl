@@ -1,4 +1,4 @@
-immutable PersistentArrayMap{K, V} <: Associative{K, V}
+immutable PersistentArrayMap{K, V} <: PersistentMap{K, V}
     kvs::Array{KVPair{K, V}}
 
     PersistentArrayMap(kvs::Array{KVPair{K, V}}) = new(kvs)
@@ -6,6 +6,7 @@ immutable PersistentArrayMap{K, V} <: Associative{K, V}
 end
 PersistentArrayMap{K, V}(kvs::(K, V)...) =
     PersistentArrayMap{K, V}(KVPair{K, V}[KVPair(k, v) for (k, v) in kvs])
+PersistentArrayMap(; kwargs...) = PersistentArrayMap(kwargs...)
 
 Base.isequal(m1::PersistentArrayMap, m2::PersistentArrayMap) =
     isequal(Set(m1.kvs...), Set(m2.kvs...))

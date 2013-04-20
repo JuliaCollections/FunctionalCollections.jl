@@ -1,3 +1,5 @@
+abstract PersistentMap{K, V} <: Associative{K, V}
+
 type NotFound end
 
 immutable KVPair{K, V}
