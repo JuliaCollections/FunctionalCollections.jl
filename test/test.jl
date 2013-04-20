@@ -61,12 +61,14 @@ end
         is(pv2.trie[1], pv.tail) => true
     end
 
-    @fact "Base.==" begin
+    @fact "equality" begin
         v1 = vec(1:1000)
         v2 = vec(1:1000)
 
         is(v1.trie, v2.trie) => false
         v1 => v2
+
+        isequal(v1, v2) => true
     end
 
     @fact "iteration" begin
@@ -77,13 +79,89 @@ end
         1:10000 => arr2
     end
 
-    @fact "Base.map" begin
+    @fact "map" begin
         v1 = vec(1:5)
         map((x)->x+1, v1) => PersistentVector([2, 3, 4, 5, 6])
     end
 
-    @fact "Base.hash" begin
+    @fact "hash" begin
         hash(vec(1:1000)) => hash(vec(1:1000))
     end
 
+    @fact "isempty" begin
+        PersistentVector{Int}() => isempty
+        PersistentVector([1])   => not(isempty)
+    end
+
+end
+
+typealias PAM PersistentArrayMap
+
+@facts "Persistent Array Maps" begin
+
+    @fact "construction" begin
+        length(PAM{Int, Int}().kvs) => 0
+        length(PAM((1, 1), (2, 2)).kvs) => 2
+
+        length(PAM((1, 1))) => 1
+        length(PAM((1, 1), (2, 2))) => 2
+    end
+
+    @fact "accessing" begin
+        m = PAM((1, "one"), (2, "two"), (3, "three"))
+        m[1] => "one"
+        m[2] => "two"
+        m[3] => "three"
+
+        get(m, 1) => "one"
+        get(m, 1, "foo") => "one"
+        get(m, 4, "foo") => "foo"
+    end
+
+    @fact "has" begin
+        m = PAM((1, "one"), (2, "two"), (3, "three"))
+        has(m, 1) => true
+        has(m, 2) => true
+        has(m, 3) => true
+        has(m, 4) => false
+    end
+
+    @fact "assoc" begin
+        m = PAM{Int, ASCIIString}()
+        assoc(m, 1, "one") => (m) -> m[1] == "one"
+        m[1] => :throws
+
+        m = PAM((1, "one"))
+        assoc(m, 1, "foo") => (m) -> m[1] == "foo"
+    end
+
+    @fact "dissoc" begin
+        m = PAM((1, "one"))
+        m = dissoc(m, 1)
+        m[1] => :throws
+    end
+
+    @fact "iterating" begin
+        m = PAM((1, "one"), (2, "two"), (3, "three"))
+        [v for (k, v) in m] => ["one", "two", "three"]
+    end
+
+    @fact "isempty" begin
+        PAM{Int, Int}() => isempty
+        PAM((1, "one")) => not(isempty)
+    end
+
+    @fact "equality" begin
+        PAM((1, "one")) => PAM((1, "one"))
+        PAM((1, "one"), (2, "two")) => PAM((2, "two"), (1, "one"))
+        isequal(PAM((1, "one")), PAM((1, "one"))) => true
+
+        PAM((1, "one")) => not(PAM((2, "two")))
+    end
+
+    @fact "map" begin
+        m = PAM((1, 1), (2, 2), (3, 3))
+
+        map((kv) -> (kv[1], kv[2]+1), m) => PAM((1, 2), (2, 3), (3, 4))
+    end
 end

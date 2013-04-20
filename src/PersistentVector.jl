@@ -1,7 +1,7 @@
-abstract BitmappedVector
+abstract BitmappedVector <: AbstractArray
 
 immutable PersistentVector{T} <: BitmappedVector
-    trie::BitmappedTrie
+    trie::BitmappedTrie{Array{T, 1}}
     tail::Array{T}
     length::Int
 
@@ -15,11 +15,13 @@ mask(i::Int) = ((i - 1) & (trielen - 1)) + 1
 boundscheck!(v::BitmappedVector, i::Int) =
     0 < i <= v.length || error(BoundsError(), " :: Index $i out of bounds ($(v.length))")
 
-Base.length(v::BitmappedVector) = v.length
-Base.endof(v::BitmappedVector) = v.length
+Base.size(v::BitmappedVector)    = v.length
+Base.length(v::BitmappedVector)  = v.length
+Base.isempty(v::BitmappedVector) = length(v) == 0
+Base.endof(v::BitmappedVector)   = length(v)
 
-import Base.==
-==(v1::BitmappedVector, v2::BitmappedVector) = v1.tail == v2.tail && v1.trie == v2.trie
+Base.isequal(v1::BitmappedVector, v2::BitmappedVector) =
+    v1.tail == v2.tail && v1.trie == v2.trie
 
 function Base.getindex(v::BitmappedVector, i::Int)
     boundscheck!(v, i)
@@ -95,10 +97,6 @@ function Base.next{T}(v::PersistentVector{T}, state::ItrState{T})
     end
     return value, ItrState(i, leaf)
 end
-
-# Base.start(v::PersistentVector) = 1
-# Base.done(v::PersistentVector, i::Int) = i > length(v)
-# Base.next(v::PersistentVector, i::Int) = (v[i], i + 1)
 
 function Base.map{T}(f::Function, pv::PersistentVector{T})
     v = PersistentVector{T}()

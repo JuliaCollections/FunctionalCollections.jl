@@ -9,17 +9,18 @@ progress and is currently not optimized for performance.
 
 :x: **PersistentHashMap**
 
-:x: **PersistentArrayMap**
+:white_check_mark: **PersistentArrayMap**
 
 :x: **PersistentSet**
 
-### Usage
+### PersistentVector
+
+PersistentVectors are immutable, sequential, random-access data
+structures: functional Arrays.
 
 ```.jl
 julia> using PersistentDataStructures
 
-# A PersistentVector is an immutable, sequential, random-access data
-# structure: a functional Array.
 julia> v = PersistentVector{Int}()
 Persistent{Int64}[]
 
@@ -78,4 +79,30 @@ baz
 
 julia> map((x)->x+1, PersistentVector{Int}([1,2,3]))
 Persistent{Int64}[2,3,4]
+```
+
+### PersistentArrayMap
+
+PersistentArrayMaps are immutable dictionaries implemented as Arrays of
+key-value pairs. This means that the time complexity of most operations
+on them is O(n). They can be quickly created, though, and useful at
+small sizes.
+
+```.jl
+julia> using PersistentDataStructures
+
+julia> m = PersistentArrayMap((1, "one"))
+Persistent{Int64, ASCIIString}[1 => one]
+
+julia> m2 = assoc(m, 2, "two")
+Persistent{Int64, ASCIIString}[1 => one, 2 => two]
+
+julia> m == m2
+false
+
+julia> dissoc(m2, 2)
+Persistent{Int64, ASCIIString}[1 => one]
+
+julia> m == dissoc(m2, 2)
+true
 ```

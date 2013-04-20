@@ -34,8 +34,7 @@ mask(t::BitmappedTrie, i::Int) = (((i - 1) >>> shift(t)) & (trielen - 1)) + 1
 
 Base.endof(t::BitmappedTrie) = length(t)
 
-import Base.==
-function ==(t1::BitmappedTrie, t2::BitmappedTrie)
+function Base.isequal(t1::BitmappedTrie, t2::BitmappedTrie)
     length(t1)    == length(t2)    &&
     shift(t1)     == shift(t2)     &&
     maxlength(t1) == maxlength(t2) &&

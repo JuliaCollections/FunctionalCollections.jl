@@ -1,13 +1,20 @@
 module PersistentDataStructures
 
+include("BitmappedVectorTrie.jl")
+
+include("PersistentVector.jl")
+
 export PersistentVector,
        append, push,
-       # Base.getindex,
        update,
        peek,
        pop
 
-include("BitmappedVectorTrie.jl")
-include("PersistentVector.jl")
+include("PersistentMap.jl")
+include("PersistentArrayMap.jl")
+
+export PersistentArrayMap,
+       assoc,
+       dissoc
 
 end # module PersistentDataStructures
