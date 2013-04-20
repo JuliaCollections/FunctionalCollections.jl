@@ -15,11 +15,11 @@ Base.isempty(m::PersistentArrayMap) = length(m) == 0
 
 findkeyidx(m::PersistentArrayMap, k) = findfirst((kv) -> kv.key == k, m.kvs)
 
-function _get{K, V}(m::PersistentArrayMap{K, V}, k::K, default, hasdef::Bool)
+function _get{K, V}(m::PersistentArrayMap{K, V}, k::K, default, hasdefault::Bool)
     for kv in m.kvs
         kv.key == k && return kv.value
     end
-    hasdef ? default : default()
+    hasdefault ? default : default()
 end
 
 Base.get{K, V}(m::PersistentArrayMap{K, V}, k::K) =
