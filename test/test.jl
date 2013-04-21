@@ -95,6 +95,17 @@ end
 
 end
 
+import PersistentDataStructures.KVPair
+
+@facts "Persistent Maps" begin
+
+    @fact "KVPairs" begin
+        KVPair(1, 1) => (1, 1)
+        (1, 1) => KVPair(1, 1)
+    end
+
+end
+
 typealias PAM PersistentArrayMap
 
 @facts "Persistent Array Maps" begin
