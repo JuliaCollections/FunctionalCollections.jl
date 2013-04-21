@@ -1,6 +1,30 @@
 using FactCheck
 using PersistentDataStructures
 
+import PersistentDataStructures: SparseBitmappedTrie,
+    SparseNode, SparseLeaf, bitpos, index
+
+@facts "Sparse Bitmapped Vector Tries" begin
+
+    @fact "bitpos and index" begin
+        l = SparseLeaf{Int}([6, 11, 16, 21, 26],
+                            2^5 | 2^10 | 2^15 | 2^20 | 2^25)
+        index(l, 6  << 5) => 1
+        index(l, 11 << 5) => 2
+        index(l, 16 << 5) => 3
+        index(l, 21 << 5) => 4
+        index(l, 26 << 5) => 5
+
+        l.bitmap & bitpos(l, 5 << 5)  => 0
+        l.bitmap & bitpos(l, 6 << 5)  => not(0)
+        l.bitmap & bitpos(l, 7 << 5)  => 0
+        l.bitmap & bitpos(l, 11 << 5) => not(0)
+        l.bitmap & bitpos(l, 12 << 5) => 0
+        l.bitmap & bitpos(l, 21 << 5) => not(0)
+    end
+
+end
+
 function vec(r::Range1)
     v = PersistentVector{Int}()
     for i=r v=append(v, i) end

@@ -7,7 +7,10 @@ const trielen = 2^shiftby
 
 abstract BitmappedTrie{T}
 abstract DenseBitmappedTrie{T} <: BitmappedTrie{T}
+abstract SparseBitmappedTrie{T} <: BitmappedTrie{T}
 
+# Bitmapped Tries
+#
 immutable DenseNode{T} <: DenseBitmappedTrie{T}
     self::Array{DenseBitmappedTrie{T}, 1}
     shift::Int
@@ -23,24 +26,44 @@ immutable DenseLeaf{T} <: DenseBitmappedTrie{T}
     DenseLeaf() = new(T[])
 end
 
-shift(n::DenseNode) = n.shift
-maxlength(n::DenseNode) = n.maxlength
-Base.length(n::DenseNode) = n.length
+immutable SparseNode{T} <: SparseBitmappedTrie{T}
+    self::Array{SparseBitmappedTrie{T}, 1}
+    shift::Int
+    length::Int
+    maxlength::Int
+    bitmap::Int
+end
+SparseNode{T}() = SparseNode{T}(SparseBitmappedTrie{T}[], shiftby*2, 0, trielen, 0)
 
-shift(::DenseLeaf) = 5
-maxlength(l::DenseLeaf) = trielen
-Base.length(l::DenseLeaf) = length(l.self)
+immutable SparseLeaf{T} <: SparseBitmappedTrie{T}
+    self::Array{T, 1}
+    bitmap::Int
 
-mask(t::DenseBitmappedTrie, i::Int) = (((i - 1) >>> shift(t)) & (trielen - 1)) + 1
+    SparseLeaf(self::Array, bitmap::Int) = new(self, bitmap)
+    SparseLeaf() = new(T[], 0)
+end
 
-Base.endof(t::DenseBitmappedTrie) = length(t)
+shift(n::Union(DenseNode, SparseNode)) = n.shift
+maxlength(n::Union(DenseNode, SparseNode)) = n.maxlength
+Base.length(n::Union(DenseNode, SparseNode)) = n.length
 
-function Base.isequal(t1::DenseBitmappedTrie, t2::DenseBitmappedTrie)
+shift(::Union(DenseLeaf, SparseLeaf)) = 5
+maxlength(l::Union(DenseLeaf, SparseLeaf)) = trielen
+Base.length(l::Union(DenseLeaf, SparseLeaf)) = length(l.self)
+
+mask(t::BitmappedTrie, i::Int) = (((i - 1) >>> shift(t)) & (trielen - 1)) + 1
+
+Base.endof(t::BitmappedTrie) = length(t)
+
+function Base.isequal(t1::BitmappedTrie, t2::BitmappedTrie)
     length(t1)    == length(t2)    &&
     shift(t1)     == shift(t2)     &&
     maxlength(t1) == maxlength(t2) &&
     t1.self       == t2.self
 end
+
+# Dense Bitmapped Tries
+# =====================
 
 promoted{T}(n::DenseBitmappedTrie{T}) =
     DenseNode{T}(DenseBitmappedTrie{T}[n], shift(n) + shiftby, length(n), maxlength(n) * trielen)
@@ -128,3 +151,10 @@ function pop(n::DenseNode)
     newself[end] = pop(newself[end])
     withself(n, newself, -1)
 end
+
+# Sparse Bitmapped Tries
+# ======================
+
+bitpos(t::SparseBitmappedTrie, i::Int) = 1 << (mask(t, i) - 1)
+index(t::SparseBitmappedTrie, i::Int) =
+    1 + count_ones(t.bitmap & (bitpos(t, i) - 1))
