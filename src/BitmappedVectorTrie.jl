@@ -6,56 +6,57 @@ const shiftby = 5
 const trielen = 2^shiftby
 
 abstract BitmappedTrie{T}
+abstract DenseBitmappedTrie{T} <: BitmappedTrie{T}
 
-immutable Node{T} <: BitmappedTrie{T}
-    self::Array{BitmappedTrie{T}, 1}
+immutable DenseNode{T} <: DenseBitmappedTrie{T}
+    self::Array{DenseBitmappedTrie{T}, 1}
     shift::Int
     length::Int
     maxlength::Int
 end
-Node{T}() = Node{T}(BitmappedTrie{T}[], shiftby*2, 0, trielen)
+DenseNode{T}() = DenseNode{T}(DenseBitmappedTrie{T}[], shiftby*2, 0, trielen)
 
-immutable Leaf{T} <: BitmappedTrie{T}
+immutable DenseLeaf{T} <: DenseBitmappedTrie{T}
     self::Array{T, 1}
 
-    Leaf(self::Array) = new(self)
-    Leaf() = new(T[])
+    DenseLeaf(self::Array) = new(self)
+    DenseLeaf() = new(T[])
 end
 
-shift(n::Node) = n.shift
-maxlength(n::Node) = n.maxlength
-Base.length(n::Node) = n.length
+shift(n::DenseNode) = n.shift
+maxlength(n::DenseNode) = n.maxlength
+Base.length(n::DenseNode) = n.length
 
-shift(::Leaf) = 5
-maxlength(l::Leaf) = trielen
-Base.length(l::Leaf) = length(l.self)
+shift(::DenseLeaf) = 5
+maxlength(l::DenseLeaf) = trielen
+Base.length(l::DenseLeaf) = length(l.self)
 
-mask(t::BitmappedTrie, i::Int) = (((i - 1) >>> shift(t)) & (trielen - 1)) + 1
+mask(t::DenseBitmappedTrie, i::Int) = (((i - 1) >>> shift(t)) & (trielen - 1)) + 1
 
-Base.endof(t::BitmappedTrie) = length(t)
+Base.endof(t::DenseBitmappedTrie) = length(t)
 
-function Base.isequal(t1::BitmappedTrie, t2::BitmappedTrie)
+function Base.isequal(t1::DenseBitmappedTrie, t2::DenseBitmappedTrie)
     length(t1)    == length(t2)    &&
     shift(t1)     == shift(t2)     &&
     maxlength(t1) == maxlength(t2) &&
     t1.self       == t2.self
 end
 
-promoted{T}(n::BitmappedTrie{T}) =
-    Node{T}(BitmappedTrie{T}[n], shift(n) + shiftby, length(n), maxlength(n) * trielen)
+promoted{T}(n::DenseBitmappedTrie{T}) =
+    DenseNode{T}(DenseBitmappedTrie{T}[n], shift(n) + shiftby, length(n), maxlength(n) * trielen)
 
-demoted{T}(n::Node{T}) =
+demoted{T}(n::DenseNode{T}) =
     if shift(n) == shiftby * 2
-        Leaf{T}(T[])
+        DenseLeaf{T}(T[])
     else
-        Node{T}(BitmappedTrie{T}[], shift(n) - shiftby, 0, int(maxlength(n) / trielen))
+        DenseNode{T}(DenseBitmappedTrie{T}[], shift(n) - shiftby, 0, int(maxlength(n) / trielen))
     end
 
-withself{T}(n::Node{T}, self::Array) = withself(n, self, 0)
-withself{T}(n::Node{T}, self::Array, lenshift::Int) =
-    Node{T}(self, shift(n), length(n) + lenshift, maxlength(n))
+withself{T}(n::DenseNode{T}, self::Array) = withself(n, self, 0)
+withself{T}(n::DenseNode{T}, self::Array, lenshift::Int) =
+    DenseNode{T}(self, shift(n), length(n) + lenshift, maxlength(n))
 
-withself{T}(l::Leaf{T}, self::Array) = Leaf{T}(self)
+withself{T}(l::DenseLeaf{T}, self::Array) = DenseLeaf{T}(self)
 
 # Copy elements from one Array to another, up to `n` elements.
 #
@@ -71,7 +72,7 @@ end
 copy_to_len{T}(from::Array{T}, len::Int) =
     copy_to(from, Array(T, len), min(len, length(from)))
 
-function append{T}(l::Leaf{T}, el::T)
+function append{T}(l::DenseLeaf{T}, el::T)
     if length(l) < maxlength(l)
         newself = copy_to_len(l.self, 1 + length(l))
         newself[end] = el
@@ -80,10 +81,10 @@ function append{T}(l::Leaf{T}, el::T)
         append(promoted(l), el)
     end
 end
-function append{T}(n::Node{T}, el::T)
+function append{T}(n::DenseNode{T}, el::T)
     if length(n) == 0
         child = append(demoted(n), el)
-        withself(n, BitmappedTrie{T}[child], 1)
+        withself(n, DenseBitmappedTrie{T}[child], 1)
     elseif length(n) < maxlength(n)
         if length(n.self[end]) == maxlength(n.self[end])
             newself = copy_to_len(n.self, 1 + length(n.self))
@@ -100,29 +101,29 @@ function append{T}(n::Node{T}, el::T)
 end
 push = append
 
-Base.getindex(l::Leaf, i::Int) = l.self[mask(l, i)]
-Base.getindex(n::Node, i::Int) = n.self[mask(n, i)][i]
+Base.getindex(l::DenseLeaf, i::Int) = l.self[mask(l, i)]
+Base.getindex(n::DenseNode, i::Int) = n.self[mask(n, i)][i]
 
-function update{T}(l::Leaf{T}, i::Int, el::T)
+function update{T}(l::DenseLeaf{T}, i::Int, el::T)
     newself = l.self[:]
     newself[mask(l, i)] = el
-    Leaf{T}(newself)
+    DenseLeaf{T}(newself)
 end
-function update{T}(n::Node{T}, i::Int, el::T)
+function update{T}(n::DenseNode{T}, i::Int, el::T)
     newself = n.self[:]
     idx = mask(n, i)
     newself[idx] = update(newself[idx], i, el)
     withself(n, newself)
 end
 
-peek(bt::BitmappedTrie) = bt[end]
+peek(bt::DenseBitmappedTrie) = bt[end]
 
 # Pop is usually destructive, but that doesn't make sense for an immutable
 # structure, so `pop` is defined to return a Trie without its last
 # element. Use `peek` to access the last element.
 #
-pop(l::Leaf) = withself(l, l.self[1:end-1])
-function pop(n::Node)
+pop(l::DenseLeaf) = withself(l, l.self[1:end-1])
+function pop(n::DenseNode)
     newself = n.self[:]
     newself[end] = pop(newself[end])
     withself(n, newself, -1)

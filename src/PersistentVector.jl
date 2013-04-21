@@ -1,13 +1,13 @@
 abstract BitmappedVector <: AbstractArray
 
 immutable PersistentVector{T} <: BitmappedVector
-    trie::BitmappedTrie{Array{T, 1}}
+    trie::DenseBitmappedTrie{Array{T, 1}}
     tail::Array{T}
     length::Int
 
-    PersistentVector(trie::BitmappedTrie, tail::Array{T}, length::Int) =
+    PersistentVector(trie::DenseBitmappedTrie, tail::Array{T}, length::Int) =
         new(trie, tail, length)
-    PersistentVector() = new(Leaf{Array{T, 1}}(), T[], 0)
+    PersistentVector() = new(DenseLeaf{Array{T, 1}}(), T[], 0)
 end
 
 mask(i::Int) = ((i - 1) & (trielen - 1)) + 1
@@ -69,7 +69,7 @@ end
 
 function PersistentVector{T}(self::Array{T})
     if length(self) <= trielen
-        PersistentVector{T}(Leaf{Array{T, 1}}(), self, length(self))
+        PersistentVector{T}(DenseLeaf{Array{T, 1}}(), self, length(self))
     else
         v = PersistentVector{T}()
         for el in self
