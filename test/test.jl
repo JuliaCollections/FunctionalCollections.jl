@@ -58,6 +58,13 @@ import PersistentDataStructures: SparseBitmappedTrie,
         leaf2.self[1] => "bar"
     end
 
+    @fact "SparseBitmappedTrie get" begin
+        n = update(SparseNode(Int), 33 << 5, 33)
+        get(n, 33 << 5, "missing") => 33
+        get(update(SparseNode(Int), 12345 << 5, 12345), 12345 << 5, "missing") => 12345
+        get(n, 12345 << 5, "missing") => "missing"
+    end
+
 end
 
 function vec(r::Range1)

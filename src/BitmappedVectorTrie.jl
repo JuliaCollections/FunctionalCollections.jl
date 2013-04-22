@@ -201,3 +201,8 @@ function update{T}(n::SparseNode{T}, i::Int, el::T)
         SparseNode{T}(newself, n.shift, n.length, n.maxlength, bitmap)
     end
 end
+
+Base.get(n::SparseLeaf, i::Int, default) =
+    hasindex(n, i) ? n.self[index(n, i)] : default
+Base.get(n::SparseNode, i::Int, default) =
+    hasindex(n, i) ? get(n.self[index(n, i)], i, default) : default
