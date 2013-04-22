@@ -5,6 +5,20 @@
 const shiftby = 5
 const trielen = 2^shiftby
 
+# Copy elements from one Array to another, up to `n` elements.
+#
+function copy_to{T}(from::Array{T}, to::Array{T}, n::Int)
+    for i=1:n
+        to[i] = from[i]
+    end
+    to
+end
+
+# Copies elements from one Array to another of size `len`.
+#
+copy_to_len{T}(from::Array{T}, len::Int) =
+    copy_to(from, Array(T, len), min(len, length(from)))
+
 abstract BitmappedTrie{T}
 abstract DenseBitmappedTrie{T} <: BitmappedTrie{T}
 abstract SparseBitmappedTrie{T} <: BitmappedTrie{T}
@@ -33,7 +47,7 @@ immutable SparseNode{T} <: SparseBitmappedTrie{T}
     maxlength::Int
     bitmap::Int
 end
-SparseNode{T}() = SparseNode{T}(SparseBitmappedTrie{T}[], shiftby*2, 0, trielen, 0)
+SparseNode(T::Type) = SparseNode{T}(SparseBitmappedTrie{T}[], shiftby*7, 0, trielen^7, 0)
 
 immutable SparseLeaf{T} <: SparseBitmappedTrie{T}
     self::Array{T, 1}
@@ -80,20 +94,6 @@ withself{T}(n::DenseNode{T}, self::Array, lenshift::Int) =
     DenseNode{T}(self, shift(n), length(n) + lenshift, maxlength(n))
 
 withself{T}(l::DenseLeaf{T}, self::Array) = DenseLeaf{T}(self)
-
-# Copy elements from one Array to another, up to `n` elements.
-#
-function copy_to{T}(from::Array{T}, to::Array{T}, n::Int)
-    for i=1:n
-        to[i] = from[i]
-    end
-    to
-end
-
-# Copies elements from one Array to another of size `len`.
-#
-copy_to_len{T}(from::Array{T}, len::Int) =
-    copy_to(from, Array(T, len), min(len, length(from)))
 
 function append{T}(l::DenseLeaf{T}, el::T)
     if length(l) < maxlength(l)
@@ -155,6 +155,49 @@ end
 # Sparse Bitmapped Tries
 # ======================
 
+function demoted{T}(n::SparseNode{T})
+    if shift(n) == shiftby * 2
+        SparseLeaf{T}(T[], 0)
+    else
+        SparseNode{T}(SparseBitmappedTrie{T}[], shift(n) - shiftby, 0, int(maxlength(n) / trielen), 0)
+    end
+end
+
 bitpos(t::SparseBitmappedTrie, i::Int) = 1 << (mask(t, i) - 1)
+hasindex(t::SparseBitmappedTrie, i::Int) =
+    t.bitmap & bitpos(t, i) != 0
 index(t::SparseBitmappedTrie, i::Int) =
     1 + count_ones(t.bitmap & (bitpos(t, i) - 1))
+
+# Update currently handles length incorrectly. In the case that a SparseNode
+# already has a child at the proper index, there's no way of knowing if the
+# recursive update will cause the length to be increased or not.
+#
+function update{T}(l::SparseLeaf{T}, i::Int, el::T)
+    if hasindex(l, i)
+        newself = l.self[:]
+        newself[index(l, i)] = el
+        SparseLeaf{T}(newself, l.bitmap)
+    else
+        pos = bitpos(l, i)
+        bitmap = pos | l.bitmap
+        idx = index(l, i)
+        newself = vcat(l.self[1:idx-1], [el], l.self[idx:end])
+        SparseLeaf{T}(newself, bitmap)
+    end
+end
+function update{T}(n::SparseNode{T}, i::Int, el::T)
+    if hasindex(n, i)
+        newself = n.self[:]
+        idx = index(n, i)
+        newself[idx] = update(newself[idx], i, el)
+        SparseNode{T}(newself, n.shift, n.length, n.maxlength, n.bitmap)
+    else
+        pos = bitpos(n, i)
+        bitmap = pos | n.bitmap
+        idx = index(n, i)
+        child = update(demoted(n), i, el)
+        newself = vcat(n.self[1:idx-1], [child], n.self[idx:end])
+        SparseNode{T}(newself, n.shift, n.length, n.maxlength, bitmap)
+    end
+end

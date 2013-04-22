@@ -2,7 +2,7 @@ using FactCheck
 using PersistentDataStructures
 
 import PersistentDataStructures: SparseBitmappedTrie,
-    SparseNode, SparseLeaf, bitpos, index
+    SparseNode, SparseLeaf, bitpos, index, hasindex
 
 @facts "Sparse Bitmapped Vector Tries" begin
 
@@ -15,12 +15,47 @@ import PersistentDataStructures: SparseBitmappedTrie,
         index(l, 21 << 5) => 4
         index(l, 26 << 5) => 5
 
-        l.bitmap & bitpos(l, 5 << 5)  => 0
-        l.bitmap & bitpos(l, 6 << 5)  => not(0)
-        l.bitmap & bitpos(l, 7 << 5)  => 0
-        l.bitmap & bitpos(l, 11 << 5) => not(0)
-        l.bitmap & bitpos(l, 12 << 5) => 0
-        l.bitmap & bitpos(l, 21 << 5) => not(0)
+        hasindex(l, 5 << 5)  => false
+        hasindex(l, 6 << 5)  => true
+        hasindex(l, 7 << 5)  => false
+        hasindex(l, 11 << 5) => true
+        hasindex(l, 12 << 5) => false
+        hasindex(l, 21 << 5) => true
+    end
+
+    @fact "SparseLeaf update" begin
+        l = SparseLeaf{Int}()
+
+        update(l, 1 << 5, 1)   => (leaf) -> hasindex(leaf, 1 << 5)
+        update(l, 10 << 5, 10) => (leaf) -> hasindex(leaf, 10 << 5) &&
+                                            !hasindex(leaf, 11 << 5)
+
+        l = SparseLeaf{Int}([1, 5], 2^0 | 2^4)
+        l = update(l, 2 << 5, 2)
+        l.self => [1, 2, 5]
+        length(l) => 3
+        hasindex(l, 1 << 5) => true
+        hasindex(l, 2 << 5) => true
+        hasindex(l, 3 << 5) => false
+        hasindex(l, 4 << 5) => false
+        hasindex(l, 5 << 5) => true
+        hasindex(l, 6 << 5) => false
+
+        update(l, 2 << 5, 100).self => [1, 100, 5]
+    end
+
+    @fact "SparseNode update" begin
+        n = update(SparseNode(ASCIIString), 1, "foo")
+        length(n.self) => 1
+
+        leaf = n.self[1].self[1].self[1].self[1].self[1].self[1]
+        hasindex(leaf, 1) => true
+        leaf.self[1] => "foo"
+
+        n2 = update(n, 33 << 5, "bar")
+        leaf2 = n2.self[1].self[1].self[1].self[1].self[1].self[2]
+        hasindex(leaf2, 1) => true
+        leaf2.self[1] => "bar"
     end
 
 end
