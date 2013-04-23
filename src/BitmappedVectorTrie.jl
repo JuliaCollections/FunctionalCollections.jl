@@ -179,28 +179,29 @@ function update{T}(l::SparseLeaf{T}, i::Int, el::T)
     if hasindex(l, i)
         newself = l.self[:]
         newself[index(l, i)] = el
-        SparseLeaf{T}(newself, l.bitmap)
+        (SparseLeaf{T}(newself, l.bitmap), false)
     else
         pos = bitpos(l, i)
         bitmap = pos | l.bitmap
         idx = index(l, i)
         newself = vcat(l.self[1:idx-1], [el], l.self[idx:end])
-        SparseLeaf{T}(newself, bitmap)
+        (SparseLeaf{T}(newself, bitmap), true)
     end
 end
 function update{T}(n::SparseNode{T}, i::Int, el::T)
     if hasindex(n, i)
         newself = n.self[:]
         idx = index(n, i)
-        newself[idx] = update(newself[idx], i, el)
-        SparseNode{T}(newself, n.shift, n.length, n.maxlength, n.bitmap)
+        updated, inc = update(newself[idx], i, el)
+        newself[idx] = updated
+        (SparseNode{T}(newself, n.shift, inc ? n.length + 1 : n.length, n.maxlength, n.bitmap), inc)
     else
         pos = bitpos(n, i)
         bitmap = pos | n.bitmap
         idx = index(n, i)
-        child = update(demoted(n), i, el)
+        child, inc = update(demoted(n), i, el)
         newself = vcat(n.self[1:idx-1], [child], n.self[idx:end])
-        SparseNode{T}(newself, n.shift, n.length, n.maxlength, bitmap)
+        (SparseNode{T}(newself, n.shift, inc ? n.length + 1 : n.length, n.maxlength, bitmap), inc)
     end
 end
 
