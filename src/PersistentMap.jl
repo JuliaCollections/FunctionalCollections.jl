@@ -6,7 +6,6 @@ immutable KVPair{K, V}
     key::K
     value::V
 end
-KVPair{K, V}(key::K, value::V) = KVPair{K, V}(key, value)
 
 Base.convert(::Type{Tuple}, kv::KVPair) = (kv.key, kv.value)
 
