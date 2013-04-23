@@ -61,9 +61,11 @@ shift(n::Union(DenseNode, SparseNode)) = n.shift
 maxlength(n::Union(DenseNode, SparseNode)) = n.maxlength
 Base.length(n::Union(DenseNode, SparseNode)) = n.length
 
-shift(::Union(DenseLeaf, SparseLeaf)) = 5
 maxlength(l::Union(DenseLeaf, SparseLeaf)) = trielen
 Base.length(l::Union(DenseLeaf, SparseLeaf)) = length(l.self)
+
+shift(::DenseLeaf) = 5
+shift(::SparseLeaf) = 0
 
 mask(t::BitmappedTrie, i::Int) = (((i - 1) >>> shift(t)) & (trielen - 1)) + 1
 
@@ -156,7 +158,7 @@ end
 # ======================
 
 function demoted{T}(n::SparseNode{T})
-    if shift(n) == shiftby * 2
+    if shift(n) == shiftby
         SparseLeaf{T}(T[], 0)
     else
         SparseNode{T}(SparseBitmappedTrie{T}[], shift(n) - shiftby, 0, int(maxlength(n) / trielen), 0)

@@ -9,60 +9,60 @@ import PersistentDataStructures: SparseBitmappedTrie,
     @fact "bitpos and index" begin
         l = SparseLeaf{Int}([6, 11, 16, 21, 26],
                             2^5 | 2^10 | 2^15 | 2^20 | 2^25)
-        index(l, 6  << 5) => 1
-        index(l, 11 << 5) => 2
-        index(l, 16 << 5) => 3
-        index(l, 21 << 5) => 4
-        index(l, 26 << 5) => 5
+        index(l, 6) => 1
+        index(l, 11) => 2
+        index(l, 16) => 3
+        index(l, 21) => 4
+        index(l, 26) => 5
 
-        hasindex(l, 5 << 5)  => false
-        hasindex(l, 6 << 5)  => true
-        hasindex(l, 7 << 5)  => false
-        hasindex(l, 11 << 5) => true
-        hasindex(l, 12 << 5) => false
-        hasindex(l, 21 << 5) => true
+        hasindex(l, 5)  => false
+        hasindex(l, 6)  => true
+        hasindex(l, 7)  => false
+        hasindex(l, 11) => true
+        hasindex(l, 12) => false
+        hasindex(l, 21) => true
     end
 
     @fact "SparseLeaf update" begin
         l = SparseLeaf{Int}()
 
-        update(l, 1 << 5, 1)   => (leaf) -> hasindex(leaf, 1 << 5)
-        update(l, 10 << 5, 10) => (leaf) -> hasindex(leaf, 10 << 5) &&
-                                            !hasindex(leaf, 11 << 5)
+        update(l, 1, 1)   => (leaf) -> hasindex(leaf, 1)
+        update(l, 10, 10) => (leaf) -> hasindex(leaf, 10) &&
+                                            !hasindex(leaf, 11)
 
         l = SparseLeaf{Int}([1, 5], 2^0 | 2^4)
-        l = update(l, 2 << 5, 2)
+        l = update(l, 2, 2)
         l.self => [1, 2, 5]
         length(l) => 3
-        hasindex(l, 1 << 5) => true
-        hasindex(l, 2 << 5) => true
-        hasindex(l, 3 << 5) => false
-        hasindex(l, 4 << 5) => false
-        hasindex(l, 5 << 5) => true
-        hasindex(l, 6 << 5) => false
+        hasindex(l, 1) => true
+        hasindex(l, 2) => true
+        hasindex(l, 3) => false
+        hasindex(l, 4) => false
+        hasindex(l, 5) => true
+        hasindex(l, 6) => false
 
-        update(l, 2 << 5, 100).self => [1, 100, 5]
+        update(l, 2, 100).self => [1, 100, 5]
     end
 
     @fact "SparseNode update" begin
         n = update(SparseNode(ASCIIString), 1, "foo")
         length(n.self) => 1
 
-        leaf = n.self[1].self[1].self[1].self[1].self[1].self[1]
+        leaf = n.self[1].self[1].self[1].self[1].self[1].self[1].self[1]
         hasindex(leaf, 1) => true
         leaf.self[1] => "foo"
 
-        n2 = update(n, 33 << 5, "bar")
-        leaf2 = n2.self[1].self[1].self[1].self[1].self[1].self[2]
-        hasindex(leaf2, 1) => true
+        n2 = update(n, 33, "bar")
+        leaf2 = n2.self[1].self[1].self[1].self[1].self[1].self[1].self[2]
+        hasindex(leaf2, 33) => true
         leaf2.self[1] => "bar"
     end
 
     @fact "SparseBitmappedTrie get" begin
-        n = update(SparseNode(Int), 33 << 5, 33)
-        get(n, 33 << 5, "missing") => 33
-        get(update(SparseNode(Int), 12345 << 5, 12345), 12345 << 5, "missing") => 12345
-        get(n, 12345 << 5, "missing") => "missing"
+        n = update(SparseNode(Int), 33, 33)
+        get(n, 33, "missing") => 33
+        get(update(SparseNode(Int), 12345, 12345), 12345, "missing") => 12345
+        get(n, 12345, "missing") => "missing"
     end
 
 end
