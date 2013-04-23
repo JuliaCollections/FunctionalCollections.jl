@@ -263,3 +263,50 @@ typealias PAM PersistentArrayMap
         map((kv) -> (kv[1], kv[2]+1), m) => PAM((1, 2), (2, 3), (3, 4))
     end
 end
+
+
+typealias PHM PersistentHashMap
+@facts "PersistentHashMap" begin
+
+    @fact "constructor" begin
+        hashmap = PHM{Int, Int}()
+        length(hashmap) => 0
+    end
+
+    @fact "equality" begin
+        PHM{Int, Int}() => PHM{Int, Int}()
+        PHM{Int, Int}() => PHM{String, String}()
+
+        m1 = PHM{Int, Int}()
+        m2 = PHM{Int, Int}()
+        assoc(m1, 1, 100) => assoc(m2, 1, 100)
+        assoc(m1, 1, 100) => not(assoc(m2, 1, 200))
+        assoc(m1, 1, 100) => not(assoc(m2, 2, 100))
+
+        m3 = PHM((1, 10), (2, 20), (3, 30))
+        m4 = PHM((3, 30), (2, 20), (1, 10))
+        m3 => m4
+        m3 => not(m1)
+    end
+
+    @fact "assoc" begin
+        m = PHM{Int, ASCIIString}()
+        assoc(m, 1, "one") => (m) -> m[1] == "one"
+        m[1] => :throws
+
+        m = PHM{Int, ASCIIString}()
+        m = assoc(m, 1, "one")
+        assoc(m, 1, "foo") => (m) -> m[1] == "foo"
+    end
+
+    @fact "get" begin
+        m = PHM{Int, ASCIIString}()
+        get(m, 1, "default") => "default"
+        m = assoc(m, 1, "one")
+        get(m, 1, "default") => "one"
+        m = assoc(m, 1, "newone")
+        get(m, 1, "default") => "newone"
+        get(m, 2) => :throws
+    end
+
+end

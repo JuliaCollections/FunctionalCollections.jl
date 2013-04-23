@@ -12,8 +12,10 @@ export PersistentVector,
 
 include("PersistentMap.jl")
 include("PersistentArrayMap.jl")
+include("PersistentHashMap.jl")
 
 export PersistentArrayMap,
+       PersistentHashMap,
        assoc,
        dissoc
 
