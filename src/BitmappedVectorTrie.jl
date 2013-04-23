@@ -209,3 +209,34 @@ Base.get(n::SparseLeaf, i::Int, default) =
     hasindex(n, i) ? n.self[index(n, i)] : default
 Base.get(n::SparseNode, i::Int, default) =
     hasindex(n, i) ? get(n.self[index(n, i)], i, default) : default
+
+function Base.start(t::SparseBitmappedTrie)
+    t.length == 0 && return true
+    ones(Int, 1 + int(t.shift / shiftby))
+end
+
+function directindex(t::SparseBitmappedTrie, v::Vector{Int})
+    isempty(v) && return t.self
+    local node = t.self
+    for i=v
+        node = node[i]
+        node = isa(node, SparseBitmappedTrie) ? node.self : node
+    end
+    node
+end
+
+Base.done(t::SparseBitmappedTrie, state) = state == true
+
+function Base.next(t::SparseBitmappedTrie, state::Vector{Int})
+    item = directindex(t, state)
+    while true
+        index = pop!(state)
+        node = directindex(t, state)
+        if length(node) > index
+            push!(state, index + 1)
+            return item, vcat(state, ones(Int, 1 + int(t.shift / shiftby) - length(state)))
+        elseif is(node, t.self)
+            return item, true
+        end
+    end
+end

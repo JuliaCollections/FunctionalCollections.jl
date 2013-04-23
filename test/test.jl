@@ -73,6 +73,14 @@ import PersistentDataStructures: SparseBitmappedTrie,
         length(n) => 1000
     end
 
+    @fact "SparseBitmappedTrie items" begin
+        n = SparseNode(Int)
+        for i=1:1000
+            n, _ = update(n, i, i)
+        end
+        [i for i=n] => 1:1000
+    end
+
 
 end
 
