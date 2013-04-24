@@ -94,6 +94,8 @@ typealias PHM PersistentHashMap
     @fact "constructor" begin
         hashmap = PHM{Int, Int}()
         length(hashmap) => 0
+        length(PHM((1, 1), (2, 2), (3, 3))) => 3
+        length(PHM(x=1, y=2, z=3)) => 3
     end
 
     @fact "equality" begin
@@ -120,6 +122,12 @@ typealias PHM PersistentHashMap
         m = PHM{Int, ASCIIString}()
         m = assoc(m, 1, "one")
         assoc(m, 1, "foo") => (m) -> m[1] == "foo"
+    end
+
+    @fact "dissoc" begin
+        m = PAM((1, "one"))
+        m = dissoc(m, 1)
+        m[1] => :throws
     end
 
     @fact "get" begin
