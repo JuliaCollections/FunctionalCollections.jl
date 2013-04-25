@@ -140,4 +140,13 @@ typealias PHM PersistentHashMap
         get(m, 2) => :throws
     end
 
+    @fact "has" begin
+        m = PHM{Int, ASCIIString}()
+        has(m, 1) => false
+        m = assoc(m, 1, "one")
+        has(m, 1) => true
+        has(m, 2) => false
+    end
+
+
 end

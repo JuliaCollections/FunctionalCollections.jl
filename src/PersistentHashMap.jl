@@ -58,4 +58,10 @@ function Base.get(m::PersistentHashMap, key, default)
     val[key]
 end
 
-# TODO Base.has, dissoc, show
+function Base.has(m::PersistentHashMap, key)
+    val = get(m.trie, int(hash(key)), NotFound())
+    is(val, NotFound()) ? false : true
+end
+
+
+# TODO show
