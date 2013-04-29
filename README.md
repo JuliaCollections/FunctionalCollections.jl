@@ -7,7 +7,7 @@ progress and is currently not optimized for performance.
 
 :white_check_mark: **PersistentVector**
 
-:x: **PersistentHashMap**
+:white_check_mark: **PersistentHashMap**
 
 :white_check_mark: **PersistentArrayMap**
 
@@ -106,3 +106,8 @@ Persistent{Int64, ASCIIString}[1 => one]
 julia> m == dissoc(m2, 2)
 true
 ```
+
+### PersistentHashMap
+
+PersistentHashMaps are the immutable counterpart of the build-in Dict
+type. Major operations are nearly constant time (O(log<sub>32</sub>n)).
