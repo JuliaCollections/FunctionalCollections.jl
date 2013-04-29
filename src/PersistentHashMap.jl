@@ -62,5 +62,26 @@ function Base.has(m::PersistentHashMap, key)
     get(m.trie, int(hash(key)), NotFound()) != NotFound()
 end
 
+function Base.start(m::PersistentHashMap)
+    state = start(m.trie)
+    done(m.trie, state) && return ({}, state)
+    arrmap, triestate = next(m.trie, state)
+    (arrmap.kvs, triestate)
+end
+Base.done(m::PersistentHashMap, state) = isempty(state[1]) && done(m.trie, state[2])
 
-# TODO show
+function Base.next(m::PersistentHashMap, state)
+    kvs, triestate = state
+    if isempty(kvs)
+        arrmap, triestate = next(m.trie, triestate)
+        next(m, (arrmap.kvs, triestate))
+    else
+        (convert(Tuple, kvs[1]), (kvs[2:end], triestate))
+    end
+end
+
+function Base.show{K, V}(io::IO, m::PersistentHashMap{K, V})
+    print(io, "Persistent{$K, $V}[")
+    print(io, join(["$k => $v" for (k, v) in m], ", "))
+    print(io, "]")
+end
