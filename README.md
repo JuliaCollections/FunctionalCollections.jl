@@ -11,7 +11,7 @@ progress and is currently not optimized for performance.
 
 :white_check_mark: **PersistentArrayMap**
 
-:x: **PersistentSet**
+:white_check_mark: **PersistentSet**
 
 ### PersistentVector
 
@@ -111,3 +111,10 @@ true
 
 PersistentHashMaps are the immutable counterpart of the build-in Dict
 type. Major operations are nearly constant time &mdash; O(log<sub>32</sub>n).
+
+### PersistentSet
+
+PersistentSets are immutable sets. Along with the usual set interface,
+`conj(s::PersistentSet, val)` returns a set with an element added
+(conjoined), and `disj(s::PersistentSet, val` returns a set with an
+element removed (disjoined).
