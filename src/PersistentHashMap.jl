@@ -5,7 +5,6 @@ immutable PersistentHashMap{K, V} <: PersistentMap{K, V}
     PersistentHashMap(trie, length) = new(trie, length)
     PersistentHashMap() = new(SparseNode(PersistentArrayMap{K, V}), 0)
 end
-
 function PersistentHashMap{K, V}(kvs::(K, V)...)
     m = PersistentHashMap{K, V}()
     for (key, value) in kvs
@@ -82,6 +81,14 @@ end
 
 Base.map(f, m::PersistentHashMap) =
     PersistentHashMap([f(kv) for kv in m]...)
+
+function Base.filter{K, V}(f::Function, m::PersistentHashMap{K, V})
+    arr = Array((K, V), 0)
+    for el in m
+        f(el) && push!(arr, el)
+    end
+    isempty(arr) ? PersistentHashMap{K, V}() : PersistentHashMap(arr...)
+end
 
 function Base.show{K, V}(io::IO, m::PersistentHashMap{K, V})
     print(io, "Persistent{$K, $V}[")

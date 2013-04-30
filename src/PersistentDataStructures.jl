@@ -19,4 +19,10 @@ export PersistentArrayMap,
        assoc,
        dissoc
 
+include("PersistentSet.jl")
+
+export PersistentSet,
+       conj,
+       disj
+
 end # module PersistentDataStructures

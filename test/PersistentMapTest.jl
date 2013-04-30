@@ -89,7 +89,7 @@ end
 
 typealias PHM PersistentHashMap
 
-@facts "PersistentHashMap" begin
+@facts "Persistent Hash Maps" begin
 
     @fact "constructor" begin
         hashmap = PHM{Int, Int}()
@@ -152,4 +152,9 @@ typealias PHM PersistentHashMap
         m = PHM((1, 1), (2, 2), (3, 3))
         map((kv) -> (kv[1], kv[2]+1), m) => PHM((1, 2), (2, 3), (3, 4))
     end
+
+    @fact "filter" begin
+        filter((kv) -> iseven(kv[2]), PHM((1, 1), (2, 2))) => PHM((2, 2))
+    end
+
 end
