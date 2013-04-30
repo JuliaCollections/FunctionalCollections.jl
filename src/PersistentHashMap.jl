@@ -58,7 +58,7 @@ function Base.get(m::PersistentHashMap, key, default)
     val[key]
 end
 
-function Base.has(m::PersistentHashMap, key)
+function Base.haskey(m::PersistentHashMap, key)
     get(m.trie, int(hash(key)), NotFound()) != NotFound()
 end
 
@@ -79,6 +79,9 @@ function Base.next(m::PersistentHashMap, state)
         (convert(Tuple, kvs[1]), (kvs[2:end], triestate))
     end
 end
+
+Base.map(f, m::PersistentHashMap) =
+    PersistentHashMap([f(kv) for kv in m]...)
 
 function Base.show{K, V}(io::IO, m::PersistentHashMap{K, V})
     print(io, "Persistent{$K, $V}[")

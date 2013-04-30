@@ -29,7 +29,7 @@ Base.get{K, V}(m::PersistentArrayMap{K, V}, k::K, default) =
     _get(m, k, default, true)
 Base.getindex{K, V}(m::PersistentArrayMap{K, V}, k::K) = get(m, k)
 
-Base.has(m::PersistentArrayMap, k) = get(m, k, NotFound()) != NotFound()
+Base.haskey(m::PersistentArrayMap, k) = get(m, k, NotFound()) != NotFound()
 
 function assoc{K, V}(m::PersistentArrayMap{K, V}, k::K, v::V)
     idx = findkeyidx(m, k)

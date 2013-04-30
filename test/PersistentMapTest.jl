@@ -35,12 +35,12 @@ typealias PAM PersistentArrayMap
         get(m, 4, "foo") => "foo"
     end
 
-    @fact "has" begin
+    @fact "haskey" begin
         m = PAM((1, "one"), (2, "two"), (3, "three"))
-        has(m, 1) => true
-        has(m, 2) => true
-        has(m, 3) => true
-        has(m, 4) => false
+        haskey(m, 1) => true
+        haskey(m, 2) => true
+        haskey(m, 3) => true
+        haskey(m, 4) => false
     end
 
     @fact "assoc" begin
@@ -87,8 +87,8 @@ typealias PAM PersistentArrayMap
     end
 end
 
-
 typealias PHM PersistentHashMap
+
 @facts "PersistentHashMap" begin
 
     @fact "constructor" begin
@@ -140,13 +140,16 @@ typealias PHM PersistentHashMap
         get(m, 2) => :throws
     end
 
-    @fact "has" begin
+    @fact "haskey" begin
         m = PHM{Int, ASCIIString}()
-        has(m, 1) => false
+        haskey(m, 1) => false
         m = assoc(m, 1, "one")
-        has(m, 1) => true
-        has(m, 2) => false
+        haskey(m, 1) => true
+        haskey(m, 2) => false
     end
 
-
+    @fact "map" begin
+        m = PHM((1, 1), (2, 2), (3, 3))
+        map((kv) -> (kv[1], kv[2]+1), m) => PHM((1, 2), (2, 3), (3, 4))
+    end
 end
