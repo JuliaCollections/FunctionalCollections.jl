@@ -1,5 +1,5 @@
 using FactCheck
-using PersistentDataStructures
+using FunctionalCollections
 
 typealias PS PersistentSet
 

@@ -1,4 +1,4 @@
-using PersistentDataStructures
+using FunctionalCollections
 using FactCheck
 
 function vec(r::Range1)

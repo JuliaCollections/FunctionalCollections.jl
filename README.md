@@ -1,4 +1,4 @@
-**Persistent Data Strucrues**
+**Functional Collections**
 
 Functional and persistent data structures for Julia. This is a work in
 progress and is currently not optimized for performance.

@@ -1,4 +1,4 @@
-module PersistentDataStructures
+module FunctionalCollections
 
 include("BitmappedVectorTrie.jl")
 
@@ -25,4 +25,4 @@ export PersistentSet,
        conj,
        disj
 
-end # module PersistentDataStructures
+end # module FunctionalCollections

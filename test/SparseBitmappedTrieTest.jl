@@ -1,7 +1,7 @@
 using FactCheck
-using PersistentDataStructures
+using FunctionalCollections
 
-import PersistentDataStructures: SparseBitmappedTrie,
+import FunctionalCollections: SparseBitmappedTrie,
     SparseNode, SparseLeaf, bitpos, index, hasindex
 
 @facts "Sparse Bitmapped Vector Tries" begin

@@ -1,7 +1,7 @@
-using PersistentDataStructures
+using FunctionalCollections
 using FactCheck
 
-import PersistentDataStructures.KVPair
+import FunctionalCollections.KVPair
 
 @facts "Persistent Maps" begin
 
