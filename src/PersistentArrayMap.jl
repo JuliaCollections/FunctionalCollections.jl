@@ -1,7 +1,7 @@
 immutable PersistentArrayMap{K, V} <: PersistentMap{K, V}
-    kvs::Array{KVPair{K, V}}
+    kvs::Vector{KVPair{K, V}}
 
-    PersistentArrayMap(kvs::Array{KVPair{K, V}}) = new(kvs)
+    PersistentArrayMap(kvs::Vector{KVPair{K, V}}) = new(kvs)
     PersistentArrayMap() = new(KVPair{K, V}[])
 end
 PersistentArrayMap{K, V}(kvs::(K, V)...) =

@@ -26,7 +26,7 @@ abstract SparseBitmappedTrie{T} <: BitmappedTrie{T}
 # Bitmapped Tries
 #
 immutable DenseNode{T} <: DenseBitmappedTrie{T}
-    self::Array{DenseBitmappedTrie{T}, 1}
+    self::Vector{DenseBitmappedTrie{T}}
     shift::Int
     length::Int
     maxlength::Int
@@ -34,14 +34,14 @@ end
 DenseNode{T}() = DenseNode{T}(DenseBitmappedTrie{T}[], shiftby*2, 0, trielen)
 
 immutable DenseLeaf{T} <: DenseBitmappedTrie{T}
-    self::Array{T, 1}
+    self::Vector{T}
 
-    DenseLeaf(self::Array) = new(self)
+    DenseLeaf(self::Vector) = new(self)
     DenseLeaf() = new(T[])
 end
 
 immutable SparseNode{T} <: SparseBitmappedTrie{T}
-    self::Array{SparseBitmappedTrie{T}, 1}
+    self::Vector{SparseBitmappedTrie{T}}
     shift::Int
     length::Int
     maxlength::Int
@@ -50,10 +50,10 @@ end
 SparseNode(T::Type) = SparseNode{T}(SparseBitmappedTrie{T}[], shiftby*7, 0, trielen^7, 0)
 
 immutable SparseLeaf{T} <: SparseBitmappedTrie{T}
-    self::Array{T, 1}
+    self::Vector{T}
     bitmap::Int
 
-    SparseLeaf(self::Array, bitmap::Int) = new(self, bitmap)
+    SparseLeaf(self::Vector, bitmap::Int) = new(self, bitmap)
     SparseLeaf() = new(T[], 0)
 end
 
