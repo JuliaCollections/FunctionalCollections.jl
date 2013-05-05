@@ -1,4 +1,3 @@
-using Benchmark
 using FunctionalCollections
 
 include("./bench.jl")
