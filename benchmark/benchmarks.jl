@@ -1,5 +1,5 @@
 using Benchmark
-using PersistentDataStructures
+using FunctionalCollections
 
 const rands = rand(1:1000000, 100000)
 
