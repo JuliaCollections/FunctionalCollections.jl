@@ -171,38 +171,30 @@ hasindex(t::SparseBitmappedTrie, i::Int) =
 index(t::SparseBitmappedTrie, i::Int) =
     1 + count_ones(t.bitmap & (bitpos(t, i) - 1))
 
-# Update currently handles length incorrectly. In the case that a SparseNode
-# already has a child at the proper index, there's no way of knowing if the
-# recursive update will cause the length to be increased or not.
-#
 function update{T}(l::SparseLeaf{T}, i::Int, el::T)
-    if hasindex(l, i)
+    hasi = hasindex(l, i)
+    bitmap = bitpos(l, i) | l.bitmap
+    idx = index(l, i)
+    if hasi
         newself = l.self[:]
-        newself[index(l, i)] = el
-        (SparseLeaf{T}(newself, l.bitmap), false)
+        newself[idx] = el
     else
-        pos = bitpos(l, i)
-        bitmap = pos | l.bitmap
-        idx = index(l, i)
         newself = vcat(l.self[1:idx-1], [el], l.self[idx:end])
-        (SparseLeaf{T}(newself, bitmap), true)
     end
+    (SparseLeaf{T}(newself, bitmap), !hasi)
 end
 function update{T}(n::SparseNode{T}, i::Int, el::T)
+    bitmap = bitpos(n, i) | n.bitmap
+    idx = index(n, i)
     if hasindex(n, i)
         newself = n.self[:]
-        idx = index(n, i)
         updated, inc = update(newself[idx], i, el)
         newself[idx] = updated
-        (SparseNode{T}(newself, n.shift, inc ? n.length + 1 : n.length, n.maxlength, n.bitmap), inc)
     else
-        pos = bitpos(n, i)
-        bitmap = pos | n.bitmap
-        idx = index(n, i)
         child, inc = update(demoted(n), i, el)
         newself = vcat(n.self[1:idx-1], [child], n.self[idx:end])
-        (SparseNode{T}(newself, n.shift, inc ? n.length + 1 : n.length, n.maxlength, bitmap), inc)
     end
+    (SparseNode{T}(newself, n.shift, inc ? n.length + 1 : n.length, n.maxlength, bitmap), inc)
 end
 
 Base.get(n::SparseLeaf, i::Int, default) =
