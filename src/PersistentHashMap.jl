@@ -1,3 +1,109 @@
+# Sparse Bitmapped Tries
+# ======================
+
+abstract SparseBitmappedTrie{T} <: BitmappedTrie{T}
+
+immutable SparseNode{T} <: SparseBitmappedTrie{T}
+    self::Vector{SparseBitmappedTrie{T}}
+    shift::Int
+    length::Int
+    maxlength::Int
+    bitmap::Int
+end
+SparseNode(T::Type) = SparseNode{T}(SparseBitmappedTrie{T}[], shiftby*7, 0, trielen^7, 0)
+
+immutable SparseLeaf{T} <: SparseBitmappedTrie{T}
+    self::Vector{T}
+    bitmap::Int
+
+    SparseLeaf(self::Vector, bitmap::Int) = new(self, bitmap)
+    SparseLeaf() = new(T[], 0)
+end
+
+shift(      n::SparseNode) = n.shift
+maxlength(  n::SparseNode) = n.maxlength
+Base.length(n::SparseNode) = n.length
+
+shift(       ::SparseLeaf) = 0
+maxlength(  l::SparseLeaf) = trielen
+Base.length(l::SparseLeaf) = length(l.self)
+
+function demoted{T}(n::SparseNode{T})
+    shift(n) == shiftby ?
+    SparseLeaf{T}(T[], 0) :
+    SparseNode{T}(SparseBitmappedTrie{T}[], shift(n) - shiftby, 0, int(maxlength(n) / trielen), 0)
+end
+
+bitpos(t::SparseBitmappedTrie, i::Int) = 1 << (mask(t, i) - 1)
+hasindex(t::SparseBitmappedTrie, i::Int) = t.bitmap & bitpos(t, i) != 0
+index(t::SparseBitmappedTrie, i::Int) =
+    1 + count_ones(t.bitmap & (bitpos(t, i) - 1))
+
+function update{T}(l::SparseLeaf{T}, i::Int, el::T)
+    hasi = hasindex(l, i)
+    bitmap = bitpos(l, i) | l.bitmap
+    idx = index(l, i)
+    if hasi
+        newself = l.self[:]
+        newself[idx] = el
+    else
+        newself = vcat(l.self[1:idx-1], [el], l.self[idx:end])
+    end
+    (SparseLeaf{T}(newself, bitmap), !hasi)
+end
+function update{T}(n::SparseNode{T}, i::Int, el::T)
+    bitmap = bitpos(n, i) | n.bitmap
+    idx = index(n, i)
+    if hasindex(n, i)
+        newself = n.self[:]
+        updated, inc = update(newself[idx], i, el)
+        newself[idx] = updated
+    else
+        child, inc = update(demoted(n), i, el)
+        newself = vcat(n.self[1:idx-1], [child], n.self[idx:end])
+    end
+    (SparseNode{T}(newself, n.shift, inc ? n.length + 1 : n.length, n.maxlength, bitmap), inc)
+end
+
+Base.get(n::SparseLeaf, i::Int, default) =
+    hasindex(n, i) ? n.self[index(n, i)] : default
+Base.get(n::SparseNode, i::Int, default) =
+    hasindex(n, i) ? get(n.self[index(n, i)], i, default) : default
+
+function Base.start(t::SparseBitmappedTrie)
+    t.length == 0 && return true
+    ones(Int, 1 + int(t.shift / shiftby))
+end
+
+function directindex(t::SparseBitmappedTrie, v::Vector{Int})
+    isempty(v) && return t.self
+    local node = t.self
+    for i=v
+        node = node[i]
+        node = isa(node, SparseBitmappedTrie) ? node.self : node
+    end
+    node
+end
+
+Base.done(t::SparseBitmappedTrie, state) = state == true
+
+function Base.next(t::SparseBitmappedTrie, state::Vector{Int})
+    item = directindex(t, state)
+    while true
+        index = pop!(state)
+        node = directindex(t, state)
+        if length(node) > index
+            push!(state, index + 1)
+            return item, vcat(state, ones(Int, 1 + int(t.shift / shiftby) - length(state)))
+        elseif is(node, t.self)
+            return item, true
+        end
+    end
+end
+
+# Persistent Hash Maps
+# ====================
+
 immutable PersistentHashMap{K, V} <: PersistentMap{K, V}
     trie::SparseBitmappedTrie{PersistentArrayMap{K, V}}
     length::Int
