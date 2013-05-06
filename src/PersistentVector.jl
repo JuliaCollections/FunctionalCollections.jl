@@ -27,12 +27,18 @@ maxlength(  l::DenseLeaf) = trielen
 Base.length(l::DenseLeaf) = length(l.self)
 
 promoted{T}(n::DenseBitmappedTrie{T}) =
-    DenseNode{T}(DenseBitmappedTrie{T}[n], shift(n) + shiftby, length(n), maxlength(n) * trielen)
+    DenseNode{T}(DenseBitmappedTrie{T}[n],
+                 shift(n) + shiftby,
+                 length(n),
+                 maxlength(n) * trielen)
 
 function demoted{T}(n::DenseNode{T})
     shift(n) == shiftby * 2 ?
     DenseLeaf{T}(T[]) :
-    DenseNode{T}(DenseBitmappedTrie{T}[], shift(n) - shiftby, 0, int(maxlength(n) / trielen))
+    DenseNode{T}(DenseBitmappedTrie{T}[],
+                 shift(n) - shiftby,
+                 0,
+                 int(maxlength(n) / trielen))
 end
 
 withself{T}(n::DenseNode{T}, self::Array) = withself(n, self, 0)
@@ -114,12 +120,13 @@ end
 mask(i::Int) = ((i - 1) & (trielen - 1)) + 1
 
 boundscheck!(v::PersistentVector, i::Int) =
-    0 < i <= v.length || error(BoundsError(), " :: Index $i out of bounds ($(v.length))")
+    0 < i <= v.length || error(BoundsError(),
+                               " :: Index $i out of bounds ($(v.length))")
 
-Base.size(v::PersistentVector)    = v.length
-Base.length(v::PersistentVector)  = v.length
+Base.size(   v::PersistentVector) = v.length
+Base.length( v::PersistentVector) = v.length
 Base.isempty(v::PersistentVector) = length(v) == 0
-Base.endof(v::PersistentVector)   = length(v)
+Base.endof(  v::PersistentVector) = length(v)
 
 Base.isequal(v1::PersistentVector, v2::PersistentVector) =
     v1.tail == v2.tail && v1.trie == v2.trie
@@ -237,4 +244,5 @@ function print_vec(io::IO, t, head::String)
     end
 end
 
-Base.show{T}(io::IO, pv::PersistentVector{T}) = print_vec(io, pv, "Persistent{$T}")
+Base.show{T}(io::IO, pv::PersistentVector{T}) =
+    print_vec(io, pv, "Persistent{$T}")

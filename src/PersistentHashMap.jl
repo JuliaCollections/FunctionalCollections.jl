@@ -31,12 +31,15 @@ Base.length(l::SparseLeaf) = length(l.self)
 function demoted{T}(n::SparseNode{T})
     shift(n) == shiftby ?
     SparseLeaf{T}(T[], 0) :
-    SparseNode{T}(SparseBitmappedTrie{T}[], shift(n) - shiftby, 0, int(maxlength(n) / trielen), 0)
+    SparseNode{T}(SparseBitmappedTrie{T}[],
+                  shift(n) - shiftby,
+                  0,
+                  int(maxlength(n) / trielen), 0)
 end
 
-bitpos(t::SparseBitmappedTrie, i::Int) = 1 << (mask(t, i) - 1)
+bitpos(  t::SparseBitmappedTrie, i::Int) = 1 << (mask(t, i) - 1)
 hasindex(t::SparseBitmappedTrie, i::Int) = t.bitmap & bitpos(t, i) != 0
-index(t::SparseBitmappedTrie, i::Int) =
+index(   t::SparseBitmappedTrie, i::Int) =
     1 + count_ones(t.bitmap & (bitpos(t, i) - 1))
 
 function update{T}(l::SparseLeaf{T}, i::Int, el::T)
@@ -62,7 +65,11 @@ function update{T}(n::SparseNode{T}, i::Int, el::T)
         child, inc = update(demoted(n), i, el)
         newself = vcat(n.self[1:idx-1], [child], n.self[idx:end])
     end
-    (SparseNode{T}(newself, n.shift, inc ? n.length + 1 : n.length, n.maxlength, bitmap), inc)
+    (SparseNode{T}(newself,
+                   n.shift,
+                   inc ? n.length + 1 : n.length,
+                   n.maxlength, bitmap),
+     inc)
 end
 
 Base.get(n::SparseLeaf, i::Int, default) =
@@ -94,7 +101,8 @@ function Base.next(t::SparseBitmappedTrie, state::Vector{Int})
         node = directindex(t, state)
         if length(node) > index
             push!(state, index + 1)
-            return item, vcat(state, ones(Int, 1 + int(t.shift / shiftby) - length(state)))
+            return item, vcat(state, ones(Int, 1 + int(t.shift / shiftby) -
+                                               length(state)))
         elseif is(node, t.self)
             return item, true
         end
@@ -173,7 +181,8 @@ function Base.start(m::PersistentHashMap)
     arrmap, triestate = next(m.trie, state)
     (arrmap.kvs, triestate)
 end
-Base.done(m::PersistentHashMap, state) = isempty(state[1]) && done(m.trie, state[2])
+Base.done(m::PersistentHashMap, state) =
+    isempty(state[1]) && done(m.trie, state[2])
 
 function Base.next(m::PersistentHashMap, state)
     kvs, triestate = state
