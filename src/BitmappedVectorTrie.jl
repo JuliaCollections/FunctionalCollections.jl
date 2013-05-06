@@ -31,10 +31,12 @@ shift(t::BitmappedTrie) =
     error("$(typeof(t)) does not implement FunctionalCollections.shift")
 maxlength(t::BitmappedTrie) =
     error("$(typeof(t)) does not implement FunctionalCollections.maxlength")
+arrayof(t::BitmappedTrie) =
+    error("$(typeof(t)) does not implement FunctionalCollections.arrayof")
 
 function Base.isequal(t1::BitmappedTrie, t2::BitmappedTrie)
     length(t1)    == length(t2)    &&
     shift(t1)     == shift(t2)     &&
     maxlength(t1) == maxlength(t2) &&
-    t1.self       == t2.self
+    arrayof(t1)   == arrayof(t2)
 end

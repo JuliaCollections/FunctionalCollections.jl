@@ -4,7 +4,7 @@
 abstract SparseBitmappedTrie{T} <: BitmappedTrie{T}
 
 immutable SparseNode{T} <: SparseBitmappedTrie{T}
-    self::Vector{SparseBitmappedTrie{T}}
+    arr::Vector{SparseBitmappedTrie{T}}
     shift::Int
     length::Int
     maxlength::Int
@@ -13,20 +13,22 @@ end
 SparseNode(T::Type) = SparseNode{T}(SparseBitmappedTrie{T}[], shiftby*7, 0, trielen^7, 0)
 
 immutable SparseLeaf{T} <: SparseBitmappedTrie{T}
-    self::Vector{T}
+    arr::Vector{T}
     bitmap::Int
 
-    SparseLeaf(self::Vector, bitmap::Int) = new(self, bitmap)
+    SparseLeaf(arr::Vector, bitmap::Int) = new(arr, bitmap)
     SparseLeaf() = new(T[], 0)
 end
 
+arrayof(    n::SparseNode) = n.arr
 shift(      n::SparseNode) = n.shift
 maxlength(  n::SparseNode) = n.maxlength
 Base.length(n::SparseNode) = n.length
 
+arrayof(    l::SparseLeaf) = l.arr
 shift(       ::SparseLeaf) = 0
 maxlength(  l::SparseLeaf) = trielen
-Base.length(l::SparseLeaf) = length(l.self)
+Base.length(l::SparseLeaf) = length(arrayof(l))
 
 function demoted{T}(n::SparseNode{T})
     shift(n) == shiftby ?
@@ -47,25 +49,25 @@ function update{T}(l::SparseLeaf{T}, i::Int, el::T)
     bitmap = bitpos(l, i) | l.bitmap
     idx = index(l, i)
     if hasi
-        newself = l.self[:]
-        newself[idx] = el
+        newarr = arrayof(l)[:]
+        newarr[idx] = el
     else
-        newself = vcat(l.self[1:idx-1], [el], l.self[idx:end])
+        newarr = vcat(arrayof(l)[1:idx-1], [el], arrayof(l)[idx:end])
     end
-    (SparseLeaf{T}(newself, bitmap), !hasi)
+    (SparseLeaf{T}(newarr, bitmap), !hasi)
 end
 function update{T}(n::SparseNode{T}, i::Int, el::T)
     bitmap = bitpos(n, i) | n.bitmap
     idx = index(n, i)
     if hasindex(n, i)
-        newself = n.self[:]
-        updated, inc = update(newself[idx], i, el)
-        newself[idx] = updated
+        newarr = arrayof(n)[:]
+        updated, inc = update(newarr[idx], i, el)
+        newarr[idx] = updated
     else
         child, inc = update(demoted(n), i, el)
-        newself = vcat(n.self[1:idx-1], [child], n.self[idx:end])
+        newarr = vcat(arrayof(n)[1:idx-1], [child], arrayof(n)[idx:end])
     end
-    (SparseNode{T}(newself,
+    (SparseNode{T}(newarr,
                    n.shift,
                    inc ? n.length + 1 : n.length,
                    n.maxlength, bitmap),
@@ -73,9 +75,9 @@ function update{T}(n::SparseNode{T}, i::Int, el::T)
 end
 
 Base.get(n::SparseLeaf, i::Int, default) =
-    hasindex(n, i) ? n.self[index(n, i)] : default
+    hasindex(n, i) ? arrayof(n)[index(n, i)] : default
 Base.get(n::SparseNode, i::Int, default) =
-    hasindex(n, i) ? get(n.self[index(n, i)], i, default) : default
+    hasindex(n, i) ? get(arrayof(n)[index(n, i)], i, default) : default
 
 function Base.start(t::SparseBitmappedTrie)
     t.length == 0 && return true
@@ -83,11 +85,11 @@ function Base.start(t::SparseBitmappedTrie)
 end
 
 function directindex(t::SparseBitmappedTrie, v::Vector{Int})
-    isempty(v) && return t.self
-    local node = t.self
+    isempty(v) && return arrayof(t)
+    local node = arrayof(t)
     for i=v
         node = node[i]
-        node = isa(node, SparseBitmappedTrie) ? node.self : node
+        node = isa(node, SparseBitmappedTrie) ? arrayof(node) : node
     end
     node
 end
@@ -103,7 +105,7 @@ function Base.next(t::SparseBitmappedTrie, state::Vector{Int})
             push!(state, index + 1)
             return item, vcat(state, ones(Int, 1 + int(t.shift / shiftby) -
                                                length(state)))
-        elseif is(node, t.self)
+        elseif is(node, arrayof(t))
             return item, true
         end
     end

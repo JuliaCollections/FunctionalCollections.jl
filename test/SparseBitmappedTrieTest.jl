@@ -2,7 +2,7 @@ using FactCheck
 using FunctionalCollections
 
 import FunctionalCollections: SparseBitmappedTrie,
-    SparseNode, SparseLeaf, bitpos, index, hasindex
+    SparseNode, SparseLeaf, bitpos, index, hasindex, arrayof
 
 @facts "Sparse Bitmapped Vector Tries" begin
 
@@ -32,7 +32,7 @@ import FunctionalCollections: SparseBitmappedTrie,
 
         l = SparseLeaf{Int}([1, 5], 2^0 | 2^4)
         l, _ = update(l, 2, 2)
-        l.self => [1, 2, 5]
+        arrayof(l) => [1, 2, 5]
         length(l) => 3
         hasindex(l, 1) => true
         hasindex(l, 2) => true
@@ -41,21 +41,21 @@ import FunctionalCollections: SparseBitmappedTrie,
         hasindex(l, 5) => true
         hasindex(l, 6) => false
 
-        update(l, 2, 100)[1].self => [1, 100, 5]
+        arrayof(update(l, 2, 100)[1]) => [1, 100, 5]
     end
 
     @fact "SparseNode update" begin
         n, _ = update(SparseNode(ASCIIString), 1, "foo")
-        length(n.self) => 1
+        length(arrayof(n)) => 1
 
-        leaf = n.self[1].self[1].self[1].self[1].self[1].self[1].self[1]
+        leaf = arrayof(n)[1].arr[1].arr[1].arr[1].arr[1].arr[1].arr[1]
         hasindex(leaf, 1) => true
-        leaf.self[1] => "foo"
+        leaf.arr[1] => "foo"
 
         n2, _ = update(n, 33, "bar")
-        leaf2 = n2.self[1].self[1].self[1].self[1].self[1].self[1].self[2]
+        leaf2 = n2.arr[1].arr[1].arr[1].arr[1].arr[1].arr[1].arr[2]
         hasindex(leaf2, 33) => true
-        leaf2.self[1] => "bar"
+        arrayof(leaf2)[1] => "bar"
     end
 
     @fact "SparseBitmappedTrie get" begin
