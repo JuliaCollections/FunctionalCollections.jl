@@ -84,12 +84,11 @@ end
 promoted{T}(n::DenseBitmappedTrie{T}) =
     DenseNode{T}(DenseBitmappedTrie{T}[n], shift(n) + shiftby, length(n), maxlength(n) * trielen)
 
-demoted{T}(n::DenseNode{T}) =
-    if shift(n) == shiftby * 2
-        DenseLeaf{T}(T[])
-    else
-        DenseNode{T}(DenseBitmappedTrie{T}[], shift(n) - shiftby, 0, int(maxlength(n) / trielen))
-    end
+function demoted{T}(n::DenseNode{T})
+    shift(n) == shiftby * 2 ?
+    DenseLeaf{T}(T[]) :
+    DenseNode{T}(DenseBitmappedTrie{T}[], shift(n) - shiftby, 0, int(maxlength(n) / trielen))
+end
 
 withself{T}(n::DenseNode{T}, self::Array) = withself(n, self, 0)
 withself{T}(n::DenseNode{T}, self::Array, lenshift::Int) =
@@ -158,16 +157,13 @@ end
 # ======================
 
 function demoted{T}(n::SparseNode{T})
-    if shift(n) == shiftby
-        SparseLeaf{T}(T[], 0)
-    else
-        SparseNode{T}(SparseBitmappedTrie{T}[], shift(n) - shiftby, 0, int(maxlength(n) / trielen), 0)
-    end
+    shift(n) == shiftby ?
+    SparseLeaf{T}(T[], 0) :
+    SparseNode{T}(SparseBitmappedTrie{T}[], shift(n) - shiftby, 0, int(maxlength(n) / trielen), 0)
 end
 
 bitpos(t::SparseBitmappedTrie, i::Int) = 1 << (mask(t, i) - 1)
-hasindex(t::SparseBitmappedTrie, i::Int) =
-    t.bitmap & bitpos(t, i) != 0
+hasindex(t::SparseBitmappedTrie, i::Int) = t.bitmap & bitpos(t, i) != 0
 index(t::SparseBitmappedTrie, i::Int) =
     1 + count_ones(t.bitmap & (bitpos(t, i) - 1))
 
