@@ -4,7 +4,9 @@ include("BitmappedVectorTrie.jl")
 
 include("PersistentVector.jl")
 
-export PersistentVector,
+typealias pvec PersistentVector
+
+export PersistentVector, pvec,
        append, push,
        update,
        peek,
@@ -14,15 +16,18 @@ include("PersistentMap.jl")
 include("PersistentArrayMap.jl")
 include("PersistentHashMap.jl")
 
+typealias phmap PersistentHashMap
+
 export PersistentArrayMap,
-       PersistentHashMap,
+       PersistentHashMap, phmap,
        assoc,
        dissoc
 
 include("PersistentSet.jl")
 
-export PersistentSet,
-       conj,
+typealias pset PersistentSet
+
+export PersistentSet, pset
        disj
 
 end # module FunctionalCollections

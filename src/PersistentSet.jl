@@ -8,7 +8,7 @@ end
 PersistentSet{T}(vals::T...) =
     PersistentSet{T}(PersistentHashMap([(val, nothing) for val in vals]...))
 
-conj{T}(s::PersistentSet{T}, val) =
+Base.conj{T}(s::PersistentSet{T}, val) =
     PersistentSet{T}(assoc(s.dict, val, nothing))
 
 disj{T}(s::PersistentSet{T}, val) =
