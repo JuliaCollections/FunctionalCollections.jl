@@ -128,7 +128,11 @@ function PersistentHashMap{K, V}(kvs::(K, V)...)
     end
     m
 end
-PersistentHashMap(; kwargs...) = PersistentHashMap(kwargs...)
+function PersistentHashMap(; kwargs...)
+    isempty(kwargs) ?
+    PersistentHashMap{Any, Any}() :
+    PersistentHashMap(kwargs...)
+end
 
 Base.length(m::PersistentHashMap) = m.length
 Base.isempty(m::PersistentHashMap) = length(m) == 0

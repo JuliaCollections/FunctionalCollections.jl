@@ -118,6 +118,7 @@ immutable PersistentVector{T} <: AbstractArray{T}
         new(trie, tail, length)
     PersistentVector() = new(DenseLeaf{Vector{T}}(), T[], 0)
 end
+PersistentVector() = PersistentVector{Any}()
 
 mask(i::Int) = ((i - 1) & (trielen - 1)) + 1
 
@@ -154,7 +155,7 @@ function append{T}(v::PersistentVector{T}, el)
     end
 end
 
-function update{T}(v::PersistentVector{T}, i::Int, el::T)
+function update{T}(v::PersistentVector{T}, i::Int, el)
     boundscheck!(v, i)
     if i > v.length - length(v.tail)
         newtail = v.tail[1:end]
