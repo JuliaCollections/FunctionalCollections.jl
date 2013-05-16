@@ -27,7 +27,7 @@ include("PersistentSet.jl")
 
 typealias pset PersistentSet
 
-export PersistentSet, pset
+export PersistentSet, pset,
        disj
 
 end # module FunctionalCollections
