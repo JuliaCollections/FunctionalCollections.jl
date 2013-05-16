@@ -8,6 +8,8 @@ immutable KVPair{K, V}
 end
 
 Base.convert(::Type{Tuple}, kv::KVPair) = (kv.key, kv.value)
+Base.convert{K, V}(::Type{KVPair{K, V}}, kv::KVPair) =
+    KVPair{K, V}(convert(K, kv.key), convert(V, kv.value))
 
 Base.isequal(kv1::KVPair, kv2::KVPair) =
     kv1.key == kv2.key && kv1.value == kv2.value

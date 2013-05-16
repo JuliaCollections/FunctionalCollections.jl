@@ -137,7 +137,7 @@ function Base.isequal(m1::PersistentHashMap, m2::PersistentHashMap)
     length(m1) == length(m2) && all(x -> x[1] == x[2], zip(m1.trie, m2.trie))
 end
 
-function _update{K, V}(f::Function, m::PersistentHashMap{K, V}, key::K)
+function _update{K, V}(f::Function, m::PersistentHashMap{K, V}, key)
     keyhash = int(hash(key))
     arraymap = get(m.trie, keyhash, PersistentArrayMap{K, V}())
     newmap = f(arraymap)
@@ -148,7 +148,7 @@ function _update{K, V}(f::Function, m::PersistentHashMap{K, V}, key::K)
                                         0))
 end
 
-function assoc{K, V}(m::PersistentHashMap{K, V}, key::K, value::V)
+function assoc{K, V}(m::PersistentHashMap{K, V}, key, value)
     _update(m, key) do arraymap
         assoc(arraymap, key, value)
     end

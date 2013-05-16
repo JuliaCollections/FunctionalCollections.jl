@@ -112,6 +112,8 @@ typealias PHM PersistentHashMap
         m4 = PHM((3, 30), (2, 20), (1, 10))
         m3 => m4
         m3 => not(m1)
+
+        m3 => [1 => 10, 2 => 20, 3 => 30]
     end
 
     @fact "assoc" begin
@@ -122,6 +124,11 @@ typealias PHM PersistentHashMap
         m = PHM{Int, ASCIIString}()
         m = assoc(m, 1, "one")
         assoc(m, 1, "foo") => (m) -> m[1] == "foo"
+    end
+
+    @fact "covariance" begin
+        m = PHM{Any, Any}()
+        assoc(m, "foo", "bar") => {"foo" => "bar"}
     end
 
     @fact "dissoc" begin

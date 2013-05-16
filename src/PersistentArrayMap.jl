@@ -16,22 +16,22 @@ Base.isempty(m::PersistentArrayMap) = length(m) == 0
 
 findkeyidx(m::PersistentArrayMap, k) = findfirst((kv) -> kv.key == k, m.kvs)
 
-function _get{K, V}(m::PersistentArrayMap{K, V}, k::K, default, hasdefault::Bool)
+function _get(m::PersistentArrayMap, k, default, hasdefault::Bool)
     for kv in m.kvs
         kv.key == k && return kv.value
     end
     hasdefault ? default : default()
 end
 
-Base.get{K, V}(m::PersistentArrayMap{K, V}, k::K) =
+Base.get(m::PersistentArrayMap, k) =
     _get(m, k, ()->error("key not found: $k"), false)
-Base.get{K, V}(m::PersistentArrayMap{K, V}, k::K, default) =
+Base.get(m::PersistentArrayMap, k, default) =
     _get(m, k, default, true)
-Base.getindex{K, V}(m::PersistentArrayMap{K, V}, k::K) = get(m, k)
+Base.getindex(m::PersistentArrayMap, k) = get(m, k)
 
 Base.haskey(m::PersistentArrayMap, k) = get(m, k, NotFound()) != NotFound()
 
-function assoc{K, V}(m::PersistentArrayMap{K, V}, k::K, v::V)
+function assoc{K, V}(m::PersistentArrayMap{K, V}, k, v)
     idx = findkeyidx(m, k)
     idx == 0 && return PersistentArrayMap{K, V}(push!(m.kvs[1:end], KVPair(k, v)))
 
