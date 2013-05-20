@@ -37,4 +37,9 @@ export List, EmptyList,
        head,
        tail
 
+include("PersistentQueue.jl")
+
+export PersistentQueue, queue,
+       enq
+
 end # module FunctionalCollections
