@@ -52,6 +52,15 @@ Base.isequal(l::List, a::AbstractArray) =
 Base.map(f, e::EmptyList) = e
 Base.map(f, l::List) = cons(f(head(l)), map(f, tail(l)))
 
+Base.reverse(e::EmptyList) = e
+function Base.reverse{T}(l::List{T})
+    reversed = EmptyList{T}()
+    for val in l
+        reversed = val >> reversed
+    end
+    reversed
+end
+
 Base.show(io::IO, ::EmptyList) = print(io, "()")
 function Base.show{T}(io::IO, l::List{T})
     print(io, "$T($(head(l))")

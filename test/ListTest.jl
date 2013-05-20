@@ -45,6 +45,10 @@ using FactCheck
         map(x->x+1, List([1,2,3,4,5])) => List([2,3,4,5,6])
     end
 
+    @fact "reverse" begin
+        reverse(List([1:10])) => 10:-1:1
+    end
+
     @fact "hash" begin
         hash(List([1:1000])) => hash(List([1:1000]))
     end
