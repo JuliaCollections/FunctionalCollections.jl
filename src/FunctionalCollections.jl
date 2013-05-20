@@ -30,4 +30,11 @@ typealias pset PersistentSet
 export PersistentSet, pset,
        disj
 
+include("List.jl")
+
+export List, EmptyList,
+       cons,
+       head,
+       tail
+
 end # module FunctionalCollections
