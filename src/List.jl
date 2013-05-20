@@ -22,10 +22,9 @@ Base.length(l::List) = l.length
 Base.isempty(::EmptyList) = true
 Base.isempty(::List)      = false
 
-import Base.>>
 cons{T}(val::T, ::EmptyList) = List(val, EmptyList{T}(), 1)
 cons{T}(val::T, l::List{T})  = List(val, l, length(l) + 1)
->>(val, l::AbstractList) = cons(val, l)
+..(val, l::AbstractList) = cons(val, l)
 
 Base.isequal(::EmptyList, ::EmptyList) = true
 Base.isequal(l1::List, l2::List) =
@@ -56,7 +55,7 @@ Base.reverse(e::EmptyList) = e
 function Base.reverse{T}(l::List{T})
     reversed = EmptyList{T}()
     for val in l
-        reversed = val >> reversed
+        reversed = val..reversed
     end
     reversed
 end

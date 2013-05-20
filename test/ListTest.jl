@@ -27,9 +27,14 @@ using FactCheck
         tail(EmptyList())   => :throws
     end
 
+    @fact "cons" begin
+        cons(1, cons(2, cons(3, EmptyList()))) => List([1, 2, 3])
+        1..(2..(3..EmptyList())) => List([1, 2, 3])
+    end
+
     @fact "sharing" begin
         l = List([1:100])
-        l2 = 0 >> l
+        l2 = 0..l
         is(l, tail(l2)) => true
     end
 

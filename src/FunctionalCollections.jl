@@ -33,7 +33,7 @@ export PersistentSet, pset,
 include("List.jl")
 
 export List, EmptyList,
-       cons,
+       cons, ..,
        head,
        tail
 

@@ -28,9 +28,9 @@ pop{T}(q::PersistentQueue{T}) =
 
 enq{T}(q::PersistentQueue{T}, val) =
     if isempty(q.in) && isempty(q.out)
-        PersistentQueue{T}(q.in, val >> EmptyList{T}(), 1)
+        PersistentQueue{T}(q.in, val..EmptyList{T}(), 1)
     else
-        PersistentQueue{T}(val >> q.in, q.out, length(q) + 1)
+        PersistentQueue{T}(val..q.in, q.out, length(q) + 1)
     end
 
 Base.start(q::PersistentQueue) = (q.in, q.out)
