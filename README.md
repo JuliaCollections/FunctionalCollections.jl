@@ -131,7 +131,6 @@ element removed (disjoined).
 
 #### PersistentVector
 
-- comment explaining "tail" optimization – why shift is 5 more than you'd expect
 - DenseLeaf might be able to create a no-arg constructor without overriding the default
 - line 27, 5 should be shiftby instead of hard-coded
 - make line 38 more clear (maybe a comment)

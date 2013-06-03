@@ -3,6 +3,23 @@
 
 abstract DenseBitmappedTrie{T} <: BitmappedTrie{T}
 
+# Why is the shift value of a DenseLeaf 5 instead of 0, and why does
+# the shift value of a DenseNode start at 10?
+#
+# The PersistentVector implements a "tail" optimization, where it
+# inserts appended elements into a tail array until that array is 32
+# elements long, only then inserting it into the actual bitmapped
+# vector trie. This significantly increases the performance of
+# operations that touch the very end of the vector (last, append, pop,
+# etc.) because you don't have to traverse the trie.
+#
+# However, it adds a small amount of complexity to the implementation;
+# when you query the trie, you now get back a length-32 array instead
+# of the actual element. This is why the DenseLeaf has a shift value
+# of 5: it leaves an "extra" 5 bits for the PersistentVector to use to
+# index into the array returned from the trie. (This also means that a
+# DenseNode has to start at shiftby*2.)
+
 immutable DenseNode{T} <: DenseBitmappedTrie{T}
     arr::Vector{DenseBitmappedTrie{T}}
     shift::Int
