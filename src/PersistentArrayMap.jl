@@ -45,7 +45,7 @@ function dissoc{K, V}(m::PersistentArrayMap{K, V}, k)
     idx == 0 && return m
 
     kvs = m.kvs[1:end]
-    delete!(kvs, idx)
+    splice!(kvs, idx)
     PersistentArrayMap{K, V}(kvs)
 end
 
