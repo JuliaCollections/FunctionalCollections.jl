@@ -131,7 +131,6 @@ element removed (disjoined).
 
 #### PersistentVector
 
-- line 27, 5 should be shiftby instead of hard-coded
 - make line 38 more clear (maybe a comment)
 - line 84, for instance, `update` shouldn't specify the type of `el`, but allow for implicit conversion (same for `append`)
 - maybe n => node and l => leaf for clarity

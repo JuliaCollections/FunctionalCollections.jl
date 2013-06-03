@@ -41,7 +41,7 @@ maxlength(  n::DenseNode) = n.maxlength
 Base.length(n::DenseNode) = n.length
 
 arrayof(    l::DenseLeaf) = l.arr
-shift(       ::DenseLeaf) = 5
+shift(       ::DenseLeaf) = shiftby
 maxlength(  l::DenseLeaf) = trielen
 Base.length(l::DenseLeaf) = length(arrayof(l))
 
