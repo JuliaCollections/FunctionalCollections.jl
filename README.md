@@ -138,4 +138,3 @@ element removed (disjoined).
 - constant time `rest` by adding an initial index offset
 - line 123 mask should take the pvec even though it doesn't use it
 - line 181 move constructor to the type definition
-- line 206, 32 shouldn't be hardcoded, but instead `trielen`

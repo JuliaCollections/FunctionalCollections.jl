@@ -215,8 +215,7 @@ end
 Base.start{T}(v::PersistentVector{T}) = ItrState(1, v.length <= 32 ? v.tail : v.trie[1])
 Base.done{T}(v::PersistentVector{T}, state::ItrState{T}) = state.index > v.length
 function Base.next{T}(v::PersistentVector{T}, state::ItrState{T})
-    i = state.index
-    leaf = state.leaf
+    i, leaf = state.index, state.leaf
     m = mask(i)
     value = leaf[m]
     i += 1
