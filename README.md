@@ -132,7 +132,6 @@ element removed (disjoined).
 #### PersistentVector
 
 - make line 38 more clear (maybe a comment)
-- maybe n => node and l => leaf for clarity
 - constant time `rest` by adding an initial index offset
 - line 123 mask should take the pvec even though it doesn't use it
 - line 181 move constructor to the type definition
