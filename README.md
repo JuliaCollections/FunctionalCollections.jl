@@ -131,7 +131,6 @@ element removed (disjoined).
 
 #### PersistentVector
 
-- DenseLeaf might be able to create a no-arg constructor without overriding the default
 - line 27, 5 should be shiftby instead of hard-coded
 - make line 38 more clear (maybe a comment)
 - line 84, for instance, `update` shouldn't specify the type of `el`, but allow for implicit conversion (same for `append`)
