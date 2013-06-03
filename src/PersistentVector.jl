@@ -41,7 +41,7 @@ maxlength(  node::DenseNode) = node.maxlength
 Base.length(node::DenseNode) = node.length
 
 arrayof(    leaf::DenseLeaf) = leaf.arr
-shift(       ::DenseLeaf) = shiftby
+shift(          ::DenseLeaf) = shiftby
 maxlength(  leaf::DenseLeaf) = trielen
 Base.length(leaf::DenseLeaf) = length(arrayof(leaf))
 
@@ -51,14 +51,13 @@ promoted{T}(node::DenseBitmappedTrie{T}) =
                  length(node),
                  maxlength(node) * trielen)
 
-function demoted{T}(node::DenseNode{T})
+demoted{T}(node::DenseNode{T}) =
     shift(node) == shiftby * 2 ?
     DenseLeaf{T}(T[]) :
     DenseNode{T}(DenseBitmappedTrie{T}[],
                  shift(node) - shiftby,
                  0,
                  int(maxlength(node) / trielen))
-end
 
 witharr{T}(node::DenseNode{T}, arr::Array) = witharr(node, arr, 0)
 witharr{T}(node::DenseNode{T}, arr::Array, lenshift::Int) =
