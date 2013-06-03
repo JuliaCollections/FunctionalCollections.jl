@@ -98,12 +98,12 @@ push = append
 Base.getindex(l::DenseLeaf, i::Int) = arrayof(l)[mask(l, i)]
 Base.getindex(n::DenseNode, i::Int) = arrayof(n)[mask(n, i)][i]
 
-function update{T}(l::DenseLeaf{T}, i::Int, el::T)
+function update{T}(l::DenseLeaf{T}, i::Int, el)
     newarr = arrayof(l)[:]
     newarr[mask(l, i)] = el
     DenseLeaf{T}(newarr)
 end
-function update{T}(n::DenseNode{T}, i::Int, el::T)
+function update(n::DenseNode, i::Int, el)
     newarr = arrayof(n)[:]
     idx = mask(n, i)
     newarr[idx] = update(newarr[idx], i, el)
