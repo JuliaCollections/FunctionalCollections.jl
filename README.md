@@ -118,3 +118,26 @@ PersistentSets are immutable sets. Along with the usual set interface,
 `conj(s::PersistentSet, val)` returns a set with an element added
 (conjoined), and `disj(s::PersistentSet, val` returns a set with an
 element removed (disjoined).
+
+### TODO:
+
+#### PersistentQueue
+
+- queue => pqueue
+
+#### BitmappedTrie
+
+- comment `mask` to indicate index-from-1 assumption
+
+#### PersistentVector
+
+- comment explaining "tail" optimization – why shift is 5 more than you'd expect
+- DenseLeaf might be able to create a no-arg constructor without overriding the default
+- line 27, 5 should be shiftby instead of hard-coded
+- make line 38 more clear (maybe a comment)
+- line 84, for instance, `update` shouldn't specify the type of `el`, but allow for implicit conversion (same for `append`)
+- maybe n => node and l => leaf for clarity
+- constant time `rest` by adding an initial index offset
+- line 123 mask should take the pvec even though it doesn't use it
+- line 181 move constructor to the type definition
+- line 206, 32 shouldn't be hardcoded, but instead `trielen`
