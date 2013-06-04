@@ -232,6 +232,16 @@ function Base.map{T}(f::Function, pv::PersistentVector{T})
     v
 end
 
+function Base.filter{T}(f::Function, pv::PersistentVector{T})
+    v = PersistentVector{T}()
+    for el in pv
+        if f(el)
+            v = append(v, el)
+        end
+    end
+    v
+end
+
 function Base.hash{T}(pv::PersistentVector{T})
     h = hash(length(pv))
     for el in pv

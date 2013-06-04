@@ -84,6 +84,11 @@ end
         map((x)->x+1, v1) => PersistentVector([2, 3, 4, 5, 6])
     end
 
+    @fact "filter" begin
+        v1 = vec(1:5)
+        filter(iseven, v1) => PersistentVector([2, 4])
+    end
+
     @fact "hash" begin
         hash(vec(1:1000)) => hash(vec(1:1000))
     end
