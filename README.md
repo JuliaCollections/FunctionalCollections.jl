@@ -131,7 +131,7 @@ element removed (disjoined).
 
 #### PersistentVector
 
-- make line 38 more clear (maybe a comment)
 - constant time `rest` by adding an initial index offset
-- line 123 mask should take the pvec even though it doesn't use it
-- line 181 move constructor to the type definition
+- quick slicing with initial offset and structure deletion
+- pvec mask should take the pvec even though it doesn't use it
+- move extra pvec constructor to the type definition
