@@ -10,7 +10,7 @@ immutable PersistentQueue{T}
 end
 
 PersistentQueue{T}(v::Vector{T}) =
-    PersistentQueue{T}(EmptyList{T}(), reverse(List(v)), length(v))
+    PersistentQueue{T}(EmptyList{T}(), reverse(PersistentList(v)), length(v))
 
 queue = PersistentQueue
 
@@ -37,12 +37,13 @@ Base.start(q::PersistentQueue) = (q.in, q.out)
 Base.done{T}(::PersistentQueue{T}, state::(EmptyList{T}, EmptyList{T})) = true
 Base.done(::PersistentQueue, state) = false
 
-function Base.next{T}(::PersistentQueue{T}, state::(AbstractList{T}, List{T}))
+function Base.next{T}(::PersistentQueue{T}, state::(AbstractList{T},
+                                                    PersistentList{T}))
     in, out = state
     (head(out), (in, tail(out)))
 end
-function Base.next{T}(q::PersistentQueue{T}, state::(List{T}, EmptyList{T}))
+function Base.next{T}(q::PersistentQueue{T}, state::(PersistentList{T},
+                                                     EmptyList{T}))
     in, out = state
     next(q, (EmptyList{T}(), reverse(in)))
 end
-

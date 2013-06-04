@@ -30,9 +30,12 @@ typealias pset PersistentSet
 export PersistentSet, pset,
        disj
 
-include("List.jl")
+include("PersistentList.jl")
 
-export List, EmptyList,
+typealias plist PersistentList
+
+export PersistentList, plist,
+       EmptyList,
        cons, ..,
        head,
        tail
