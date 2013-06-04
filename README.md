@@ -3,15 +3,14 @@
 Functional and persistent data structures for Julia. This is a work in
 progress and is currently not optimized for performance.
 
-### Implemented:
+### Contains:
 
-:white_check_mark: **PersistentVector**
-
-:white_check_mark: **PersistentHashMap**
-
-:white_check_mark: **PersistentArrayMap**
-
-:white_check_mark: **PersistentSet**
+- `PersistentVector`
+- `PersistentHashMap`
+- `PersistentArrayMap`
+- `PersistentSet`
+- `PersistentList`
+- `PersistentQueue`
 
 ### PersistentVector
 
@@ -68,7 +67,7 @@ julia> v2[5000]
 
 julia> v[5000]
 5000
-
+}
 # PersistentVectors are iterables as well
 julia> for el in PersistentVector{ASCIIString}(["foo", "bar", "baz"])
            println(el)
