@@ -13,16 +13,20 @@ julia> using FunctionalCollections
 
 ### Exports
 
-- `PersistentVector / pvec`
-- `PersistentHashMap / phmap`
-- `PersistentArrayMap`
-- `PersistentSet / pset`
-- `PersistentList / plist`
-- `PersistentQueue / pqueue`
+```
+Collection         | Abbrev
+----------------------------
+PersistentVector   | pvec
+PersistentHashMap  | phmap
+PersistentArrayMap |
+PersistentSet      | pset
+PersistentList     | plist
+PersistentQueue    | pqueue
+```
 
 [src/FunctionalCollections.jl](https://github.com/zachallaun/FunctionalCollections.jl/blob/master/src/FunctionalCollections.jl)
-contains all of the package's exports, though all of the collections
-also implement built-in functions from `Base`.
+contains all of the package's exports, though many built-ins are also
+implemented.
 
 ### PersistentVector
 
