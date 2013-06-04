@@ -52,7 +52,7 @@ promoted{T}(node::DenseBitmappedTrie{T}) =
                  maxlength(node) * trielen)
 
 demoted{T}(node::DenseNode{T}) =
-    shift(node) == shiftby * 2 ?
+    shift(node) == shiftby*2 ?
     DenseLeaf{T}(T[]) :
     DenseNode{T}(DenseBitmappedTrie{T}[],
                  shift(node) - shiftby,
@@ -96,6 +96,48 @@ push = append
 
 Base.getindex(leaf::DenseLeaf, i::Int) = arrayof(leaf)[mask(leaf, i)]
 Base.getindex(node::DenseNode, i::Int) = arrayof(node)[mask(node, i)][i]
+
+function slicetoright(leaf::DenseLeaf, slice::Range1)
+    start = slice.start
+    witharr(leaf, leaf.arr[mask(leaf, start):end])
+end
+function slicetoright(node::DenseNode, slice::Range1)
+    start = slice.start
+    newarr = node.arr[mask(node, start):end]
+    newarr[1] = slicetoright(newarr[1], slice)
+    witharr(node, newarr)
+end
+
+function slicetoleft(leaf::DenseLeaf, slice::Range1)
+    endsat = slice.start + slice.len - 1
+    witharr(leaf, leaf.arr[1:mask(leaf, endsat)])
+end
+function slicetoleft(node::DenseNode, slice::Range1)
+    endsat = slice.start + slice.len - 1
+    newarr = node.arr[1:mask(node, endsat)]
+    newarr[end] = slicetoleft(newarr[end], slice)
+    witharr(node, newarr)
+end
+
+function Base.getindex(leaf::DenseLeaf, slice::Range1)
+    start = slice.start
+    endsat = slice.start + slice.len - 1
+    witharr(leaf, leaf.arr[mask(leaf, start):mask(leaf, endsat)])
+end
+function Base.getindex{T}(node::DenseNode{T}, slice::Range1)
+    start = slice.start
+    endsat = slice.start + slice.len - 1
+
+    newarr = node.arr[mask(node, start):mask(node, endsat)]
+    if endof(newarr) == 1
+        newarr[1] = getindex(newarr[1], slice)
+    else
+        newarr[1]   = slicetoright(newarr[1], slice)
+        newarr[end] = slicetoleft(newarr[end], slice)
+    end
+
+    DenseNode{T}(newarr, shift(node), slice.len, maxlength(node))
+end
 
 function update{T}(leaf::DenseLeaf{T}, i::Int, el)
     newarr = arrayof(leaf)[:]
