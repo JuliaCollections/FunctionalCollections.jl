@@ -26,70 +26,73 @@ also implement built-in functions from `Base`.
 
 ### PersistentVector
 
-PersistentVectors are immutable, sequential, random-access data
-structures: functional Arrays.
+Persistent vectors are immutable, sequential, random-access data
+structures, with performance characteristics similar to arrays.
 
 ```.jl
-julia> using PersistentDataStructures
+julia> v = pvec([1, 2, 3, 4, 5])
+Persistent{Int64}[1, 2, 3, 4, 5]
+```
 
-julia> v = PersistentVector{Int}()
-Persistent{Int64}[]
+Since persistent vectors are immutable, "changing" operations return a
+new vector instead of modifying the original.
 
-# "Changing" a PersistentVector does *not* mutate it, but instead
-# returns a new PersistentVector.
-julia> v2 = append(v, 1)
-Persistent{Int64}[1]
+```.jl
+julia> append(v, 6)
+Persistent{Int64}[1, 2, 3, 4, 5, 6]
 
+# v hasn't changed
 julia> v
-Persistent{Int64}[]
+Persistent{Int64}[1, 2, 3, 4, 5]
+```
 
-julia> peek(v2)
-1
+Persistent vectors are random-access structures, and can be indexed
+into just like arrays.
 
-julia> pop(v2)
-Persistent{Int64}[]
+```.jl
+julia> v[3]
+3
+```
 
-julia> is(v, pop(pv))
-false
+But since they're immutable, it doesn't make sense to define index
+assignment (`v[3] = 42`) since assignment implies change. Instead,
+`assoc` returns a new persistent vector with some value associated
+with a given index.
 
-julia> v == pop(v)
-true
+```.jl
+julia> assoc(v, 3, 42)
+Persistent{Int64}[1, 2, 42, 4, 5]
+```
 
-# Elements of a PersistentVector can be accessed randomly.
-julia> v = PersistentVector{Int64}()
+Three functions, `push`, `peek`, and `pop`, make up the persistent
+vector stack interface. `push` is simply an alias for `append`, `peek`
+returns the last element of the vector, and `pop` returns a new vector
+_without_ the last element.
 
-julia> for i=1:10000 v=append(v, i) end
+```.jl
+julia> peek(v)
+5
 
-julia> v[5000]
-5000
+julia> pop(v)
+Persistent{Int64}[1, 2, 3, 4]
+```
 
-julia> v[end]
-10000
+Persistent vectors also support iteration and higher-order sequence
+operations.
 
-julia> v[end+1]
-BoundsError()
-
-# Since a PersistentVector cannot be mutated, it does not implement
-# setindex!; instead, use update.
-julia> v2 = update(v, 5000, 1)
-Persistent[1, 2, 3, 4, 5, ..., 49996, 49997, 49998, 49999, 50000]
-
-julia> v2[5000]
-1
-
-julia> v[5000]
-5000
-}
-# PersistentVectors are iterables as well
-julia> for el in PersistentVector{ASCIIString}(["foo", "bar", "baz"])
+```.jl
+julia> for el in pvec(["foo", "bar", "baz"])
            println(el)
        end
 foo
 bar
 baz
 
-julia> map((x)->x+1, PersistentVector{Int}([1,2,3]))
-Persistent{Int64}[2,3,4]
+julia> map(x -> x * 2, v)
+Persistent{Int64}[1, 4, 6, 8, 10]
+
+julia> filter(iseven, v)
+Persistent{Int64}[2, 4]
 ```
 
 ### PersistentArrayMap
