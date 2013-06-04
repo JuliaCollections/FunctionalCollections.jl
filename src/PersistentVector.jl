@@ -97,15 +97,15 @@ push = append
 Base.getindex(leaf::DenseLeaf, i::Int) = arrayof(leaf)[mask(leaf, i)]
 Base.getindex(node::DenseNode, i::Int) = arrayof(node)[mask(node, i)][i]
 
-function update{T}(leaf::DenseLeaf{T}, i::Int, el)
+function assoc{T}(leaf::DenseLeaf{T}, i::Int, el)
     newarr = arrayof(leaf)[:]
     newarr[mask(leaf, i)] = el
     DenseLeaf{T}(newarr)
 end
-function update(node::DenseNode, i::Int, el)
+function assoc(node::DenseNode, i::Int, el)
     newarr = arrayof(node)[:]
     idx = mask(node, i)
-    newarr[idx] = update(newarr[idx], i, el)
+    newarr[idx] = assoc(newarr[idx], i, el)
     witharr(node, newarr)
 end
 
@@ -171,7 +171,7 @@ function append{T}(v::PersistentVector{T}, el)
     end
 end
 
-function update{T}(v::PersistentVector{T}, i::Int, el)
+function assoc{T}(v::PersistentVector{T}, i::Int, el)
     boundscheck!(v, i)
     if i > v.length - length(v.tail)
         newtail = v.tail[1:end]
@@ -180,7 +180,7 @@ function update{T}(v::PersistentVector{T}, i::Int, el)
     else
         newnode = v.trie[i][1:end]
         newnode[mask(i)] = el
-        PersistentVector{T}(update(v.trie, i, newnode), v.tail, v.length)
+        PersistentVector{T}(assoc(v.trie, i, newnode), v.tail, v.length)
     end
 end
 

@@ -8,7 +8,7 @@ typealias pvec PersistentVector
 
 export PersistentVector, pvec,
        append, push,
-       update,
+       assoc,
        peek,
        pop
 

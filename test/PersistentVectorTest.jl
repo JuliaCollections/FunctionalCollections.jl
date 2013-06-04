@@ -44,8 +44,8 @@ end
         vec(1:1000)[end]  => 1000
     end
 
-    @fact "updating" begin
-        update(vec(1:1000), 500, 1)[500] => 1
+    @fact "associng" begin
+        assoc(vec(1:1000), 500, 1)[500] => 1
     end
 
     @fact "appending" begin

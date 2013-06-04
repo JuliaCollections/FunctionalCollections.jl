@@ -1,8 +1,8 @@
 using FactCheck
 using FunctionalCollections
 
-import FunctionalCollections: SparseBitmappedTrie,
-    SparseNode, SparseLeaf, bitpos, index, hasindex, arrayof
+import FunctionalCollections: SparseBitmappedTrie, SparseNode, SparseLeaf,
+    bitpos, index, hasindex, arrayof, update
 
 @facts "Sparse Bitmapped Vector Tries" begin
 
