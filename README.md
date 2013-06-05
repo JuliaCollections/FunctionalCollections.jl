@@ -99,6 +99,51 @@ julia> filter(iseven, v)
 Persistent{Int64}[2, 4]
 ```
 
+### PersistentHashMap
+
+Persistent hash maps are immutable, unordered, associative structures,
+similar to the built-in `Dict` type.
+
+```.jl
+julia> name = phmap((:first, "Zach"), (:last, "Allaun"))
+Persistent{Symbol, ASCIIString}[:last => "Allaun", :first => "Zach"]
+```
+
+They can be queried in a manner similar to the dictionaries.
+
+```.jl
+julia> name[:first]
+"Zach"
+
+julia> get(name, :middle, "")
+""
+```
+
+With persistent vectors, `assoc` is used to associate a value with an
+index; with persistent hash maps, you use it to associate a value with
+an arbitrary key. To dissociate a key/value pair, use `dissoc`.
+
+```.jl
+julia> fullname = assoc(name, :middle, "Randall")
+Persistent{Symbol, ASCIIString}[:last => "Allaun", :first => "Zach", :middle => "Randall"]
+
+julia> dissoc(fullname, :middle)
+Persistent{Symbol, ASCIIString}[:last => "Allaun", :first => "Zach"]
+```
+
+`Base.map` is defined for persistent hash maps. The function argument
+should expect a `(key, value)` tuple and return a `(key, value)`
+tuple. This function will be applied to each key-value pair of the
+hash map to construct a new one.
+
+```.jl
+julia> mapkeys(f, m::PersistentHashMap) =
+	       map(kv -> (f(kv[1]), kv[2]), m)
+
+julia> mapkeys(string, fullname)
+Persistent{ASCIIString, ASCIIString}["last" => "Allaun", "first" => "Zach", "middle" => "Randall"]
+```
+
 ### PersistentArrayMap
 
 PersistentArrayMaps are immutable dictionaries implemented as Arrays of
@@ -125,11 +170,6 @@ julia> m == dissoc(m2, 2)
 true
 ```
 
-### PersistentHashMap
-
-PersistentHashMaps are the immutable counterpart of the build-in Dict
-type. Major operations are nearly constant time &mdash; O(log<sub>32</sub>n).
-
 ### PersistentSet
 
 PersistentSets are immutable sets. Along with the usual set interface,
@@ -153,3 +193,8 @@ element removed (disjoined).
 - quick slicing with initial offset and structure deletion
 - pvec mask should take the pvec even though it doesn't use it
 - move extra pvec constructor to the type definition
+
+#### PersistentHashMap
+
+- the repr of values should be printed, not the string
+- printing breaks after dissocing
