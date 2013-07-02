@@ -4,81 +4,81 @@ using FunctionalCollections
 import FunctionalCollections: SparseBitmappedTrie, SparseNode, SparseLeaf,
     bitpos, index, hasindex, arrayof, update
 
-@facts "Sparse Bitmapped Vector Tries" begin
+facts("Sparse Bitmapped Vector Tries") do
 
-    @fact "bitpos and index" begin
+    context("bitpos and index") do
         l = SparseLeaf{Int}([6, 11, 16, 21, 26],
                             2^5 | 2^10 | 2^15 | 2^20 | 2^25)
-        index(l, 6) => 1
-        index(l, 11) => 2
-        index(l, 16) => 3
-        index(l, 21) => 4
-        index(l, 26) => 5
+        @fact index(l, 6) => 1
+        @fact index(l, 11) => 2
+        @fact index(l, 16) => 3
+        @fact index(l, 21) => 4
+        @fact index(l, 26) => 5
 
-        hasindex(l, 5)  => false
-        hasindex(l, 6)  => true
-        hasindex(l, 7)  => false
-        hasindex(l, 11) => true
-        hasindex(l, 12) => false
-        hasindex(l, 21) => true
+        @fact hasindex(l, 5)  => false
+        @fact hasindex(l, 6)  => true
+        @fact hasindex(l, 7)  => false
+        @fact hasindex(l, 11) => true
+        @fact hasindex(l, 12) => false
+        @fact hasindex(l, 21) => true
     end
 
-    @fact "SparseLeaf update" begin
+    context("SparseLeaf update") do
         l = SparseLeaf{Int}()
 
-        update(l, 1, 1)   => (leaf) -> hasindex(leaf[1], 1)
-        update(l, 10, 10) => (leaf) -> hasindex(leaf[1], 10) &&
-                                            !hasindex(leaf[1], 11)
+        @fact update(l, 1, 1)   => (leaf) -> hasindex(leaf[1], 1)
+        @fact update(l, 10, 10) => (leaf) -> hasindex(leaf[1], 10) &&
+                                             !hasindex(leaf[1], 11)
 
         l = SparseLeaf{Int}([1, 5], 2^0 | 2^4)
         l, _ = update(l, 2, 2)
-        arrayof(l) => [1, 2, 5]
-        length(l) => 3
-        hasindex(l, 1) => true
-        hasindex(l, 2) => true
-        hasindex(l, 3) => false
-        hasindex(l, 4) => false
-        hasindex(l, 5) => true
-        hasindex(l, 6) => false
+        @fact arrayof(l) => [1, 2, 5]
+        @fact length(l) => 3
+        @fact hasindex(l, 1) => true
+        @fact hasindex(l, 2) => true
+        @fact hasindex(l, 3) => false
+        @fact hasindex(l, 4) => false
+        @fact hasindex(l, 5) => true
+        @fact hasindex(l, 6) => false
 
-        arrayof(update(l, 2, 100)[1]) => [1, 100, 5]
+        @fact arrayof(update(l, 2, 100)[1]) => [1, 100, 5]
     end
 
-    @fact "SparseNode update" begin
+    context("SparseNode update") do
         n, _ = update(SparseNode(ASCIIString), 1, "foo")
-        length(arrayof(n)) => 1
+        @fact length(arrayof(n)) => 1
 
         leaf = arrayof(n)[1].arr[1].arr[1].arr[1].arr[1].arr[1].arr[1]
-        hasindex(leaf, 1) => true
-        leaf.arr[1] => "foo"
+        @fact hasindex(leaf, 1) => true
+        @fact leaf.arr[1] => "foo"
 
         n2, _ = update(n, 33, "bar")
         leaf2 = n2.arr[1].arr[1].arr[1].arr[1].arr[1].arr[1].arr[2]
-        hasindex(leaf2, 33) => true
-        arrayof(leaf2)[1] => "bar"
+        @fact hasindex(leaf2, 33) => true
+        @fact arrayof(leaf2)[1] => "bar"
     end
 
-    @fact "SparseBitmappedTrie get" begin
+    context("SparseBitmappedTrie get") do
         n, _ = update(SparseNode(Int), 33, 33)
-        get(n, 33, "missing") => 33
-        get(update(SparseNode(Int), 12345, 12345)[1], 12345, "missing") => 12345
-        get(n, 12345, "missing") => "missing"
+        @fact get(n, 33, "missing") => 33
+        @fact get(update(SparseNode(Int), 12345, 12345)[1], 12345, "missing") => 12345
+        @fact get(n, 12345, "missing") => "missing"
     end
 
-    @fact "SparseBitmappedTrie length" begin
+    context("SparseBitmappedTrie length") do
         n = SparseNode(Int)
         for i=1:1000
             n, _ = update(n, i, i)
         end
-        length(n) => 1000
+        @fact length(n) => 1000
     end
 
-    @fact "SparseBitmappedTrie items" begin
+    context("SparseBitmappedTrie items") do
         n = SparseNode(Int)
         for i=1:1000
             n, _ = update(n, i, i)
         end
-        [i for i=n] => 1:1000
+        @fact [i for i=n] => 1:1000
     end
 
 end

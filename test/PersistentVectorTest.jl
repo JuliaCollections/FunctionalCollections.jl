@@ -13,89 +13,89 @@ function Base.Array(r::Range1)
     arr
 end
 
-@facts "Persistent Vectors" begin
+facts("Persistent Vectors") do
 
-    @fact "range constructor" begin
-        typeof(vec(1:1000)) => PersistentVector{Int}
-        typeof(pop(vec(1:1000))) => PersistentVector{Int}
+    context("range constructor") do
+        @fact typeof(vec(1:1000)) => PersistentVector{Int}
+        @fact typeof(pop(vec(1:1000))) => PersistentVector{Int}
     end
 
-    @fact "length" begin
-        length(vec(1:32)) => 32
-        length(vec(1:10000)) => 10000
-        length(pop(vec(1:1000))) => 999
+    context("length") do
+        @fact length(vec(1:32)) => 32
+        @fact length(vec(1:10000)) => 10000
+        @fact length(pop(vec(1:1000))) => 999
     end
 
-    @fact "accessing elements" begin
+    context("accessing elements") do
         pv = vec(1:5000)
 
-        pv[1]    => 1
-        pv[32]   => 32
-        pv[500]  => 500
-        pv[2500] => 2500
-        pv[5000] => 5000
-        pv[5001] => :throws
+        @fact pv[1]    => 1
+        @fact pv[32]   => 32
+        @fact pv[500]  => 500
+        @fact pv[2500] => 2500
+        @fact pv[5000] => 5000
+        @fact pv[5001] => :throws
 
-        vec(1:32)[33] => :throws
+        @fact vec(1:32)[33] => :throws
     end
 
-    @fact "accessing last" begin
-        peek(vec(1:1000)) => 1000
-        vec(1:1000)[end]  => 1000
+    context("accessing last") do
+        @fact peek(vec(1:1000)) => 1000
+        @fact vec(1:1000)[end]  => 1000
     end
 
-    @fact "associng" begin
-        assoc(vec(1:1000), 500, 1)[500] => 1
+    context("associng") do
+        @fact assoc(vec(1:1000), 500, 1)[500] => 1
     end
 
-    @fact "appending" begin
-        append(vec(1:31), 32)        => vec(1:32)
-        append(vec(1:999), 1000)     => vec(1:1000)
-        append(vec(1:9999), 10000)   => vec(1:10000)
-        append(vec(1:99999), 100000) => vec(1:100000)
+    context("appending") do
+        @fact append(vec(1:31), 32)        => vec(1:32)
+        @fact append(vec(1:999), 1000)     => vec(1:1000)
+        @fact append(vec(1:9999), 10000)   => vec(1:10000)
+        @fact append(vec(1:99999), 100000) => vec(1:100000)
     end
 
-    @fact "structural sharing" begin
+    context("structural sharing") do
         pv = vec(1:32)
         pv2 = append(pv, 33)
-        is(pv2.trie[1], pv.tail) => true
+        @fact is(pv2.trie[1], pv.tail) => true
     end
 
-    @fact "equality" begin
+    context("equality") do
         v1 = vec(1:1000)
         v2 = vec(1:1000)
 
-        is(v1.trie, v2.trie) => false
-        v1 => v2
+        @fact is(v1.trie, v2.trie) => false
+        @fact v1 => v2
 
-        isequal(v1, v2) => true
+        @fact isequal(v1, v2) => true
     end
 
-    @fact "iteration" begin
+    context("iteration") do
         arr2 = Int[]
         for i in vec(1:10000)
             push!(arr2, i)
         end
-        1:10000 => arr2
+        @fact 1:10000 => arr2
     end
 
-    @fact "map" begin
+    context("map") do
         v1 = vec(1:5)
-        map((x)->x+1, v1) => PersistentVector([2, 3, 4, 5, 6])
+        @fact map((x)->x+1, v1) => PersistentVector([2, 3, 4, 5, 6])
     end
 
-    @fact "filter" begin
+    context("filter") do
         v1 = vec(1:5)
-        filter(iseven, v1) => PersistentVector([2, 4])
+        @fact filter(iseven, v1) => PersistentVector([2, 4])
     end
 
-    @fact "hash" begin
-        hash(vec(1:1000)) => hash(vec(1:1000))
+    context("hash") do
+        @fact hash(vec(1:1000)) => hash(vec(1:1000))
     end
 
-    @fact "isempty" begin
-        PersistentVector{Int}() => isempty
-        PersistentVector([1])   => not(isempty)
+    context("isempty") do
+        @fact PersistentVector{Int}() => isempty
+        @fact PersistentVector([1])   => not(isempty)
     end
 
 end

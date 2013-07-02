@@ -3,165 +3,165 @@ using FactCheck
 
 import FunctionalCollections.KVPair
 
-@facts "Persistent Maps" begin
+facts("Persistent Maps") do
 
-    @fact "KVPairs" begin
-        KVPair(1, 1) => (1, 1)
-        (1, 1) => KVPair(1, 1)
+    context("KVPairs") do
+        @fact KVPair(1, 1) => (1, 1)
+        @fact (1, 1) => KVPair(1, 1)
     end
 
 end
 
 typealias PAM PersistentArrayMap
 
-@facts "Persistent Array Maps" begin
+facts("Persistent Array Maps") do
 
-    @fact "construction" begin
-        length(PAM{Int, Int}().kvs) => 0
-        length(PAM((1, 1), (2, 2)).kvs) => 2
+    context("construction") do
+        @fact length(PAM{Int, Int}().kvs) => 0
+        @fact length(PAM((1, 1), (2, 2)).kvs) => 2
 
-        length(PAM((1, 1))) => 1
-        length(PAM((1, 1), (2, 2))) => 2
+        @fact length(PAM((1, 1))) => 1
+        @fact length(PAM((1, 1), (2, 2))) => 2
     end
 
-    @fact "accessing" begin
+    context("accessing") do
         m = PAM((1, "one"), (2, "two"), (3, "three"))
-        m[1] => "one"
-        m[2] => "two"
-        m[3] => "three"
+        @fact m[1] => "one"
+        @fact m[2] => "two"
+        @fact m[3] => "three"
 
-        get(m, 1) => "one"
-        get(m, 1, "foo") => "one"
-        get(m, 4, "foo") => "foo"
+        @fact get(m, 1) => "one"
+        @fact get(m, 1, "foo") => "one"
+        @fact get(m, 4, "foo") => "foo"
     end
 
-    @fact "haskey" begin
+    context("haskey") do
         m = PAM((1, "one"), (2, "two"), (3, "three"))
-        haskey(m, 1) => true
-        haskey(m, 2) => true
-        haskey(m, 3) => true
-        haskey(m, 4) => false
+        @fact haskey(m, 1) => true
+        @fact haskey(m, 2) => true
+        @fact haskey(m, 3) => true
+        @fact haskey(m, 4) => false
     end
 
-    @fact "assoc" begin
+    context("assoc") do
         m = PAM{Int, ASCIIString}()
-        assoc(m, 1, "one") => (m) -> m[1] == "one"
-        m[1] => :throws
+        @fact assoc(m, 1, "one") => (m) -> m[1] == "one"
+        @fact m[1] => :throws
 
         m = PAM((1, "one"))
-        assoc(m, 1, "foo") => (m) -> m[1] == "foo"
+        @fact assoc(m, 1, "foo") => (m) -> m[1] == "foo"
     end
 
-    @fact "dissoc" begin
+    context("dissoc") do
         m = PAM((1, "one"))
         m = dissoc(m, 1)
-        m[1] => :throws
+        @fact m[1] => :throws
     end
 
-    @fact "iterating" begin
+    context("iterating") do
         m = PAM((1, "one"), (2, "two"), (3, "three"))
-        [v for (k, v) in m] => ["one", "two", "three"]
+        @fact [v for (k, v) in m] => ["one", "two", "three"]
     end
 
-    @fact "isempty" begin
-        PAM{Int, Int}() => isempty
-        PAM((1, "one")) => not(isempty)
+    context("isempty") do
+        @fact PAM{Int, Int}() => isempty
+        @fact PAM((1, "one")) => not(isempty)
     end
 
-    @fact "equality" begin
-        PAM((1, "one")) => PAM((1, "one"))
-        PAM((1, "one"), (2, "two")) => PAM((2, "two"), (1, "one"))
-        isequal(PAM((1, "one")), PAM((1, "one"))) => true
+    context("equality") do
+        @fact PAM((1, "one")) => PAM((1, "one"))
+        @fact PAM((1, "one"), (2, "two")) => PAM((2, "two"), (1, "one"))
+        @fact isequal(PAM((1, "one")), PAM((1, "one"))) => true
 
-        PAM((1, "one")) => not(PAM((2, "two")))
+        @fact PAM((1, "one")) => not(PAM((2, "two")))
     end
 
-    @fact "kwargs construction" begin
-        PAM(x=1, y=2, z=3) => PAM((:x, 1), (:y, 2), (:z, 3))
+    context("kwargs construction") do
+        @fact PAM(x=1, y=2, z=3) => PAM((:x, 1), (:y, 2), (:z, 3))
     end
 
-    @fact "map" begin
+    context("map") do
         m = PAM((1, 1), (2, 2), (3, 3))
 
-        map((kv) -> (kv[1], kv[2]+1), m) => PAM((1, 2), (2, 3), (3, 4))
+        @fact map((kv) -> (kv[1], kv[2]+1), m) => PAM((1, 2), (2, 3), (3, 4))
     end
 end
 
 typealias PHM PersistentHashMap
 
-@facts "Persistent Hash Maps" begin
+facts("Persistent Hash Maps") do
 
-    @fact "constructor" begin
+    context("constructor") do
         hashmap = PHM{Int, Int}()
-        length(hashmap) => 0
-        length(PHM((1, 1), (2, 2), (3, 3))) => 3
-        length(PHM(x=1, y=2, z=3)) => 3
+        @fact length(hashmap) => 0
+        @fact length(PHM((1, 1), (2, 2), (3, 3))) => 3
+        @fact length(PHM(x=1, y=2, z=3)) => 3
     end
 
-    @fact "equality" begin
-        PHM{Int, Int}() => PHM{Int, Int}()
-        PHM{Int, Int}() => PHM{String, String}()
+    context("equality") do
+        @fact PHM{Int, Int}() => PHM{Int, Int}()
+        @fact PHM{Int, Int}() => PHM{String, String}()
 
         m1 = PHM{Int, Int}()
         m2 = PHM{Int, Int}()
-        assoc(m1, 1, 100) => assoc(m2, 1, 100)
-        assoc(m1, 1, 100) => not(assoc(m2, 1, 200))
-        assoc(m1, 1, 100) => not(assoc(m2, 2, 100))
+        @fact assoc(m1, 1, 100) => assoc(m2, 1, 100)
+        @fact assoc(m1, 1, 100) => not(assoc(m2, 1, 200))
+        @fact assoc(m1, 1, 100) => not(assoc(m2, 2, 100))
 
         m3 = PHM((1, 10), (2, 20), (3, 30))
         m4 = PHM((3, 30), (2, 20), (1, 10))
-        m3 => m4
-        m3 => not(m1)
+        @fact m3 => m4
+        @fact m3 => not(m1)
 
-        m3 => [1 => 10, 2 => 20, 3 => 30]
+        @fact m3 => [1 => 10, 2 => 20, 3 => 30]
     end
 
-    @fact "assoc" begin
+    context("assoc") do
         m = PHM{Int, ASCIIString}()
-        assoc(m, 1, "one") => (m) -> m[1] == "one"
-        m[1] => :throws
+        @fact assoc(m, 1, "one") => (m) -> m[1] == "one"
+        @fact m[1] => :throws
 
         m = PHM{Int, ASCIIString}()
         m = assoc(m, 1, "one")
-        assoc(m, 1, "foo") => (m) -> m[1] == "foo"
+        @fact assoc(m, 1, "foo") => (m) -> m[1] == "foo"
     end
 
-    @fact "covariance" begin
+    context("covariance") do
         m = PHM{Any, Any}()
-        assoc(m, "foo", "bar") => {"foo" => "bar"}
+        @fact assoc(m, "foo", "bar") => {"foo" => "bar"}
     end
 
-    @fact "dissoc" begin
+    context("dissoc") do
         m = PAM((1, "one"))
         m = dissoc(m, 1)
-        m[1] => :throws
+        @fact m[1] => :throws
     end
 
-    @fact "get" begin
+    context("get") do
         m = PHM{Int, ASCIIString}()
-        get(m, 1, "default") => "default"
+        @fact get(m, 1, "default") => "default"
         m = assoc(m, 1, "one")
-        get(m, 1, "default") => "one"
+        @fact get(m, 1, "default") => "one"
         m = assoc(m, 1, "newone")
-        get(m, 1, "default") => "newone"
-        get(m, 2) => :throws
+        @fact get(m, 1, "default") => "newone"
+        @fact get(m, 2) => :throws
     end
 
-    @fact "haskey" begin
+    context("haskey") do
         m = PHM{Int, ASCIIString}()
-        haskey(m, 1) => false
+        @fact haskey(m, 1) => false
         m = assoc(m, 1, "one")
-        haskey(m, 1) => true
-        haskey(m, 2) => false
+        @fact haskey(m, 1) => true
+        @fact haskey(m, 2) => false
     end
 
-    @fact "map" begin
+    context("map") do
         m = PHM((1, 1), (2, 2), (3, 3))
-        map((kv) -> (kv[1], kv[2]+1), m) => PHM((1, 2), (2, 3), (3, 4))
+        @fact map((kv) -> (kv[1], kv[2]+1), m) => PHM((1, 2), (2, 3), (3, 4))
     end
 
-    @fact "filter" begin
-        filter((kv) -> iseven(kv[2]), PHM((1, 1), (2, 2))) => PHM((2, 2))
+    context("filter") do
+        @fact filter((kv) -> iseven(kv[2]), PHM((1, 1), (2, 2))) => PHM((2, 2))
     end
 
 end

@@ -3,73 +3,73 @@ using FunctionalCollections
 
 typealias PS PersistentSet
 
-@facts "Persistent Sets" begin
+facts("Persistent Sets") do
 
-    @fact "construction" begin
+    context("construction") do
         s = PS(1, 1, 2, 3, 3)
-        length(s) => 3
-        length(PS{ASCIIString}()) => 0
+        @fact length(s) => 3
+        @fact length(PS{ASCIIString}()) => 0
     end
 
-    @fact "isequal" begin
-        PS(1, 2, 3) => PS(1, 2, 3)
-        PS(1, 2, 3) => PS(3, 2, 1)
-        PS{ASCIIString}() => PS{Int}()
+    context("isequal") do
+        @fact PS(1, 2, 3) => PS(1, 2, 3)
+        @fact PS(1, 2, 3) => PS(3, 2, 1)
+        @fact PS{ASCIIString}() => PS{Int}()
     end
 
-    @fact "conj" begin
-        conj(PS(1, 2, 3), 4) => PS(1, 2, 3, 4)
-        conj(PS(1, 2, 3), 1) => PS(1, 2, 3)
-        conj(PS(1, 2, 3), 4) => PS(4, 3, 2, 1)
+    context("conj") do
+        @fact conj(PS(1, 2, 3), 4) => PS(1, 2, 3, 4)
+        @fact conj(PS(1, 2, 3), 1) => PS(1, 2, 3)
+        @fact conj(PS(1, 2, 3), 4) => PS(4, 3, 2, 1)
     end
 
-    @fact "disj" begin
-        disj(PS(1, 2, 3), 3) => PS(1, 2)
-        disj(PS(1, 2), 3) => PS(1, 2)
-        disj(PS{Int}(), 1234) => PS{Int}()
+    context("disj") do
+        @fact disj(PS(1, 2, 3), 3) => PS(1, 2)
+        @fact disj(PS(1, 2), 3) => PS(1, 2)
+        @fact disj(PS{Int}(), 1234) => PS{Int}()
     end
 
-    @fact "contains" begin
-        contains(PS("foo", "bar"), "foo") => true
-        contains(PS("foo", "bar"), "baz") => false
+    context("contains") do
+        @fact contains(PS("foo", "bar"), "foo") => true
+        @fact contains(PS("foo", "bar"), "baz") => false
     end
 
-    @fact "filter" begin
-        filter(iseven, PS(1, 2, 3, 4)) => PS(2, 4)
+    context("filter") do
+        @fact filter(iseven, PS(1, 2, 3, 4)) => PS(2, 4)
     end
 
-    @fact "setdiff, -" begin
-        setdiff(PS(1, 2, 3), PS(1, 2)) => PS(3)
-        setdiff(PS(1, 2), PS(1, 2, 3)) => PS{Int}()
-        setdiff(PS(1, 2, 3), Set(1, 2)) => PS(3)
+    context("setdiff, -") do
+        @fact setdiff(PS(1, 2, 3), PS(1, 2)) => PS(3)
+        @fact setdiff(PS(1, 2), PS(1, 2, 3)) => PS{Int}()
+        @fact setdiff(PS(1, 2, 3), Set(1, 2)) => PS(3)
 
-        PS(1, 2, 3) - PS(1, 2) => PS(3)
+        @fact PS(1, 2, 3) - PS(1, 2) => PS(3)
     end
 
-    @fact "isempty" begin
-        PS{Int}() => isempty
-        PS(1) => not(isempty)
+    context("isempty") do
+        @fact PS{Int}() => isempty
+        @fact PS(1) => not(isempty)
     end
 
-    @fact "union" begin
-        union(PS(1, 2, 3), PS(4, 5)) => PS(1, 2, 3, 4, 5)
-        union(PS(1, 2, 3), PS(1, 2, 3, 4)) => PS(1, 2, 3, 4)
-        union(PS(1), PS(2), PS(3)) => PS(1, 2, 3)
+    context("union") do
+        @fact union(PS(1, 2, 3), PS(4, 5)) => PS(1, 2, 3, 4, 5)
+        @fact union(PS(1, 2, 3), PS(1, 2, 3, 4)) => PS(1, 2, 3, 4)
+        @fact union(PS(1), PS(2), PS(3)) => PS(1, 2, 3)
     end
 
-    @fact "isless, <=" begin
-        PS(1)    <= PS(1, 2) => true
-        PS(1, 2) <= PS(1, 2) => true
+    context("isless, <=") do
+        @fact PS(1)    <= PS(1, 2) => true
+        @fact PS(1, 2) <= PS(1, 2) => true
 
-        PS(1, 2, 3) <= PS(1, 2) => false
-        PS(1, 2) <= PS(1, 2, 3) => true
+        @fact PS(1, 2, 3) <= PS(1, 2) => false
+        @fact PS(1, 2) <= PS(1, 2, 3) => true
 
-        isless(PS(1, 2), PS(1, 2))    => false
-        isless(PS(1, 2), PS(1, 2, 3)) => true
+        @fact isless(PS(1, 2), PS(1, 2))    => false
+        @fact isless(PS(1, 2), PS(1, 2, 3)) => true
     end
 
-    @fact "iteration" begin
-        length([el for el in PS(1, 2, 3, 4)]) => 4
+    context("iteration") do
+        @fact length([el for el in PS(1, 2, 3, 4)]) => 4
     end
 
 end
