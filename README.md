@@ -179,6 +179,30 @@ element removed (disjoined).
 
 ### TODO:
 
+#### General
+
+- standardize "short-fn" interfaces:
+
+```jl
+# currently
+pvec([1,2,3,4,5])
+pset(1,2,3,4,5)
+
+# should be
+pvec(1,2,3,4,5)
+pset(1,2,3,4,5)
+```
+
+- `@Persistent` macro sugar for hi-jacking built-in syntax:
+
+```jl
+@Persistent ["foo" => 1, "bar" => 2, "baz" => 3]
+# creates a phmap
+
+@Persistent [1, 2, 3, 4, 5]
+# creates a pvec
+```
+
 #### PersistentQueue
 
 - queue => pqueue
