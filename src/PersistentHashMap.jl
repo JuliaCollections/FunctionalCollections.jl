@@ -203,8 +203,9 @@ function Base.next(m::PersistentHashMap, state)
     end
 end
 
-Base.map(f, m::PersistentHashMap) =
+function Base.map(f::Union(Function, DataType), m::PersistentHashMap)
     PersistentHashMap([f(kv) for kv in m]...)
+end
 
 function Base.filter{K, V}(f::Function, m::PersistentHashMap{K, V})
     arr = Array((K, V), 0)
