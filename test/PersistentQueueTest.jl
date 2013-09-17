@@ -15,12 +15,12 @@ facts("Persistent Queues") do
 
     context("peek") do
         @fact peek(PersistentQueue([1:100])) => 100
-        @fact peek(PersistentQueue{Int}()) => :throws
+        @fact try peek(PersistentQueue{Int}()); false catch e true end => true
     end
 
     context("pop") do
         @fact pop(PersistentQueue([1:100])) => PersistentQueue([1:99])
-        @fact pop(PersistentQueue{Int}()) => :throws
+        @fact try pop(PersistentQueue{Int}()); false catch e true end => true
     end
 
     context("enq") do

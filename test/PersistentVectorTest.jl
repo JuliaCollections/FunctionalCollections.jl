@@ -34,9 +34,9 @@ facts("Persistent Vectors") do
         @fact pv[500]  => 500
         @fact pv[2500] => 2500
         @fact pv[5000] => 5000
-        @fact pv[5001] => :throws
+        @fact try pv[5001]; false catch e true end => true
 
-        @fact vec(1:32)[33] => :throws
+        @fact try vec(1:32)[33]; false catch e true end => true
     end
 
     context("accessing last") do

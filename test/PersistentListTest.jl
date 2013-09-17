@@ -18,13 +18,13 @@ facts("Persistent Lists") do
     context("head") do
         @fact head(PersistentList([1:100])) => 1
         @fact head(PersistentList([1]))     => 1
-        @fact head(EmptyList())   => :throws
+        @fact try head(EmptyList()); false catch e true end => true
     end
 
     context("tail") do
         @fact tail(PersistentList([1:100])) => PersistentList([2:100])
         @fact tail(PersistentList([1]))     => EmptyList()
-        @fact tail(EmptyList())   => :throws
+        @fact try tail(EmptyList()); false catch e true end => true
     end
 
     context("cons") do

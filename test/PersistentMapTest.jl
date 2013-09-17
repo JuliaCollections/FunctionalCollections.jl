@@ -46,7 +46,7 @@ facts("Persistent Array Maps") do
     context("assoc") do
         m = PAM{Int, ASCIIString}()
         @fact assoc(m, 1, "one") => (m) -> m[1] == "one"
-        @fact m[1] => :throws
+        @fact try m[1]; false catch e true end => true
 
         m = PAM((1, "one"))
         @fact assoc(m, 1, "foo") => (m) -> m[1] == "foo"
@@ -55,7 +55,7 @@ facts("Persistent Array Maps") do
     context("dissoc") do
         m = PAM((1, "one"))
         m = dissoc(m, 1)
-        @fact m[1] => :throws
+        @fact try m[1]; false catch e true end => true
     end
 
     context("iterating") do
@@ -119,7 +119,7 @@ facts("Persistent Hash Maps") do
     context("assoc") do
         m = PHM{Int, ASCIIString}()
         @fact assoc(m, 1, "one") => (m) -> m[1] == "one"
-        @fact m[1] => :throws
+        @fact try m[1]; false catch e true end => true
 
         m = PHM{Int, ASCIIString}()
         m = assoc(m, 1, "one")
@@ -134,7 +134,7 @@ facts("Persistent Hash Maps") do
     context("dissoc") do
         m = PAM((1, "one"))
         m = dissoc(m, 1)
-        @fact m[1] => :throws
+        @fact try m[1]; false catch e true end => true
     end
 
     context("get") do
@@ -144,7 +144,7 @@ facts("Persistent Hash Maps") do
         @fact get(m, 1, "default") => "one"
         m = assoc(m, 1, "newone")
         @fact get(m, 1, "default") => "newone"
-        @fact get(m, 2) => :throws
+        @fact try get(m, 2); false catch e true end => true
     end
 
     context("haskey") do
