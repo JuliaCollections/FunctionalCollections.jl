@@ -18,7 +18,7 @@ Base.length(s::PersistentSet) = length(s.dict)
 
 Base.isequal(s1::PersistentSet, s2::PersistentSet) = s1.dict == s2.dict
 
-Base.contains(s::PersistentSet, val) = haskey(s.dict, val)
+Base.in(val, s::PersistentSet) = haskey(s.dict, val)
 
 Base.start(s::PersistentSet) = start(s.dict)
 Base.done(s::PersistentSet, state) = done(s.dict, state)
@@ -31,7 +31,7 @@ Base.filter{T}(f::Function, s::PersistentSet{T}) =
     PersistentSet{T}(filter((kv) -> f(kv[1]), s.dict))
 
 function Base.setdiff(l::PersistentSet, r::Union(PersistentSet, Set))
-    notinr(el) = !contains(r, el)
+    notinr(el) = !(el in r)
     filter(notinr, l)
 end
 
@@ -50,11 +50,11 @@ Base.union(s::PersistentSet...) = reduce(union, s)
 
 function Base.isless(s1::PersistentSet, s2::PersistentSet)
     length(s1) < length(s2) &&
-    all(el -> contains(s2, el), s1)
+    all(el -> el in s2, s1)
 end
 
 import Base.<=
-<=(s1::PersistentSet, s2::PersistentSet) = all(el -> contains(s2, el), s1)
+<=(s1::PersistentSet, s2::PersistentSet) = all(el -> el in s2, s1)
 
 function Base.show{T}(io::IO, s::PersistentSet{T})
     print(io, "PersistentSet{$T}(")

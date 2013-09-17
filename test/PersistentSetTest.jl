@@ -29,9 +29,9 @@ facts("Persistent Sets") do
         @fact disj(PS{Int}(), 1234) => PS{Int}()
     end
 
-    context("contains") do
-        @fact contains(PS("foo", "bar"), "foo") => true
-        @fact contains(PS("foo", "bar"), "baz") => false
+    context("in") do
+        @fact "foo" in PS("foo", "bar") => true
+        @fact "baz" in PS("foo", "bar") => false
     end
 
     context("filter") do
