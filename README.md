@@ -34,7 +34,7 @@ Persistent vectors are immutable, sequential, random-access data
 structures, with performance characteristics similar to arrays.
 
 ```.jl
-julia> v = pvec([1, 2, 3, 4, 5])
+julia> v = @Persistent [1, 2, 3, 4, 5]
 Persistent{Int64}[1, 2, 3, 4, 5]
 ```
 
@@ -85,7 +85,7 @@ Persistent vectors also support iteration and higher-order sequence
 operations.
 
 ```.jl
-julia> for el in pvec(["foo", "bar", "baz"])
+julia> for el in @Persistent ["foo", "bar", "baz"]
            println(el)
        end
 foo
@@ -105,7 +105,7 @@ Persistent hash maps are immutable, unordered, associative structures,
 similar to the built-in `Dict` type.
 
 ```.jl
-julia> name = phmap((:first, "Zach"), (:last, "Allaun"))
+julia> name = @Persistent [:first => "Zach", :last => "Allaun"]
 Persistent{Symbol, ASCIIString}[:last => "Allaun", :first => "Zach"]
 ```
 
