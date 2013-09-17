@@ -26,7 +26,6 @@ immutable DenseNode{T} <: DenseBitmappedTrie{T}
     length::Int
     maxlength::Int
 end
-DenseNode{T}() = DenseNode{T}(DenseBitmappedTrie{T}[], shiftby*2, 0, trielen)
 
 immutable DenseLeaf{T} <: DenseBitmappedTrie{T}
     arr::Vector{T}
