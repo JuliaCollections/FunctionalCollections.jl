@@ -45,24 +45,27 @@ shift(          ::DenseLeaf) = shiftby
 maxlength(  leaf::DenseLeaf) = trielen
 Base.length(leaf::DenseLeaf) = length(arrayof(leaf))
 
-promoted{T}(node::DenseBitmappedTrie{T}) =
+function promoted{T}(node::DenseBitmappedTrie{T})
     DenseNode{T}(DenseBitmappedTrie{T}[node],
                  shift(node) + shiftby,
                  length(node),
                  maxlength(node) * trielen)
+end
 
-demoted{T}(node::DenseNode{T}) =
-    shift(node) == shiftby * 2 ?
-    DenseLeaf{T}(T[]) :
-    DenseNode{T}(DenseBitmappedTrie{T}[],
-                 shift(node) - shiftby,
-                 0,
-                 int(maxlength(node) / trielen))
+function demoted{T}(node::DenseNode{T})
+    if shift(node) == shiftby * 2
+        DenseLeaf{T}(T[])
+    else
+        DenseNode{T}(DenseBitmappedTrie{T}[],
+                     shift(node) - shiftby,
+                     0,
+                     int(maxlength(node) / trielen))
+    end
+end
 
-witharr{T}(node::DenseNode{T}, arr::Array) = witharr(node, arr, 0)
-witharr{T}(node::DenseNode{T}, arr::Array, lenshift::Int) =
+function witharr{T}(node::DenseNode{T}, arr::Array, lenshift::Int=0)
     DenseNode{T}(arr, shift(node), length(node) + lenshift, maxlength(node))
-
+end
 witharr{T}(leaf::DenseLeaf{T}, arr::Array) = DenseLeaf{T}(arr)
 
 function append(leaf::DenseLeaf, el)
@@ -136,11 +139,23 @@ immutable PersistentVector{T} <: AbstractArray{T}
 end
 PersistentVector() = PersistentVector{Any}()
 
+function PersistentVector{T}(arr::Vector{T})
+    if length(arr) <= trielen
+        PersistentVector{T}(DenseLeaf{Vector{T}}(), arr, length(arr))
+    else
+        v = PersistentVector{T}()
+        for el in arr
+            v = append(v, el)
+        end
+        v
+    end
+end
+
 mask(i::Int) = ((i - 1) & (trielen - 1)) + 1
 
-boundscheck!(v::PersistentVector, i::Int) =
-    0 < i <= v.length || error(BoundsError(),
-                               " :: Index $i out of bounds ($(v.length))")
+function boundscheck!(v::PersistentVector, i::Int)
+    0 < i <= v.length || error(BoundsError(), " :: Index $i out of bounds ($(v.length))")
+end
 
 Base.size(   v::PersistentVector) = v.length
 Base.length( v::PersistentVector) = v.length
@@ -191,18 +206,6 @@ function pop{T}(v::PersistentVector{T})
     else
         newtail = v.tail[1:end-1]
         PersistentVector{T}(v.trie, newtail, v.length - 1)
-    end
-end
-
-function PersistentVector{T}(arr::Vector{T})
-    if length(arr) <= trielen
-        PersistentVector{T}(DenseLeaf{Vector{T}}(), arr, length(arr))
-    else
-        v = PersistentVector{T}()
-        for el in arr
-            v = append(v, el)
-        end
-        v
     end
 end
 
