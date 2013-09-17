@@ -91,7 +91,7 @@ end
 function updating(v::PersistentVector{Int})
     function ()
         for idx in rands
-            update(v, idx, 1)
+            assoc(v, idx, 1)
         end
     end
 end
