@@ -11,6 +11,8 @@ PersistentSet{T}(vals::T...) =
 Base.conj{T}(s::PersistentSet{T}, val) =
     PersistentSet{T}(assoc(s.dict, val, nothing))
 
+push(s::PersistentSet, val) = conj(s, val)
+
 disj{T}(s::PersistentSet{T}, val) =
     PersistentSet{T}(dissoc(s.dict, val))
 
