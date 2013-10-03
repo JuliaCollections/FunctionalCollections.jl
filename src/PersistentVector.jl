@@ -127,7 +127,7 @@ end
 # Persistent Vectors
 # ==================
 
-immutable PersistentVector{T} <: AbstractArray{T}
+immutable PersistentVector{T} <: AbstractArray{T,1}
     trie::DenseBitmappedTrie{Vector{T}}
     tail::Vector{T}
     length::Int
