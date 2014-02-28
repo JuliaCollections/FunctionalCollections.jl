@@ -48,7 +48,7 @@ export PersistentQueue, queue,
 export @Persistent
 
 fromexpr(ex::Expr, ::Type{pvec}) = :(pvec($(esc(ex))))
-fromexpr(ex::Expr, ::Type{pset}) = :(pset($(map(esc, ex.args[2:])...)))
+fromexpr(ex::Expr, ::Type{pset}) = :(pset($(map(esc, ex.args[2:end])...)))
 function fromexpr(ex::Expr, ::Type{phmap})
     kvtuples = [Expr(:tuple, map(esc, kv.args)...) for kv in ex.args]
     :(phmap($(kvtuples...)))
