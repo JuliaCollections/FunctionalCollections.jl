@@ -185,6 +185,7 @@ function append{T}(v::PersistentVector{T}, el)
         PersistentVector{T}(append(v.trie, v.tail), T[el], 1 + v.length)
     end
 end
+push(v::PersistentVector, el) = append(v, el)
 
 function assoc{T}(v::PersistentVector{T}, i::Int, el)
     boundscheck!(v, i)
