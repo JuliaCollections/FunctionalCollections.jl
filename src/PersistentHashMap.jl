@@ -141,7 +141,7 @@ Base.length(m::PersistentHashMap) = m.length
 Base.isempty(m::PersistentHashMap) = length(m) == 0
 
 function Base.isequal(m1::PersistentHashMap, m2::PersistentHashMap)
-    length(m1) == length(m2) && all(x -> x[1] == x[2], zip(m1.trie, m2.trie))
+    length(m1) == length(m2) && all(x -> x[1] == x[2], zip(m1, m2))
 end
 ==(m1::PersistentHashMap, m2::PersistentHashMap) = isequal(m1, m2)
 

@@ -3,7 +3,7 @@ using FactCheck
 
 function vec(r::Range1)
     v = PersistentVector{Int}()
-    for i=r v=append(v, i) end
+    for i=r v=push(v, i) end
     v
 end
 
@@ -76,7 +76,7 @@ facts("Persistent Vectors") do
         for i in vec(1:10000)
             push!(arr2, i)
         end
-        @fact 1:10000 => arr2
+        @fact [1:10000] => arr2
     end
 
     context("map") do
