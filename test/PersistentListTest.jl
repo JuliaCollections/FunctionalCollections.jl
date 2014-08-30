@@ -43,7 +43,7 @@ facts("Persistent Lists") do
         for i in PersistentList([1:1000])
             push!(arr2, i)
         end
-        @fact 1:1000 => arr2
+        @fact [1:1000] => arr2
     end
 
     context("map") do
