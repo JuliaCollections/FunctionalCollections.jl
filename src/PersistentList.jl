@@ -29,6 +29,9 @@ cons{T}(val::T, l::PersistentList{T})  = PersistentList(val, l, length(l) + 1)
 Base.isequal(::EmptyList, ::EmptyList) = true
 Base.isequal(l1::PersistentList, l2::PersistentList) =
     isequal(head(l1), head(l2)) && isequal(tail(l1), tail(l2))
+==(::EmptyList, ::EmptyList) = true
+==(l1::PersistentList, l2::PersistentList) =
+    isequal(l1, l2)
 
 function PersistentList{T}(v::Vector{T})
     v = reverse(v)
@@ -47,6 +50,8 @@ Base.next(::AbstractList, l::PersistentList) = (head(l), tail(l))
 Base.isequal(a::AbstractArray, l::PersistentList) = isequal(l, a)
 Base.isequal(l::PersistentList, a::AbstractArray) =
     isequal(length(l), length(a)) && all((el) -> el[1] == el[2], zip(l, a))
+==(a::AbstractArray, l::PersistentList) = isequal(l, a)
+==(l::PersistentList, a::AbstractArray) = isequal(l, a)
 
 Base.map(f::Union(Function, DataType), e::EmptyList) = e
 Base.map(f::Union(Function, DataType), l::PersistentList) = cons(f(head(l)), map(f, tail(l)))

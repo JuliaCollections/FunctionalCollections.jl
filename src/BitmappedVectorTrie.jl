@@ -40,3 +40,5 @@ function Base.isequal(t1::BitmappedTrie, t2::BitmappedTrie)
     maxlength(t1) == maxlength(t2) &&
     arrayof(t1)   == arrayof(t2)
 end
+
+==(t1::BitmappedTrie, t2::BitmappedTrie) = isequal(t1, t2)
