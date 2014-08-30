@@ -163,8 +163,9 @@ Base.isempty(v::PersistentVector) = length(v) == 0
 Base.endof(  v::PersistentVector) = length(v)
 
 Base.isequal(v1::PersistentVector, v2::PersistentVector) =
+    isequal(v1.tail, v2.tail) && isequal(v1.trie, v2.trie)
+==(v1::PersistentVector, v2::PersistentVector) =
     v1.tail == v2.tail && v1.trie == v2.trie
-==(v1::PersistentVector, v2::PersistentVector) = isequal(v1, v2)
 
 function Base.getindex(v::PersistentVector, i::Int)
     boundscheck!(v, i)

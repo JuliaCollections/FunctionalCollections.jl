@@ -11,7 +11,7 @@ PersistentArrayMap(; kwargs...) = PersistentArrayMap(kwargs...)
 Base.isequal(m1::PersistentArrayMap, m2::PersistentArrayMap) =
     isequal(Set(m1.kvs), Set(m2.kvs))
 ==(m1::PersistentArrayMap, m2::PersistentArrayMap) =
-    isequal(m1, m2)
+    Set(m1.kvs) == Set(m2.kvs)
 
 Base.length(m::PersistentArrayMap)  = length(m.kvs)
 Base.isempty(m::PersistentArrayMap) = length(m) == 0

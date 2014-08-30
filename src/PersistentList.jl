@@ -31,7 +31,7 @@ Base.isequal(l1::PersistentList, l2::PersistentList) =
     isequal(head(l1), head(l2)) && isequal(tail(l1), tail(l2))
 ==(::EmptyList, ::EmptyList) = true
 ==(l1::PersistentList, l2::PersistentList) =
-    isequal(l1, l2)
+    head(l1) == head(l2) && tail(l1) == tail(l2)
 
 function PersistentList{T}(v::Vector{T})
     v = reverse(v)

@@ -18,8 +18,8 @@ disj{T}(s::PersistentSet{T}, val) =
 
 Base.length(s::PersistentSet) = length(s.dict)
 
-Base.isequal(s1::PersistentSet, s2::PersistentSet) = s1.dict == s2.dict
-==(s1::PersistentSet, s2::PersistentSet) = isequal(s1, s2)
+Base.isequal(s1::PersistentSet, s2::PersistentSet) = isequal(s1.dict, s2.dict)
+==(s1::PersistentSet, s2::PersistentSet) = s1.dict == s2.dict
 
 Base.in(val, s::PersistentSet) = haskey(s.dict, val)
 
