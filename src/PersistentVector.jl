@@ -250,7 +250,7 @@ end
 function Base.hash{T}(pv::PersistentVector{T})
     h = hash(length(pv))
     for el in pv
-        h = Base.bitmix(h, int(hash(el)))
+        h = Base.hash(el, h)
     end
     uint(h)
 end
