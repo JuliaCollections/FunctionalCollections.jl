@@ -9,6 +9,8 @@ facts("Persistent Sets") do
         s = PS(1, 1, 2, 3, 3)
         @fact length(s) => 3
         @fact length(PS{ASCIIString}()) => 0
+        @fact typeof(PS{Integer}([1,2,3])) => PS{Integer}
+        @fact typeof(PS(Integer[1,2,3])) => PS{Integer}
     end
 
     context("isequal") do
