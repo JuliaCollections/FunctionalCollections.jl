@@ -163,6 +163,8 @@ Base.isempty(v::PersistentVector) = length(v) == 0
 Base.endof(  v::PersistentVector) = length(v)
 
 Base.isequal(v1::PersistentVector, v2::PersistentVector) =
+    isequal(v1.tail, v2.tail) && isequal(v1.trie, v2.trie)
+==(v1::PersistentVector, v2::PersistentVector) =
     v1.tail == v2.tail && v1.trie == v2.trie
 
 function Base.getindex(v::PersistentVector, i::Int)
@@ -249,7 +251,7 @@ end
 function Base.hash{T}(pv::PersistentVector{T})
     h = hash(length(pv))
     for el in pv
-        h = Base.bitmix(h, int(hash(el)))
+        h = Base.hash(el, h)
     end
     uint(h)
 end

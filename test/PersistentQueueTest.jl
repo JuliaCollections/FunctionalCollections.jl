@@ -34,7 +34,7 @@ facts("Persistent Queues") do
         for i in PersistentQueue([1:1000])
             push!(arr2, i)
         end
-        @fact arr2 => 1000:-1:1
+        @fact arr2 => [1000:-1:1]
     end
 
     context("hash") do

@@ -56,6 +56,9 @@ facts("Persistent Array Maps") do
         m = PAM((1, "one"))
         m = dissoc(m, 1)
         @fact try m[1]; false catch e true end => true
+
+        m = PAM((1, "one"), (2, "two"))
+        @fact dissoc(m, 1) => PAM((2, "two"))
     end
 
     context("iterating") do
@@ -135,6 +138,9 @@ facts("Persistent Hash Maps") do
         m = PAM((1, "one"))
         m = dissoc(m, 1)
         @fact try m[1]; false catch e true end => true
+
+        m = PHM((1, "one"), (2, "two"))
+        @fact dissoc(m, 1) => PHM((2, "two"))
     end
 
     context("get") do

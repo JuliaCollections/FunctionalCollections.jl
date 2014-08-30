@@ -1,5 +1,7 @@
 module FunctionalCollections
 
+import Base.==
+
 include("BitmappedVectorTrie.jl")
 
 include("PersistentVector.jl")
