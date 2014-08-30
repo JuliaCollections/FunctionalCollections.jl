@@ -7,7 +7,19 @@ immutable PersistentList{T} <: AbstractList{T}
     head::T
     tail::AbstractList{T}
     length::Int
+    PersistentList(head::T, tail::AbstractList{T}, length) =
+        new(head, tail, length)
+    PersistentList() = EmptyList{Any}()
+    function PersistentList(v)
+        v = reverse(v)
+        list = EmptyList{T}()
+        for el in v
+            list = cons(el, list)
+        end
+        list
+    end
 end
+PersistentList(itr) = PersistentList{eltype(itr)}(itr)
 
 head(::EmptyList) = error(BoundsError())
 tail(::EmptyList) = error(BoundsError())
@@ -22,22 +34,14 @@ Base.length(l::PersistentList) = l.length
 Base.isempty(::EmptyList) = true
 Base.isempty(::PersistentList)      = false
 
-cons{T}(val::T, ::EmptyList) = PersistentList(val, EmptyList{T}(), 1)
-cons{T}(val::T, l::PersistentList{T})  = PersistentList(val, l, length(l) + 1)
+cons{T}(val, ::EmptyList{T}) = PersistentList{T}(val, EmptyList{T}(), 1)
+cons{T}(val, l::PersistentList{T})  = PersistentList{T}(val, l, length(l) + 1)
 ..(val, l::AbstractList) = cons(val, l)
 
 Base.isequal(::EmptyList, ::EmptyList) = true
 Base.isequal(l1::PersistentList, l2::PersistentList) =
     isequal(head(l1), head(l2)) && isequal(tail(l1), tail(l2))
 
-function PersistentList{T}(v::Vector{T})
-    v = reverse(v)
-    list = EmptyList{T}()
-    for el in v
-        list = cons(el, list)
-    end
-    list
-end
 
 Base.start(l::AbstractList) = l
 Base.done(::AbstractList, ::EmptyList) = true
