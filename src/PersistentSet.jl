@@ -3,7 +3,10 @@ immutable PersistentSet{T}
 
     PersistentSet(d::PersistentHashMap{T, Nothing}) = new(d)
     PersistentSet() = new(PersistentHashMap{T, Nothing}())
+    PersistentSet(itr) = union(new(PersistentHashMap{T,Nothing}()), itr)
 end
+PersistentSet() = PersistentSet{Any}()
+PersistentSet(itr) = PersistentSet{eltype(itr)}(itr)
 
 PersistentSet{T}(vals::T...) =
     PersistentSet{T}(PersistentHashMap([(val, nothing) for val in vals]...))
@@ -17,6 +20,7 @@ disj{T}(s::PersistentSet{T}, val) =
     PersistentSet{T}(dissoc(s.dict, val))
 
 Base.length(s::PersistentSet) = length(s.dict)
+Base.eltype{T}(s::PersistentSet{T}) = T
 
 Base.isequal(s1::PersistentSet, s2::PersistentSet) = s1.dict == s2.dict
 
@@ -42,11 +46,11 @@ import Base.-
 
 Base.isempty(s::PersistentSet) = length(s.dict) == 0
 
-function Base.union(s1::PersistentSet, s2::PersistentSet)
-    for el in s2
-        s1 = conj(s1, el)
+function Base.union(s::PersistentSet, xs)
+    for x in xs
+        s = conj(s, x)
     end
-    s1
+    s
 end
 Base.union(s::PersistentSet...) = reduce(union, s)
 
