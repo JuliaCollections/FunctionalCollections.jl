@@ -36,8 +36,10 @@ function Base.next(s::PersistentSet, state)
     (kv[1], state)
 end
 
-Base.filter{T}(f::Function, s::PersistentSet{T}) =
-    PersistentSet{T}(filter((kv) -> f(kv[1]), s.dict))
+function Base.filter{T}(f::Function, s::PersistentSet{T})
+    filtered = filter((kv) -> f(kv[1]), s.dict)
+    PersistentSet{T}(keys(filtered))
+end
 
 function Base.setdiff(l::PersistentSet, r::Union(PersistentSet, Set))
     notinr(el) = !(el in r)
