@@ -1,5 +1,7 @@
 **Functional Collections v0.0.0**
 
+[![Build Status](https://travis-ci.org/zachallaun/FunctionalCollections.jl.svg?branch=master)](https://travis-ci.org/zachallaun/FunctionalCollections.jl)
+
 Functional and persistent data structures for Julia. This is a work in
 progress and is currently not optimized for performance.
 
