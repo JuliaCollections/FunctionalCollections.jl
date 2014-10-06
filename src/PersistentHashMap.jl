@@ -122,13 +122,20 @@ immutable PersistentHashMap{K, V} <: PersistentMap{K, V}
     PersistentHashMap() = new(SparseNode(PersistentArrayMap{K, V}), 0)
 end
 
-function PersistentHashMap(kvs::(Any, Any)...)
-    K, V = typejoin(map(typeof, kvs)...)
+function PersistentHashMap(itr)
+    if length(itr) == 0
+        return PersistentHashMap()
+    end
+    K, V = typejoin(map(typeof, itr)...)
     m = PersistentHashMap{K, V}()
-    for (k, v) in kvs
+    for (k, v) in itr
         m = assoc(m, k, v)
     end
     m
+end
+
+function PersistentHashMap(kvs::(Any, Any)...)
+    PersistentHashMap([kvs...])
 end
 
 function PersistentHashMap(; kwargs...)
