@@ -170,4 +170,8 @@ facts("Persistent Hash Maps") do
         @fact filter((kv) -> iseven(kv[2]), PHM((1, 1), (2, 2))) => PHM((2, 2))
     end
 
+    context("merge") do
+        @fact merge(PHM((1, 1), (2, 2)), PHM((2, 3), (3, 4))) =>
+                PHM((1,1), (2, 3), (3, 4))
+    end
 end
