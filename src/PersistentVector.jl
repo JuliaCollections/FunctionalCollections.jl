@@ -95,7 +95,7 @@ function append{T}(node::DenseNode{T}, el)
         append(promoted(node), el)
     end
 end
-push(leaf::DenseLeaf, el) = append(leave, el)
+push(leaf::DenseLeaf, el) = append(leaf, el)
 push(node::DenseNode, el) = append(node, el)
 
 Base.getindex(leaf::DenseLeaf, i::Int) = arrayof(leaf)[mask(leaf, i)]
