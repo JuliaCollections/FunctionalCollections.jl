@@ -13,6 +13,9 @@ PersistentSet{T}(x1::T, x2::T, xs::T...) =
     PersistentSet{T}(PersistentHashMap((x1, nothing), (x2, nothing),
                                         [(x, nothing) for x in xs]...))
 
+Base.hash(s::PersistentSet,h::Uint) =
+    hash(s.dict, h+uint(0xf7dca1a5fd7090be))
+
 Base.conj{T}(s::PersistentSet{T}, val) =
     PersistentSet{T}(assoc(s.dict, val, nothing))
 
@@ -36,8 +39,10 @@ function Base.next(s::PersistentSet, state)
     (kv[1], state)
 end
 
-Base.filter{T}(f::Function, s::PersistentSet{T}) =
-    PersistentSet{T}(filter((kv) -> f(kv[1]), s.dict))
+function Base.filter{T}(f::Function, s::PersistentSet{T})
+    filtered = filter((kv) -> f(kv[1]), s.dict)
+    PersistentSet{T}(keys(filtered))
+end
 
 function Base.setdiff(l::PersistentSet, r::Union(PersistentSet, Set))
     notinr(el) = !(el in r)

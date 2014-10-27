@@ -122,13 +122,20 @@ immutable PersistentHashMap{K, V} <: PersistentMap{K, V}
     PersistentHashMap() = new(SparseNode(PersistentArrayMap{K, V}), 0)
 end
 
-function PersistentHashMap(kvs::(Any, Any)...)
-    K, V = typejoin(map(typeof, kvs)...)
+function PersistentHashMap(itr)
+    if length(itr) == 0
+        return PersistentHashMap()
+    end
+    K, V = typejoin(map(typeof, itr)...)
     m = PersistentHashMap{K, V}()
-    for (k, v) in kvs
+    for (k, v) in itr
         m = assoc(m, k, v)
     end
     m
+end
+
+function PersistentHashMap(kvs::(Any, Any)...)
+    PersistentHashMap([kvs...])
 end
 
 function PersistentHashMap(; kwargs...)
@@ -219,6 +226,23 @@ function Base.filter{K, V}(f::Function, m::PersistentHashMap{K, V})
     end
     isempty(arr) ? PersistentHashMap{K, V}() : PersistentHashMap(arr...)
 end
+
+# Suppress ambiguity warning while allowing merging with array
+function _merge(d::PersistentHashMap, others...)
+    acc = d
+    for other in others
+        for (k, v) in other
+            acc = assoc(acc, k, v)
+        end
+    end
+    acc
+end
+
+# This definition suppresses ambiguity warning
+Base.merge(d::PersistentHashMap, others::Associative...) =
+    _merge(d, others...)
+Base.merge(d::PersistentHashMap, others...) =
+    _merge(d, others...)
 
 function Base.show{K, V}(io::IO, m::PersistentHashMap{K, V})
     print(io, "Persistent{$K, $V}[")
