@@ -1,6 +1,6 @@
 **Functional Collections v0.0.0**
 
-[![Build Status](https://travis-ci.org/zachallaun/FunctionalCollections.jl.svg?branch=master)](https://travis-ci.org/zachallaun/FunctionalCollections.jl)
+[![Build Status](https://travis-ci.org/JuliaLang/FunctionalCollections.jl.svg?branch=master)](https://travis-ci.org/JuliaLang/FunctionalCollections.jl)
 
 Functional and persistent data structures for Julia. This is a work in
 progress and is currently not optimized for performance.
@@ -26,7 +26,7 @@ PersistentList     | plist
 PersistentQueue    | pqueue
 ```
 
-[src/FunctionalCollections.jl](https://github.com/zachallaun/FunctionalCollections.jl/blob/master/src/FunctionalCollections.jl)
+[src/FunctionalCollections.jl](https://github.com/JuliaLang/FunctionalCollections.jl/blob/master/src/FunctionalCollections.jl)
 contains all of the package's exports, though many built-ins are also
 implemented.
 
