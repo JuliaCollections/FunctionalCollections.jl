@@ -1,6 +1,7 @@
-**Functional Collections v0.0.0**
+# FunctionalCollections
 
-[![Build Status](https://travis-ci.org/JuliaLang/FunctionalCollections.jl.svg?branch=master)](https://travis-ci.org/JuliaLang/FunctionalCollections.jl)
+[![Build Status](https://travis-ci.org/JuliaLang/FunctionalCollections.jl.svg)](https://travis-ci.org/JuliaLang/FunctionalCollections.jl)
+[![FunctionalCollections](http://pkg.julialang.org/badges/FunctionalCollections_release.svg)](http://pkg.julialang.org/?pkg=FunctionalCollections&ver=release)
 
 Functional and persistent data structures for Julia. This is a work in
 progress and is currently not optimized for performance.
