@@ -14,7 +14,7 @@ PersistentSet{T}(x1::T, x2::T, xs::T...) =
                                         [(x, nothing) for x in xs]...))
 
 Base.hash(s::PersistentSet,h::Uint) =
-    hash(s.dict, h+uint(0xf7dca1a5fd7090be))
+    hash(s.dict, h+(0xf7dca1a5fd7090be % UInt))
 
 Base.conj{T}(s::PersistentSet{T}, val) =
     PersistentSet{T}(assoc(s.dict, val, nothing))

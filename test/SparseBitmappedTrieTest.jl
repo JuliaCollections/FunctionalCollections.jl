@@ -78,7 +78,7 @@ facts("Sparse Bitmapped Vector Tries") do
         for i=1:1000
             n, _ = update(n, i, i)
         end
-        @fact [i for i=n] => [1:1000]
+        @fact [i for i=n] => [1:1000;]
     end
 
 end

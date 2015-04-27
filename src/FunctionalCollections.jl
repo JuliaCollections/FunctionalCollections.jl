@@ -1,5 +1,7 @@
 module FunctionalCollections
 
+using Compat
+
 import Base.==
 
 include("BitmappedVectorTrie.jl")

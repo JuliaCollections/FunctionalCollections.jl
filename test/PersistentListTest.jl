@@ -10,19 +10,19 @@ facts("Persistent Lists") do
     end
 
     context("equality") do
-        @fact PersistentList([1:100]) => PersistentList([1:100])
-        @fact PersistentList([1:100]) => not(PersistentList([1:99]))
-        @fact PersistentList([1:100]) => [1:100]
+        @fact PersistentList([1:100;]) => PersistentList([1:100;])
+        @fact PersistentList([1:100;]) => not(PersistentList([1:99;]))
+        @fact PersistentList([1:100;]) => [1:100;]
     end
 
     context("head") do
-        @fact head(PersistentList([1:100])) => 1
+        @fact head(PersistentList([1:100;])) => 1
         @fact head(PersistentList([1]))     => 1
         @fact try head(EmptyList()); false catch e true end => true
     end
 
     context("tail") do
-        @fact tail(PersistentList([1:100])) => PersistentList([2:100])
+        @fact tail(PersistentList([1:100;])) => PersistentList([2:100;])
         @fact tail(PersistentList([1]))     => EmptyList()
         @fact try tail(EmptyList()); false catch e true end => true
     end
@@ -33,14 +33,14 @@ facts("Persistent Lists") do
     end
 
     context("sharing") do
-        l = PersistentList([1:100])
+        l = PersistentList([1:100;])
         l2 = 0..l
         @fact is(l, tail(l2)) => true
     end
 
     context("iteration") do
         arr2 = Int[]
-        for i in PersistentList([1:1000])
+        for i in PersistentList([1:1000;])
             push!(arr2, i)
         end
         @fact [1:1000] => arr2
@@ -55,7 +55,7 @@ facts("Persistent Lists") do
     end
 
     context("hash") do
-        @fact hash(PersistentList([1:1000])) => hash(PersistentList([1:1000]))
+        @fact hash(PersistentList([1:1000;])) => hash(PersistentList([1:1000;]))
     end
 
     context("isempty") do

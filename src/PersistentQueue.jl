@@ -34,16 +34,16 @@ enq{T}(q::PersistentQueue{T}, val) =
     end
 
 Base.start(q::PersistentQueue) = (q.in, q.out)
-Base.done{T}(::PersistentQueue{T}, state::(EmptyList{T}, EmptyList{T})) = true
+Base.done{T}(::PersistentQueue{T}, state::(@compat Tuple{EmptyList{T}, EmptyList{T}})) = true
 Base.done(::PersistentQueue, state) = false
 
-function Base.next{T}(::PersistentQueue{T}, state::(AbstractList{T},
-                                                    PersistentList{T}))
+function Base.next{T}(::PersistentQueue{T}, state::(@compat Tuple{AbstractList{T},
+                                                    PersistentList{T}}))
     in, out = state
     (head(out), (in, tail(out)))
 end
-function Base.next{T}(q::PersistentQueue{T}, state::(PersistentList{T},
-                                                     EmptyList{T}))
+function Base.next{T}(q::PersistentQueue{T}, state::(@compat Tuple{PersistentList{T},
+                                                     EmptyList{T}}))
     in, out = state
     next(q, (EmptyList{T}(), reverse(in)))
 end

@@ -76,7 +76,7 @@ facts("Persistent Vectors") do
         for i in vec(1:10000)
             push!(arr2, i)
         end
-        @fact [1:10000] => arr2
+        @fact [1:10000;] => arr2
     end
 
     context("map") do
