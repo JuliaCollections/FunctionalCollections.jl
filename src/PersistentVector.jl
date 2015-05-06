@@ -59,7 +59,7 @@ function demoted{T}(node::DenseNode{T})
         DenseNode{T}(DenseBitmappedTrie{T}[],
                      shift(node) - shiftby,
                      0,
-                     int(maxlength(node) / trielen))
+                     round(Int, maxlength(node) / trielen))
     end
 end
 
@@ -254,7 +254,7 @@ function Base.hash{T}(pv::PersistentVector{T})
     for el in pv
         h = Base.hash(el, h)
     end
-    uint(h)
+    @compat UInt(h)
 end
 
 function print_elements(io, pv, range)

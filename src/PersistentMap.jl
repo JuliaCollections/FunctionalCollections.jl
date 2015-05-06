@@ -19,6 +19,6 @@ Base.isequal(tup::Tuple, kv::KVPair) = isequal(kv, tup)
 ==(kv::KVPair, tup::Tuple) = convert(Tuple, kv) == tup
 ==(tup::Tuple, kv::KVPair) = kv == tup
 
-Base.hash(kv::KVPair) = uint(Base.hash(kv.key, hash(kv.value)))
+Base.hash(kv::KVPair) = @compat UInt(Base.hash(kv.key, hash(kv.value)))
 
 Base.show(io::IO, kv::KVPair) = print(io, "$(kv.key) => $(kv.value)")

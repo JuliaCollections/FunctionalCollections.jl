@@ -1,13 +1,13 @@
 using FunctionalCollections
 using FactCheck
 
-function vec(r::Range1)
+function vec(r::UnitRange)
     v = PersistentVector{Int}()
     for i=r v=push(v, i) end
     v
 end
 
-function Base.Array(r::Range1)
+function Base.Array(r::UnitRange)
     arr = Array(Int, r)
     for i=r arr[i] = i end
     arr
@@ -76,7 +76,7 @@ facts("Persistent Vectors") do
         for i in vec(1:10000)
             push!(arr2, i)
         end
-        @fact [1:10000] => arr2
+        @fact collect(1:10000) => arr2
     end
 
     context("map") do

@@ -1,3 +1,4 @@
+using Compat
 using FunctionalCollections
 using FactCheck
 
@@ -116,7 +117,7 @@ facts("Persistent Hash Maps") do
         @fact m3 => m4
         @fact m3 => not(m1)
 
-        @fact m3 => [1 => 10, 2 => 20, 3 => 30]
+        @fact m3 => (@compat Dict(1 => 10, 2 => 20, 3 => 30))
     end
 
     context("assoc") do
@@ -131,7 +132,7 @@ facts("Persistent Hash Maps") do
 
     context("covariance") do
         m = PHM{Any, Any}()
-        @fact assoc(m, "foo", "bar") => {"foo" => "bar"}
+        @fact assoc(m, "foo", "bar") => (@compat Dict("foo" => "bar"))
     end
 
     context("dissoc") do
