@@ -4,7 +4,7 @@ immutable PersistentArrayMap{K, V} <: PersistentMap{K, V}
     PersistentArrayMap(kvs::Vector{KVPair{K, V}}) = new(kvs)
     PersistentArrayMap() = new(KVPair{K, V}[])
 end
-PersistentArrayMap{K, V}(kvs::(K, V)...) =
+PersistentArrayMap{K, V}(kvs::(@compat Tuple{K, V})...) =
     PersistentArrayMap{K, V}(KVPair{K, V}[KVPair(k, v) for (k, v) in kvs])
 PersistentArrayMap(; kwargs...) = PersistentArrayMap(kwargs...)
 

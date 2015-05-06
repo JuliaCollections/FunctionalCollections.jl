@@ -36,7 +36,7 @@ function demoted{T}(n::SparseNode{T})
     SparseNode{T}(SparseBitmappedTrie{T}[],
                   shift(n) - shiftby,
                   0,
-                  int(maxlength(n) / trielen), 0)
+                  round(Int, maxlength(n) / trielen), 0)
 end
 
 bitpos(  t::SparseBitmappedTrie, i::Int) = 1 << (mask(t, i) - 1)
@@ -81,7 +81,7 @@ Base.get(n::SparseNode, i::Int, default) =
 
 function Base.start(t::SparseBitmappedTrie)
     t.length == 0 && return true
-    ones(Int, 1 + int(t.shift / shiftby))
+    ones(Int, 1 + round(Int, t.shift / shiftby))
 end
 
 function directindex(t::SparseBitmappedTrie, v::Vector{Int})
@@ -103,7 +103,7 @@ function Base.next(t::SparseBitmappedTrie, state::Vector{Int})
         node = directindex(t, state)
         if length(node) > index
             push!(state, index + 1)
-            return item, vcat(state, ones(Int, 1 + int(t.shift / shiftby) -
+            return item, vcat(state, ones(Int, 1 + round(Int, t.shift / shiftby) -
                                                length(state)))
         elseif is(node, arrayof(t))
             return item, true
@@ -126,7 +126,11 @@ function PersistentHashMap(itr)
     if length(itr) == 0
         return PersistentHashMap()
     end
-    K, V = typejoin(map(typeof, itr)...)
+    if VERSION >= v"0.4.0-dev"
+        K, V = typejoin(map(typeof, itr)...).types
+    else
+        K, V = typejoin(map(typeof, itr)...)
+    end
     m = PersistentHashMap{K, V}()
     for (k, v) in itr
         m = assoc(m, k, v)
@@ -134,7 +138,7 @@ function PersistentHashMap(itr)
     m
 end
 
-function PersistentHashMap(kvs::(Any, Any)...)
+function PersistentHashMap(kvs::(@compat Tuple{Any, Any})...)
     PersistentHashMap([kvs...])
 end
 
@@ -157,7 +161,7 @@ tup_eq(x) = x[1] == x[2]
     length(m1) == length(m2) && all(tup_eq, zip(m1, m2))
 
 function _update{K, V}(f::Function, m::PersistentHashMap{K, V}, key)
-    keyhash = int(hash(key))
+    keyhash = reinterpret(Int, hash(key))
     arraymap = get(m.trie, keyhash, PersistentArrayMap{K, V}())
     newmap = f(arraymap)
     newtrie, _ = update(m.trie, keyhash, newmap)
@@ -180,25 +184,25 @@ function dissoc(m::PersistentHashMap, key)
 end
 
 function Base.getindex(m::PersistentHashMap, key)
-    val = get(m.trie, int(hash(key)), NotFound())
+    val = get(m.trie, reinterpret(Int, hash(key)), NotFound())
     is(val, NotFound()) && error("key not found")
     val[key]
 end
 
 Base.get(m::PersistentHashMap, key) = m[key]
 function Base.get(m::PersistentHashMap, key, default)
-    val = get(m.trie, int(hash(key)), NotFound())
+    val = get(m.trie, reinterpret(Int, hash(key)), NotFound())
     is(val, NotFound()) && return default
     val[key]
 end
 
 function Base.haskey(m::PersistentHashMap, key)
-    get(m.trie, int(hash(key)), NotFound()) != NotFound()
+    get(m.trie, reinterpret(Int, hash(key)), NotFound()) != NotFound()
 end
 
 function Base.start(m::PersistentHashMap)
     state = start(m.trie)
-    done(m.trie, state) && return ({}, state)
+    done(m.trie, state) && return (Any[], state)
     arrmap, triestate = next(m.trie, state)
     (arrmap.kvs, triestate)
 end
@@ -220,7 +224,7 @@ function Base.map(f::Union(Function, DataType), m::PersistentHashMap)
 end
 
 function Base.filter{K, V}(f::Function, m::PersistentHashMap{K, V})
-    arr = Array((K, V), 0)
+    arr = Array((@compat Tuple{K, V}), 0)
     for el in m
         f(el) && push!(arr, el)
     end

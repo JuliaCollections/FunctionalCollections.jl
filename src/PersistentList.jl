@@ -21,8 +21,8 @@ immutable PersistentList{T} <: AbstractList{T}
 end
 PersistentList(itr) = PersistentList{eltype(itr)}(itr)
 
-head(::EmptyList) = error(BoundsError())
-tail(::EmptyList) = error(BoundsError())
+head(::EmptyList) = throw(BoundsError())
+tail(::EmptyList) = throw(BoundsError())
 head(l::PersistentList) = l.head
 tail(l::PersistentList) = l.tail
 

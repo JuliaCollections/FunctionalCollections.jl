@@ -43,7 +43,7 @@ facts("Persistent Sets") do
     context("setdiff, -") do
         @fact setdiff(PS(1, 2, 3), PS(1, 2)) => PS(3)
         @fact setdiff(PS(1, 2), PS(1, 2, 3)) => PS{Int}()
-        @fact setdiff(PS(1, 2, 3), Set(1, 2)) => PS(3)
+        @fact setdiff(PS(1, 2, 3), Set([1, 2])) => PS(3)
 
         @fact PS(1, 2, 3) - PS(1, 2) => PS(3)
     end

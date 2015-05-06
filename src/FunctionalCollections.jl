@@ -1,6 +1,7 @@
 module FunctionalCollections
 
 import Base.==
+using Compat
 
 include("BitmappedVectorTrie.jl")
 
@@ -52,18 +53,19 @@ export @Persistent
 fromexpr(ex::Expr, ::Type{pvec}) = :(pvec($(esc(ex))))
 fromexpr(ex::Expr, ::Type{pset}) = :(pset($(map(esc, ex.args[2:end])...)))
 function fromexpr(ex::Expr, ::Type{phmap})
-    kvtuples = [Expr(:tuple, map(esc, kv.args)...) for kv in ex.args]
+    kvtuples = [Expr(:tuple, map(esc, kv.args)...)
+                for kv in (ex.head == :dict ? ex.args : ex.args[2:end])]
     :(phmap($(kvtuples...)))
 end
 
 macro Persistent(ex)
     hd = ex.head
 
-    if is(hd, :vcat) || is(hd, :cell1d)
+    if is(hd, :vcat) || is(hd, :cell1d) || is(hd, :vect)
         fromexpr(ex, pvec)
     elseif is(hd, :call) && is(ex.args[1], :Set)
         fromexpr(ex, pset)
-    elseif is(hd, :dict)
+    elseif is(hd, :dict) || (is(hd, :call) && is(ex.args[1], :Dict))
         fromexpr(ex, phmap)
     else
         error("Unsupported @Persistent syntax")
