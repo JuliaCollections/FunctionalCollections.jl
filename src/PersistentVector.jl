@@ -181,7 +181,11 @@ function push{T}(v::PersistentVector{T}, el)
         newtail[end] = el
         PersistentVector{T}(v.trie, newtail, 1 + v.length)
     else
-        PersistentVector{T}(append(v.trie, v.tail), T[el], 1 + v.length)
+        # T[el] will give an error when T is an tuple type in v0.3
+        # workaround:
+        arr = Array(T, 1)
+        arr[1] = convert(T, el)
+        PersistentVector{T}(append(v.trie, v.tail), arr, 1 + v.length)
     end
 end
 append{T}(v::PersistentVector{T}, itr) = foldl(push, v, itr)
