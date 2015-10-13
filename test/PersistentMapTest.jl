@@ -104,7 +104,7 @@ facts("Persistent Hash Maps") do
 
     context("equality") do
         @fact PHM{Int, Int}() --> PHM{Int, Int}()
-        @fact PHM{Int, Int}() --> PHM{String, String}()
+        @fact PHM{Int, Int}() --> PHM{AbstractString, AbstractString}()
 
         m1 = PHM{Int, Int}()
         m2 = PHM{Int, Int}()
