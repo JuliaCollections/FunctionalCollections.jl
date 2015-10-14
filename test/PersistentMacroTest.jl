@@ -9,7 +9,6 @@ facts("@Persistent constructor macro") do
     end
 
     context("Persistent Hash Maps") do
-        @fact @Persistent(["foo" => 1, "bar" => 2]) --> phmap(("foo", 1), ("bar", 2))
         @fact @Persistent(Dict("foo" => 1, "bar" => 2)) --> phmap(("foo", 1), ("bar", 2))
     end
 

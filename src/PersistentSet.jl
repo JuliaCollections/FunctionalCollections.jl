@@ -1,9 +1,9 @@
 immutable PersistentSet{T}
-    dict::PersistentHashMap{T, Nothing}
+    dict::PersistentHashMap{T, (@compat Void)}
 
-    PersistentSet(d::PersistentHashMap{T, Nothing}) = new(d)
-    PersistentSet() = new(PersistentHashMap{T, Nothing}())
-    PersistentSet(itr) = _union(new(PersistentHashMap{T,Nothing}()), itr)
+    PersistentSet(d::PersistentHashMap{T, (@compat Void)}) = new(d)
+    PersistentSet() = new(PersistentHashMap{T, (@compat Void)}())
+    PersistentSet(itr) = _union(new(PersistentHashMap{T, (@compat Void)}()), itr)
 end
 PersistentSet() = PersistentSet{Any}()
 PersistentSet(itr) = PersistentSet{eltype(itr)}(itr)
@@ -13,7 +13,7 @@ PersistentSet{T}(x1::T, x2::T, xs::T...) =
     PersistentSet{T}(PersistentHashMap((x1, nothing), (x2, nothing),
                                         [(x, nothing) for x in xs]...))
 
-Base.hash(s::PersistentSet,h::Uint) =
+Base.hash(s::PersistentSet,h::UInt) =
     hash(s.dict, h+(@compat UInt(0xf7dca1a5fd7090be)))
 
 Base.conj{T}(s::PersistentSet{T}, val) =
@@ -44,13 +44,13 @@ function Base.filter{T}(f::Function, s::PersistentSet{T})
     PersistentSet{T}(keys(filtered))
 end
 
-function Base.setdiff(l::PersistentSet, r::Union(PersistentSet, Set))
+function Base.setdiff(l::PersistentSet, r::(@compat Union{PersistentSet, Set}))
     notinr(el) = !(el in r)
     filter(notinr, l)
 end
 
 import Base.-
--(l::PersistentSet, r::Union(PersistentSet, Set)) = setdiff(l, r)
+-(l::PersistentSet, r::(@compat Union{PersistentSet, Set})) = setdiff(l, r)
 
 Base.isempty(s::PersistentSet) = length(s.dict) == 0
 
@@ -61,7 +61,7 @@ function _union(s::PersistentSet, xs)
     s
 end
 
-join_eltype() = None
+join_eltype() = @compat Union{}
 join_eltype(v1, vs...) = typejoin(eltype(v1), join_eltype(vs...))
 
 Base.union(s::PersistentSet) = s

@@ -57,8 +57,8 @@ Base.isequal(l::PersistentList, a::AbstractArray) =
 ==(a::AbstractArray, l::PersistentList) = isequal(l, a)
 ==(l::PersistentList, a::AbstractArray) = isequal(l, a)
 
-Base.map(f::Union(Function, DataType), e::EmptyList) = e
-Base.map(f::Union(Function, DataType), l::PersistentList) = cons(f(head(l)), map(f, tail(l)))
+Base.map(f::(@compat Union{Function, DataType}), e::EmptyList) = e
+Base.map(f::(@compat Union{Function, DataType}), l::PersistentList) = cons(f(head(l)), map(f, tail(l)))
 
 Base.reverse(e::EmptyList) = e
 function Base.reverse{T}(l::PersistentList{T})

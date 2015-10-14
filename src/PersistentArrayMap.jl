@@ -55,7 +55,7 @@ Base.start(m::PersistentArrayMap)   = 1
 Base.done(m::PersistentArrayMap, i) = i > length(m)
 Base.next(m::PersistentArrayMap, i) = (convert(Tuple, m.kvs[i]), i+1)
 
-Base.map(f::Union(DataType, Function), m::PersistentArrayMap) =
+Base.map(f::(@compat Union{DataType, Function}), m::PersistentArrayMap) =
     PersistentArrayMap([f(kv) for kv in m]...)
 
 Base.show{K, V}(io::IO, m::PersistentArrayMap{K, V}) =

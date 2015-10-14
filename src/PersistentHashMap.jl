@@ -219,7 +219,7 @@ function Base.next(m::PersistentHashMap, state)
     end
 end
 
-function Base.map(f::Union(Function, DataType), m::PersistentHashMap)
+function Base.map(f::(@compat Union{Function, DataType}), m::PersistentHashMap)
     PersistentHashMap([f(kv) for kv in m]...)
 end
 

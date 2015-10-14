@@ -267,7 +267,7 @@ function print_elements(io, pv, range)
     end
 end
 
-function print_vec(io::IO, t, head::String)
+function print_vec(io::IO, t, head::AbstractString)
     print(io, "$head[")
     if length(t) < 50
         print_elements(io, t, 1:length(t)-1)
