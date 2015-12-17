@@ -45,8 +45,8 @@ Since persistent vectors are immutable, "changing" operations return a
 new vector instead of modifying the original.
 
 ```.jl
-julia> append(v, 6)
-Persistent{Int64}[1, 2, 3, 4, 5, 6]
+julia> append(v, [6, 7])
+Persistent{Int64}[1, 2, 3, 4, 5, 6, 7]
 
 # v hasn't changed
 julia> v
@@ -72,11 +72,15 @@ Persistent{Int64}[1, 2, 42, 4, 5]
 ```
 
 Three functions, `push`, `peek`, and `pop`, make up the persistent
-vector stack interface. `push` is simply an alias for `append`, `peek`
-returns the last element of the vector, and `pop` returns a new vector
-_without_ the last element.
+vector stack interface. `push` adds a single element (whereas `append`
+adds all elements in the given collection, starting from the left),
+`peek` returns the last element of the vector, and `pop` returns a new
+vector _without_ the last element.
 
 ```.jl
+julia> push(v, 6)
+Persistent{Int64}[1, 2, 3, 4, 5, 6]
+
 julia> peek(v)
 5
 
