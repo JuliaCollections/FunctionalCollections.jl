@@ -112,7 +112,7 @@ Persistent hash maps are immutable, unordered, associative structures,
 similar to the built-in `Dict` type.
 
 ```.jl
-julia> name = @Persistent [:first => "Zach", :last => "Allaun"]
+julia> name = @Persistent Dict(:first => "Zach", :last => "Allaun")
 Persistent{Symbol, ASCIIString}[:last => "Allaun", :first => "Zach"]
 ```
 
@@ -208,7 +208,7 @@ pset(1,2,3,4,5)
 - `@Persistent` macro sugar for hi-jacking built-in syntax:
 
 ```jl
-@Persistent ["foo" => 1, "bar" => 2, "baz" => 3]
+@Persistent Dict("foo" => 1, "bar" => 2, "baz" => 3)
 # creates a phmap
 
 @Persistent [1, 2, 3, 4, 5]
