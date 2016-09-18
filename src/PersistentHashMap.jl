@@ -248,7 +248,7 @@ Base.merge(d::PersistentHashMap, others::Associative...) =
 Base.merge(d::PersistentHashMap, others...) =
     _merge(d, others...)
 
-function Base.show{K, V}(io::IO, m::PersistentHashMap{K, V})
+@compat function Base.show{K, V}(io::IO, ::MIME"text/plain", m::PersistentHashMap{K, V})
     print(io, "Persistent{$K, $V}[")
     print(io, join(["$k => $v" for (k, v) in m], ", "))
     print(io, "]")

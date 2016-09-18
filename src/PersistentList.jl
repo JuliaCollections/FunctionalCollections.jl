@@ -69,8 +69,8 @@ function Base.reverse{T}(l::PersistentList{T})
     reversed
 end
 
-Base.show(io::IO, ::EmptyList) = print(io, "()")
-function Base.show{T}(io::IO, l::PersistentList{T})
+@compat Base.show(io::IO, ::MIME"text/plain", ::EmptyList) = print(io, "()")
+@compat function Base.show{T}(io::IO, ::MIME"text/plain", l::PersistentList{T})
     print(io, "$T($(head(l))")
     for val in tail(l)
         print(io, ", $val")

@@ -21,4 +21,4 @@ Base.isequal(tup::Tuple, kv::KVPair) = isequal(kv, tup)
 
 Base.hash(kv::KVPair) = @compat UInt(Base.hash(kv.key, hash(kv.value)))
 
-Base.show(io::IO, kv::KVPair) = print(io, "$(kv.key) => $(kv.value)")
+@compat Base.show(io::IO, ::MIME"text/plain", kv::KVPair) = print(io, "$(kv.key) => $(kv.value)")

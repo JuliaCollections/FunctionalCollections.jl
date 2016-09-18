@@ -58,5 +58,5 @@ Base.next(m::PersistentArrayMap, i) = (convert(Tuple, m.kvs[i]), i+1)
 Base.map(f::(@compat Union{DataType, Function}), m::PersistentArrayMap) =
     PersistentArrayMap([f(kv) for kv in m]...)
 
-Base.show{K, V}(io::IO, m::PersistentArrayMap{K, V}) =
+@compat Base.show{K, V}(io::IO, ::MIME"text/plain", m::PersistentArrayMap{K, V}) =
     print(io, "Persistent{$K, $V}$(m.kvs)")

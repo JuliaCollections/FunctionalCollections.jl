@@ -283,5 +283,5 @@ function print_vec(io::IO, t, head::AbstractString)
     end
 end
 
-Base.show{T}(io::IO, pv::PersistentVector{T}) =
+@compat Base.show{T}(io::IO, ::MIME"text/plain", pv::PersistentVector{T}) =
     print_vec(io, pv, "Persistent{$T}")
