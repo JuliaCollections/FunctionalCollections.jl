@@ -45,7 +45,7 @@ facts("Persistent Array Maps") do
     end
 
     context("assoc") do
-        m = PAM{Int, ASCIIString}()
+        m = PAM{Int, AbstractString}()
         @fact assoc(m, 1, "one") --> (m) -> m[1] == "one"
         @fact try m[1]; false catch e true end --> true
 
@@ -121,11 +121,11 @@ facts("Persistent Hash Maps") do
     end
 
     context("assoc") do
-        m = PHM{Int, ASCIIString}()
+        m = PHM{Int, AbstractString}()
         @fact assoc(m, 1, "one") --> (m) -> m[1] == "one"
         @fact try m[1]; false catch e true end --> true
 
-        m = PHM{Int, ASCIIString}()
+        m = PHM{Int, AbstractString}()
         m = assoc(m, 1, "one")
         @fact assoc(m, 1, "foo") --> (m) -> m[1] == "foo"
     end
@@ -145,7 +145,7 @@ facts("Persistent Hash Maps") do
     end
 
     context("get") do
-        m = PHM{Int, ASCIIString}()
+        m = PHM{Int, AbstractString}()
         @fact get(m, 1, "default") --> "default"
         m = assoc(m, 1, "one")
         @fact get(m, 1, "default") --> "one"
@@ -155,7 +155,7 @@ facts("Persistent Hash Maps") do
     end
 
     context("haskey") do
-        m = PHM{Int, ASCIIString}()
+        m = PHM{Int, AbstractString}()
         @fact haskey(m, 1) --> false
         m = assoc(m, 1, "one")
         @fact haskey(m, 1) --> true

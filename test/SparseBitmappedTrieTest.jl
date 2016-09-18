@@ -45,7 +45,7 @@ facts("Sparse Bitmapped Vector Tries") do
     end
 
     context("SparseNode update") do
-        n, _ = update(SparseNode(ASCIIString), 1, "foo")
+        n, _ = update(SparseNode(AbstractString), 1, "foo")
         @fact length(arrayof(n)) --> 1
 
         leaf = arrayof(n)[1].arr[1].arr[1].arr[1].arr[1].arr[1].arr[1]

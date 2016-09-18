@@ -8,7 +8,7 @@ facts("Persistent Sets") do
     context("construction") do
         s = PS(1, 1, 2, 3, 3)
         @fact length(s) --> 3
-        @fact length(PS{ASCIIString}()) --> 0
+        @fact length(PS{AbstractString}()) --> 0
         @fact typeof(PS{Integer}([1,2,3])) --> PS{Integer}
         @fact typeof(PS(Integer[1,2,3])) --> PS{Integer}
     end
@@ -16,7 +16,7 @@ facts("Persistent Sets") do
     context("isequal") do
         @fact PS(1, 2, 3) --> PS(1, 2, 3)
         @fact PS(1, 2, 3) --> PS(3, 2, 1)
-        @fact PS{ASCIIString}() --> PS{Int}()
+        @fact PS{AbstractString}() --> PS{Int}()
     end
 
     context("conj") do
