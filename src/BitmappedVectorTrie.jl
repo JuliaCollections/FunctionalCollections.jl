@@ -10,8 +10,8 @@ abstract BitmappedTrie{T}
 # Copy elements from one Array to another, up to `n` elements.
 #
 function copy_to{T}(from::Array{T}, to::Array{T}, n::Int)
-    for i=1:n
-        to[i] = from[i]
+    @simd for i=1:min(n, length(from))
+        @inbounds to[i] = from[i]
     end
     to
 end
@@ -19,7 +19,7 @@ end
 # Copies elements from one Array to another of size `len`.
 #
 copy_to_len{T}(from::Array{T}, len::Int) =
-    copy_to(from, Array(T, len), min(len, length(from)))
+    copy_to(from, Array(T, len), len)
 
 mask(t::BitmappedTrie, i::Int) = (((i - 1) >>> shift(t)) & (trielen - 1)) + 1
 

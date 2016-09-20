@@ -70,6 +70,20 @@ function witharr{T}(node::DenseNode{T}, arr::Array, lenshift::Int=0)
 end
 witharr{T}(leaf::DenseLeaf{T}, arr::Array) = DenseLeaf{T}(arr)
 
+function append(leaf::DenseLeaf, el::AbstractArray)
+    fulllen = length(leaf) + length(el)
+    if fulllen <= maxlength(leaf)
+        newarr = copy_to_len(arrayof(leaf), fulllen)
+        @show newarr (length(leaf)+1):fulllen el
+        newarr[(length(leaf)+1):fulllen] = el
+        witharr(leaf, newarr)
+    else
+        n = fulllen - maxlength(leaf)
+        notyetfull = append(promoted(leaf), el[1:n])
+        append(promoted(notyetfull), el[n+1:end])
+    end
+end
+
 function append(leaf::DenseLeaf, el)
     if length(leaf) < maxlength(leaf)
         newarr = copy_to_len(arrayof(leaf), 1 + length(leaf))
@@ -79,6 +93,7 @@ function append(leaf::DenseLeaf, el)
         append(promoted(leaf), el)
     end
 end
+
 function append{T}(node::DenseNode{T}, el)
     if length(node) == 0
         child = append(demoted(node), el)
@@ -190,7 +205,20 @@ function push{T}(v::PersistentVector{T}, el)
         PersistentVector{T}(append(v.trie, v.tail), arr, 1 + v.length)
     end
 end
-append{T}(v::PersistentVector{T}, itr) = foldl(push, v, itr)
+
+function append{T}(v::PersistentVector{T}, el::AbstractArray{T})
+    fulllen = length(el) + length(v.tail)
+    if fulllen <= trielen
+        newtail = copy_to_len(v.tail, fulllen)
+        newtail[length(v.tail)+1:fulllen] = el
+        PersistentVector{T}(v.trie, newtail, length(el) + v.length)
+    else
+        # T[el] will give an error when T is an tuple type in v0.3
+        # workaround:
+        @show v.trie v.tail
+        PersistentVector{T}(append(v.trie, v.tail), el, length(el) + v.length)
+    end
+end
 
 function assoc{T}(v::PersistentVector{T}, i::Int, el)
     boundscheck!(v, i)
