@@ -28,11 +28,13 @@ immutable DenseNode{T} <: DenseBitmappedTrie{T}
     maxlength::Int
 end
 
+@generated _empty{T}(::Type{T}) = T[]
+
 immutable DenseLeaf{T} <: DenseBitmappedTrie{T}
     arr::Vector{T}
 
     DenseLeaf(arr::Vector) = new(arr)
-    DenseLeaf() = new(T[])
+    DenseLeaf() = new(_empty(T))
 end
 
 arrayof(    node::DenseNode) = node.arr
