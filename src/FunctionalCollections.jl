@@ -1,7 +1,6 @@
 module FunctionalCollections
 
 import Base.==
-using Compat
 
 include("BitmappedVectorTrie.jl")
 
@@ -16,8 +15,6 @@ export PersistentVector, pvec,
        pop
 
 include("PersistentMap.jl")
-include("PersistentArrayMap.jl")
-include("PersistentHashMap.jl")
 
 typealias phmap PersistentHashMap
 
@@ -61,11 +58,11 @@ end
 macro Persistent(ex)
     hd = ex.head
 
-    if is(hd, :vcat) || is(hd, :cell1d) || is(hd, :vect)
+    if (hd === :vcat) || (hd === :cell1d) || (hd === :vect)
         fromexpr(ex, pvec)
-    elseif is(hd, :call) && is(ex.args[1], :Set)
+    elseif (hd === :call) && (ex.args[1] === :Set)
         fromexpr(ex, pset)
-    elseif is(hd, :dict) || (is(hd, :call) && is(ex.args[1], :Dict))
+    elseif (hd === :dict) || ((hd === :call) && (ex.args[1] === :Dict))
         fromexpr(ex, phmap)
     else
         error("Unsupported @Persistent syntax")
