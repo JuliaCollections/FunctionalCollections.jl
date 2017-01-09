@@ -1,19 +1,18 @@
-using Compat
-using FactCheck
+using Base.Test
 using FunctionalCollections
 
-facts("@Persistent constructor macro") do
+@testset "@Persistent constructor macro" begin
 
-    context("Persistent Vectors") do
-        @fact @Persistent([1, 2, 3]) --> pvec([1, 2, 3])
+    @testset "Persistent Vectors" begin
+        @test @Persistent([1, 2, 3]) == pvec([1, 2, 3])
     end
 
-    context("Persistent Hash Maps") do
-        @fact @Persistent(Dict("foo" => 1, "bar" => 2)) --> phmap(("foo", 1), ("bar", 2))
+    @testset "Persistent Hash Maps" begin
+        @test @Persistent(Dict("foo" => 1, "bar" => 2)) == phmap(("foo", 1), ("bar", 2))
     end
 
-    context("Persistent Set") do
-        @fact @Persistent(Set(1, 2, 3, 3)) --> pset(1, 2, 3, 3)
+    @testset "Persistent Set" begin
+        @test @Persistent(Set(1, 2, 3, 3)) == pset(1, 2, 3, 3)
     end
 
 end
