@@ -15,7 +15,7 @@ PersistentQueue{T}(v::AbstractVector{T}) =
 queue = PersistentQueue
 
 Base.length(q::PersistentQueue) = q.length
-Base.isempty(q::PersistentQueue) = is(q.length, 0)
+Base.isempty(q::PersistentQueue) = (q.length === 0)
 
 peek(q::PersistentQueue) = isempty(q.out) ? head(reverse(q.in)) : head(q.out)
 
@@ -34,15 +34,15 @@ enq{T}(q::PersistentQueue{T}, val) =
     end
 
 Base.start(q::PersistentQueue) = (q.in, q.out)
-Base.done{T}(::PersistentQueue{T}, state::(@compat Tuple{EmptyList{T}, EmptyList{T}})) = true
+Base.done{T}(::PersistentQueue{T}, state::(Tuple{EmptyList{T}, EmptyList{T}})) = true
 Base.done(::PersistentQueue, state) = false
 
-function Base.next{T}(::PersistentQueue{T}, state::(@compat Tuple{AbstractList{T},
+function Base.next{T}(::PersistentQueue{T}, state::(Tuple{AbstractList{T},
                                                                   PersistentList{T}}))
     in, out = state
     (head(out), (in, tail(out)))
 end
-function Base.next{T}(q::PersistentQueue{T}, state::(@compat Tuple{PersistentList{T},
+function Base.next{T}(q::PersistentQueue{T}, state::(Tuple{PersistentList{T},
                                                                    EmptyList{T}}))
     in, out = state
     next(q, (EmptyList{T}(), reverse(in)))

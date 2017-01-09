@@ -1,131 +1,3 @@
-
-# Dense Bitmapped Tries
-# =====================
-
-abstract DenseBitmappedTrie{T} <: BitmappedTrie{T}
-
-# Why is the shift value of a DenseLeaf 5 instead of 0, and why does
-# the shift value of a DenseNode start at 10?
-#
-# The PersistentVector implements a "tail" optimization, where it
-# inserts appended elements into a tail array until that array is 32
-# elements long, only then inserting it into the actual bitmapped
-# vector trie. This significantly increases the performance of
-# operations that touch the very end of the vector (last, append, pop,
-# etc.) because you don't have to traverse the trie.
-#
-# However, it adds a small amount of complexity to the implementation;
-# when you query the trie, you now get back a length-32 array instead
-# of the actual element. This is why the DenseLeaf has a shift value
-# of 5: it leaves an "extra" 5 bits for the PersistentVector to use to
-# index into the array returned from the trie. (This also means that a
-# DenseNode has to start at shiftby*2.)
-
-immutable DenseNode{T} <: DenseBitmappedTrie{T}
-    arr::Vector{DenseBitmappedTrie{T}}
-    shift::Int
-    length::Int
-    maxlength::Int
-end
-
-immutable DenseLeaf{T} <: DenseBitmappedTrie{T}
-    arr::Vector{T}
-
-    DenseLeaf(arr::Vector) = new(arr)
-    DenseLeaf() = new(T[])
-end
-
-arrayof(    node::DenseNode) = node.arr
-shift(      node::DenseNode) = node.shift
-maxlength(  node::DenseNode) = node.maxlength
-Base.length(node::DenseNode) = node.length
-
-arrayof(    leaf::DenseLeaf) = leaf.arr
-shift(          ::DenseLeaf) = shiftby
-maxlength(  leaf::DenseLeaf) = trielen
-Base.length(leaf::DenseLeaf) = length(arrayof(leaf))
-
-function promoted{T}(node::DenseBitmappedTrie{T})
-    DenseNode{T}(DenseBitmappedTrie{T}[node],
-                 shift(node) + shiftby,
-                 length(node),
-                 maxlength(node) * trielen)
-end
-
-function demoted{T}(node::DenseNode{T})
-    if shift(node) == shiftby * 2
-        DenseLeaf{T}(T[])
-    else
-        DenseNode{T}(DenseBitmappedTrie{T}[],
-                     shift(node) - shiftby,
-                     0,
-                     round(Int, maxlength(node) / trielen))
-    end
-end
-
-function witharr{T}(node::DenseNode{T}, arr::Array, lenshift::Int=0)
-    DenseNode{T}(arr, shift(node), length(node) + lenshift, maxlength(node))
-end
-witharr{T}(leaf::DenseLeaf{T}, arr::Array) = DenseLeaf{T}(arr)
-
-function append(leaf::DenseLeaf, el)
-    if length(leaf) < maxlength(leaf)
-        newarr = copy_to_len(arrayof(leaf), 1 + length(leaf))
-        newarr[end] = el
-        witharr(leaf, newarr)
-    else
-        append(promoted(leaf), el)
-    end
-end
-function append{T}(node::DenseNode{T}, el)
-    if length(node) == 0
-        child = append(demoted(node), el)
-        witharr(node, DenseBitmappedTrie{T}[child], 1)
-    elseif length(node) < maxlength(node)
-        if length(arrayof(node)[end]) == maxlength(arrayof(node)[end])
-            newarr = copy_to_len(arrayof(node), 1 + length(arrayof(node)))
-            newarr[end] = append(demoted(node), el)
-            witharr(node, newarr, 1)
-        else
-            newarr = arrayof(node)[:]
-            newarr[end] = append(newarr[end], el)
-            witharr(node, newarr, 1)
-        end
-    else
-        append(promoted(node), el)
-    end
-end
-push(leaf::DenseLeaf, el) = append(leaf, el)
-push(node::DenseNode, el) = append(node, el)
-
-Base.getindex(leaf::DenseLeaf, i::Int) = arrayof(leaf)[mask(leaf, i)]
-Base.getindex(node::DenseNode, i::Int) = arrayof(node)[mask(node, i)][i]
-
-function assoc{T}(leaf::DenseLeaf{T}, i::Int, el)
-    newarr = arrayof(leaf)[:]
-    newarr[mask(leaf, i)] = el
-    DenseLeaf{T}(newarr)
-end
-function assoc(node::DenseNode, i::Int, el)
-    newarr = arrayof(node)[:]
-    idx = mask(node, i)
-    newarr[idx] = assoc(newarr[idx], i, el)
-    witharr(node, newarr)
-end
-
-peek(bt::DenseBitmappedTrie) = bt[end]
-
-# Pop is usually destructive, but that doesn't make sense for an immutable
-# structure, so `pop` is defined to return a Trie without its last
-# element. Use `peek` to access the last element.
-#
-pop(leaf::DenseLeaf) = witharr(leaf, arrayof(leaf)[1:end-1])
-function pop(node::DenseNode)
-    newarr = arrayof(node)[:]
-    newarr[end] = pop(newarr[end])
-    witharr(node, newarr, -1)
-end
-
 # Persistent Vectors
 # ==================
 
@@ -258,7 +130,7 @@ function Base.hash{T}(pv::PersistentVector{T})
     for el in pv
         h = Base.hash(el, h)
     end
-    @compat UInt(h)
+     UInt(h)
 end
 
 function print_elements(io, pv, range)
@@ -267,7 +139,7 @@ function print_elements(io, pv, range)
     end
 end
 
-function print_vec(io::IO, t, head::AbstractString)
+function print_vec(io::IO, t, head::String)
     print(io, "$head[")
     if length(t) < 50
         print_elements(io, t, 1:length(t)-1)
@@ -283,5 +155,5 @@ function print_vec(io::IO, t, head::AbstractString)
     end
 end
 
-@compat Base.show{T}(io::IO, ::MIME"text/plain", pv::PersistentVector{T}) =
+ Base.show{T}(io::IO, ::MIME"text/plain", pv::PersistentVector{T}) =
     print_vec(io, pv, "Persistent{$T}")

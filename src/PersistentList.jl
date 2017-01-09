@@ -53,12 +53,12 @@ Base.next(::AbstractList, l::PersistentList) = (head(l), tail(l))
 
 Base.isequal(a::AbstractArray, l::PersistentList) = isequal(l, a)
 Base.isequal(l::PersistentList, a::AbstractArray) =
-    isequal(length(l), length(a)) && all((el) -> el[1] == el[2], zip(l, a))
+    isequal(length(l), length(a)) && all((el) -> el[1] == el[2], zipd(l, a))
 ==(a::AbstractArray, l::PersistentList) = isequal(l, a)
 ==(l::PersistentList, a::AbstractArray) = isequal(l, a)
 
-Base.map(f::(@compat Union{Function, DataType}), e::EmptyList) = e
-Base.map(f::(@compat Union{Function, DataType}), l::PersistentList) = cons(f(head(l)), map(f, tail(l)))
+Base.map(f::( Union{Function, DataType}), e::EmptyList) = e
+Base.map(f::( Union{Function, DataType}), l::PersistentList) = cons(f(head(l)), map(f, tail(l)))
 
 Base.reverse(e::EmptyList) = e
 function Base.reverse{T}(l::PersistentList{T})
@@ -69,8 +69,8 @@ function Base.reverse{T}(l::PersistentList{T})
     reversed
 end
 
-@compat Base.show(io::IO, ::MIME"text/plain", ::EmptyList) = print(io, "()")
-@compat function Base.show{T}(io::IO, ::MIME"text/plain", l::PersistentList{T})
+ Base.show(io::IO, ::MIME"text/plain", ::EmptyList) = print(io, "()")
+ function Base.show{T}(io::IO, ::MIME"text/plain", l::PersistentList{T})
     print(io, "$T($(head(l))")
     for val in tail(l)
         print(io, ", $val")
