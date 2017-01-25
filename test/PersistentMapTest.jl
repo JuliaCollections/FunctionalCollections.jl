@@ -1,15 +1,6 @@
 using FunctionalCollections
 using Base.Test
 
-# @testset "Persistent Maps" begin
-#
-#    @testset "KVPairs" begin
-#        @test KVPair(1, 1) == (1, 1)
-#        @test (1, 1) == KVPair(1, 1)
-#    end
-#
-# end
-
 typealias PAM PersistentArrayMap
 
 @testset "Persistent Array Maps" begin
@@ -109,12 +100,12 @@ typealias PHM PersistentHashMap
         @test assoc(m1, 1, 100) != (assoc(m2, 1, 200))
         @test assoc(m1, 1, 100) != (assoc(m2, 2, 100))
 
-        #m3 = PHM([(1 => 10), (2 => 20), (3 => 30)]) #????
+        m3 = PHM([(1 => 10), (2 => 20), (3 => 30)])
         m4 = PHM((3, 30), (2, 20), (1, 10))
-        #@test m3 == m4
-        #@test m3 != (m1)
+        @test m3 == m4
+        @test m3 != (m1)
 
-        #@test m3 == Dict(1 => 10, 2 => 20, 3 => 30)
+        @test m3 == Dict(1 => 10, 2 => 20, 3 => 30)
     end
 
     @testset "assoc" begin
@@ -127,9 +118,11 @@ typealias PHM PersistentHashMap
         @test assoc(m, 1, "foo")[1] == "foo"
     end
 
-    @testset "covariance" begin
-        m = PHM{Any, Any}()
-        @test assoc(m, "foo", "bar") == (Dict("foo" => "bar"))
+    if VERSION > v"0.5"
+        @testset "covariance" begin
+            m = PHM{Any, Any}()
+            @test assoc(m, "foo", "bar") == (Dict("foo" => "bar"))
+        end
     end
 
     @testset "dissoc" begin

@@ -9,9 +9,8 @@ typealias PS PersistentSet
         s = PS(1, 1, 2, 3, 3)
         @test length(s) == 3
         @test length(PS{String}()) == 0
-        # inference problems in 0.5.0, seem fixed in 0.6.0-dev
-        @test typeof(PS{Integer}([1,2,3])) == PS{Integer}
-        @test typeof(PS(Integer[1,2,3])) == PS{Integer}
+        @test typeof(PS{Int64}([1,2,3])) == PS{Int64}
+        @test typeof(PS(Int64[1,2,3])) == PS{Int64}
     end
 
     @testset "isequal" begin
