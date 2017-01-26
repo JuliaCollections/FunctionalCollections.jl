@@ -55,7 +55,7 @@ function push{T}(v::PersistentVector{T}, el)
     else
         # T[el] will give an error when T is an tuple type in v0.3
         # workaround:
-        arr = Array(T, 1)
+        arr = Array{T,1}(1)
         arr[1] = convert(T, el)
         PersistentVector{T}(append(v.trie, v.tail), arr, 1 + v.length)
     end

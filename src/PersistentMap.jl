@@ -182,7 +182,7 @@ function Base.map(f::( Union{Function, DataType}), m::PersistentHashMap)
 end
 
 function Base.filter{K, V}(f::Function, m::PersistentHashMap{K, V})
-    arr = Array((Pair{K, V}), 0)
+    arr = Array{Pair{K, V},1}(0)
     for el in m
         f(el) && push!(arr, el)
     end
