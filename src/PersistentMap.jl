@@ -39,10 +39,10 @@ Base.haskey(m::PersistentArrayMap, k) = get(m, k, NotFound()) != NotFound()
 
 function assoc{K, V}(m::PersistentArrayMap{K, V}, k, v)
     idx = findkeyidx(m, k)
-    idx == 0 && return PersistentArrayMap{K, V}(push!(m.kvs[1:end], Pair(k, v)))
+    idx == 0 && return PersistentArrayMap{K, V}(push!(m.kvs[1:end], Pair{K,V}(k, v)))
 
     kvs = m.kvs[1:end]
-    kvs[idx] = Pair(k, v)
+    kvs[idx] = Pair{K,V}(k, v)
     PersistentArrayMap{K, V}(kvs)
 end
 
