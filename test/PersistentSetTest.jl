@@ -1,77 +1,77 @@
-using FactCheck
+using Base.Test
 using FunctionalCollections
 
 typealias PS PersistentSet
 
-facts("Persistent Sets") do
+@testset "Persistent Sets" begin
 
-    context("construction") do
+    @testset "construction" begin
         s = PS(1, 1, 2, 3, 3)
-        @fact length(s) --> 3
-        @fact length(PS{AbstractString}()) --> 0
-        @fact typeof(PS{Integer}([1,2,3])) --> PS{Integer}
-        @fact typeof(PS(Integer[1,2,3])) --> PS{Integer}
+        @test length(s) == 3
+        @test length(PS{String}()) == 0
+        @test typeof(PS{Int64}([1,2,3])) == PS{Int64}
+        @test typeof(PS(Int64[1,2,3])) == PS{Int64}
     end
 
-    context("isequal") do
-        @fact PS(1, 2, 3) --> PS(1, 2, 3)
-        @fact PS(1, 2, 3) --> PS(3, 2, 1)
-        @fact PS{AbstractString}() --> PS{Int}()
+    @testset "isequal" begin
+        @test PS(1, 2, 3) == PS(1, 2, 3)
+        @test PS(1, 2, 3) == PS(3, 2, 1)
+        @test PS{String}() == PS{Int}()
     end
 
-    context("conj") do
-        @fact conj(PS(1, 2, 3), 4) --> PS(1, 2, 3, 4)
-        @fact conj(PS(1, 2, 3), 1) --> PS(1, 2, 3)
-        @fact conj(PS(1, 2, 3), 4) --> PS(4, 3, 2, 1)
+    @testset "conj" begin
+        @test conj(PS(1, 2, 3), 4) == PS(1, 2, 3, 4)
+        @test conj(PS(1, 2, 3), 1) == PS(1, 2, 3)
+        @test conj(PS(1, 2, 3), 4) == PS(4, 3, 2, 1)
     end
 
-    context("disj") do
-        @fact disj(PS(1, 2, 3), 3) --> PS(1, 2)
-        @fact disj(PS(1, 2), 3) --> PS(1, 2)
-        @fact disj(PS{Int}(), 1234) --> PS{Int}()
+    @testset "disj" begin
+        @test disj(PS(1, 2, 3), 3) == PS(1, 2)
+        @test disj(PS(1, 2), 3) == PS(1, 2)
+        @test disj(PS{Int}(), 1234) == PS{Int}()
     end
 
-    context("in") do
-        @fact "foo" in PS("foo", "bar") --> true
-        @fact "baz" in PS("foo", "bar") --> false
+    @testset "in" begin
+        @test "foo" in PS("foo", "bar")
+        @test !("baz" in PS("foo", "bar"))
     end
 
-    context("filter") do
-        @fact filter(iseven, PS(1, 2, 3, 4)) --> PS(2, 4)
+    @testset "filter" begin
+        @test filter(iseven, PS(1, 2, 3, 4)) == PS(2, 4)
     end
 
-    context("setdiff, -") do
-        @fact setdiff(PS(1, 2, 3), PS(1, 2)) --> PS(3)
-        @fact setdiff(PS(1, 2), PS(1, 2, 3)) --> PS{Int}()
-        @fact setdiff(PS(1, 2, 3), Set([1, 2])) --> PS(3)
+    @testset "setdiff, -" begin
+        @test setdiff(PS(1, 2, 3), PS(1, 2)) == PS(3)
+        @test setdiff(PS(1, 2), PS(1, 2, 3)) == PS{Int}()
+        @test setdiff(PS(1, 2, 3), Set([1, 2])) == PS(3)
 
-        @fact PS(1, 2, 3) - PS(1, 2) --> PS(3)
+        @test PS(1, 2, 3) - PS(1, 2) == PS(3)
     end
 
-    context("isempty") do
-        @fact PS{Int}() --> isempty
-        @fact PS(1) --> not(isempty)
+    @testset "isempty" begin
+        @test isempty(PS{Int}())
+        @test !isempty(PS(1))
     end
 
-    context("union") do
-        @fact union(PS(1, 2, 3), PS(4, 5)) --> PS(1, 2, 3, 4, 5)
-        @fact union(PS(1, 2, 3), PS(1, 2, 3, 4)) --> PS(1, 2, 3, 4)
-        @fact union(PS(1), PS(2), PS(3)) --> PS(1, 2, 3)
+    @testset "union" begin
+        @test union(PS(1, 2, 3), PS(4, 5)) == PS(1, 2, 3, 4, 5)
+        @test union(PS(1, 2, 3), PS(1, 2, 3, 4)) == PS(1, 2, 3, 4)
+        @test union(PS(1), PS(2), PS(3)) == PS(1, 2, 3)
     end
 
-    context("isless, <=") do
-        @fact PS(1)    <= PS(1, 2) --> true
-        @fact PS(1, 2) <= PS(1, 2) --> true
+    @testset "isless, <=" begin
+        @test PS(1)    <= PS(1, 2)
+        @test PS(1, 2) <= PS(1, 2)
 
-        @fact PS(1, 2, 3) <= PS(1, 2) --> false
-        @fact PS(1, 2) <= PS(1, 2, 3) --> true
+        @test !(PS(1, 2, 3) <= PS(1, 2))
+        @test PS(1, 2) <= PS(1, 2, 3)
 
-        @fact isless(PS(1, 2), PS(1, 2))    --> false
-        @fact isless(PS(1, 2), PS(1, 2, 3)) --> true
+        @test !isless(PS(1, 2), PS(1, 2))
+        @test isless(PS(1, 2), PS(1, 2, 3))
     end
 
-    context("iteration") do
-        @fact length([el for el in PS(1, 2, 3, 4)]) --> 4
+    @testset "iteration" begin
+        @test length([el for el in PS(1, 2, 3, 4)]) == 4
     end
 
 end

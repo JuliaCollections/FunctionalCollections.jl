@@ -1,178 +1,168 @@
-using Compat
 using FunctionalCollections
-using FactCheck
-
-import FunctionalCollections.KVPair
-
-facts("Persistent Maps") do
-
-    context("KVPairs") do
-        @fact KVPair(1, 1) --> (1, 1)
-        @fact (1, 1) --> KVPair(1, 1)
-    end
-
-end
+using Base.Test
 
 typealias PAM PersistentArrayMap
 
-facts("Persistent Array Maps") do
+@testset "Persistent Array Maps" begin
 
-    context("construction") do
-        @fact length(PAM{Int, Int}().kvs) --> 0
-        @fact length(PAM((1, 1), (2, 2)).kvs) --> 2
+    @testset "construction" begin
+        @test length(PAM{Int, Int}().kvs) == 0
+        @test length(PAM((1, 1), (2, 2)).kvs) == 2
 
-        @fact length(PAM((1, 1))) --> 1
-        @fact length(PAM((1, 1), (2, 2))) --> 2
+        @test length(PAM((1, 1))) == 1
+        @test length(PAM((1, 1), (2, 2))) == 2
     end
 
-    context("accessing") do
+    @testset "accessing" begin
         m = PAM((1, "one"), (2, "two"), (3, "three"))
-        @fact m[1] --> "one"
-        @fact m[2] --> "two"
-        @fact m[3] --> "three"
+        @test m[1] == "one"
+        @test m[2] == "two"
+        @test m[3] == "three"
 
-        @fact get(m, 1) --> "one"
-        @fact get(m, 1, "foo") --> "one"
-        @fact get(m, 4, "foo") --> "foo"
+        @test get(m, 1) == "one"
+        @test get(m, 1, "foo") == "one"
+        @test get(m, 4, "foo") == "foo"
     end
 
-    context("haskey") do
+    @testset "haskey" begin
         m = PAM((1, "one"), (2, "two"), (3, "three"))
-        @fact haskey(m, 1) --> true
-        @fact haskey(m, 2) --> true
-        @fact haskey(m, 3) --> true
-        @fact haskey(m, 4) --> false
+        @test haskey(m, 1)
+        @test haskey(m, 2)
+        @test haskey(m, 3)
+        @test !haskey(m, 4)
     end
 
-    context("assoc") do
-        m = PAM{Int, AbstractString}()
-        @fact assoc(m, 1, "one") --> (m) -> m[1] == "one"
-        @fact try m[1]; false catch e true end --> true
+    @testset "assoc" begin
+        m = PAM{Int, String}()
+        @test assoc(m, 1, "one")[1] == "one"
+        @test try m[1]; false catch e true end
 
         m = PAM((1, "one"))
-        @fact assoc(m, 1, "foo") --> (m) -> m[1] == "foo"
+        @test assoc(m, 1, "foo")[1] == "foo"
     end
 
-    context("dissoc") do
+    @testset "dissoc" begin
         m = PAM((1, "one"))
         m = dissoc(m, 1)
-        @fact try m[1]; false catch e true end --> true
+        @test try m[1]; false catch e true end
 
         m = PAM((1, "one"), (2, "two"))
-        @fact dissoc(m, 1) --> PAM((2, "two"))
+        @test dissoc(m, 1) == PAM((2, "two"))
     end
 
-    context("iterating") do
+    @testset "iterating" begin
         m = PAM((1, "one"), (2, "two"), (3, "three"))
-        @fact [v for (k, v) in m] --> ["one", "two", "three"]
+        @test [v for (k, v) in m] == ["one", "two", "three"]
     end
 
-    context("isempty") do
-        @fact PAM{Int, Int}() --> isempty
-        @fact PAM((1, "one")) --> not(isempty)
+    @testset "isempty" begin
+        @test isempty(PAM{Int, Int}())
+        @test !isempty(PAM((1, "one")))
     end
 
-    context("equality") do
-        @fact PAM((1, "one")) --> PAM((1, "one"))
-        @fact PAM((1, "one"), (2, "two")) --> PAM((2, "two"), (1, "one"))
-        @fact isequal(PAM((1, "one")), PAM((1, "one"))) --> true
+    @testset "equality" begin
+        @test PAM((1, "one")) == PAM((1, "one"))
+        @test PAM((1, "one"), (2, "two")) == PAM((2, "two"), (1, "one"))
+        @test isequal(PAM((1, "one")), PAM((1, "one")))
 
-        @fact PAM((1, "one")) --> not(PAM((2, "two")))
+        @test PAM((1, "one")) != (PAM((2, "two")))
     end
 
-    context("kwargs construction") do
-        @fact PAM(x=1, y=2, z=3) --> PAM((:x, 1), (:y, 2), (:z, 3))
+    @testset "kwargs construction" begin
+        @test PAM(x=1, y=2, z=3) == PAM((:x, 1), (:y, 2), (:z, 3))
     end
 
-    context("map") do
+    @testset "map" begin
         m = PAM((1, 1), (2, 2), (3, 3))
 
-        @fact map((kv) -> (kv[1], kv[2]+1), m) --> PAM((1, 2), (2, 3), (3, 4))
+        @test map((kv) -> (kv[1], kv[2]+1), m) == PAM((1, 2), (2, 3), (3, 4))
     end
 end
 
 typealias PHM PersistentHashMap
 
-facts("Persistent Hash Maps") do
+@testset "Persistent Hash Maps" begin
 
-    context("constructor") do
+    @testset "constructor" begin
         hashmap = PHM{Int, Int}()
-        @fact length(hashmap) --> 0
-        @fact length(PHM((1, 1), (2, 2), (3, 3))) --> 3
-        @fact length(PHM(x=1, y=2, z=3)) --> 3
+        @test length(hashmap) == 0
+        @test length(PHM((1, 1), (2, 2), (3, 3))) == 3
+        @test length(PHM(x=1, y=2, z=3)) == 3
     end
 
-    context("equality") do
-        @fact PHM{Int, Int}() --> PHM{Int, Int}()
-        @fact PHM{Int, Int}() --> PHM{AbstractString, AbstractString}()
+    @testset "equality" begin
+        @test PHM{Int, Int}() == PHM{Int, Int}()
+        @test PHM{Int, Int}() == PHM{String, String}()
 
         m1 = PHM{Int, Int}()
         m2 = PHM{Int, Int}()
-        @fact assoc(m1, 1, 100) --> assoc(m2, 1, 100)
-        @fact assoc(m1, 1, 100) --> not(assoc(m2, 1, 200))
-        @fact assoc(m1, 1, 100) --> not(assoc(m2, 2, 100))
+        @test assoc(m1, 1, 100) == assoc(m2, 1, 100)
+        @test assoc(m1, 1, 100) != (assoc(m2, 1, 200))
+        @test assoc(m1, 1, 100) != (assoc(m2, 2, 100))
 
-        m3 = PHM((1, 10), (2, 20), (3, 30))
+        m3 = PHM([(1 => 10), (2 => 20), (3 => 30)])
         m4 = PHM((3, 30), (2, 20), (1, 10))
-        @fact m3 --> m4
-        @fact m3 --> not(m1)
+        @test m3 == m4
+        @test m3 != (m1)
 
-        @fact m3 --> (@compat Dict(1 => 10, 2 => 20, 3 => 30))
+        @test m3 == Dict(1 => 10, 2 => 20, 3 => 30)
     end
 
-    context("assoc") do
-        m = PHM{Int, AbstractString}()
-        @fact assoc(m, 1, "one") --> (m) -> m[1] == "one"
-        @fact try m[1]; false catch e true end --> true
+    @testset "assoc" begin
+        m = PHM{Int, String}()
+        @test assoc(m, 1, "one")[1] == "one"
+        @test try m[1]; false catch e true end
 
-        m = PHM{Int, AbstractString}()
+        m = PHM{Int, String}()
         m = assoc(m, 1, "one")
-        @fact assoc(m, 1, "foo") --> (m) -> m[1] == "foo"
+        @test assoc(m, 1, "foo")[1] == "foo"
     end
 
-    context("covariance") do
-        m = PHM{Any, Any}()
-        @fact assoc(m, "foo", "bar") --> (@compat Dict("foo" => "bar"))
+    if VERSION > v"0.5"
+        @testset "covariance" begin
+            m = PHM{Any, Any}()
+            @test assoc(m, "foo", "bar") == (Dict("foo" => "bar"))
+        end
     end
 
-    context("dissoc") do
+    @testset "dissoc" begin
         m = PAM((1, "one"))
         m = dissoc(m, 1)
-        @fact try m[1]; false catch e true end --> true
+        @test try m[1]; false catch e true end
 
         m = PHM((1, "one"), (2, "two"))
-        @fact dissoc(m, 1) --> PHM((2, "two"))
+        @test dissoc(m, 1) == PHM((2, "two"))
     end
 
-    context("get") do
-        m = PHM{Int, AbstractString}()
-        @fact get(m, 1, "default") --> "default"
+    @testset "get" begin
+        m = PHM{Int, String}()
+        @test get(m, 1, "default") == "default"
         m = assoc(m, 1, "one")
-        @fact get(m, 1, "default") --> "one"
+        @test get(m, 1, "default") == "one"
         m = assoc(m, 1, "newone")
-        @fact get(m, 1, "default") --> "newone"
-        @fact try get(m, 2); false catch e true end --> true
+        @test get(m, 1, "default") == "newone"
+        @test try get(m, 2); false catch e true end
     end
 
-    context("haskey") do
-        m = PHM{Int, AbstractString}()
-        @fact haskey(m, 1) --> false
+    @testset "haskey" begin
+        m = PHM{Int, String}()
+        @test !haskey(m, 1)
         m = assoc(m, 1, "one")
-        @fact haskey(m, 1) --> true
-        @fact haskey(m, 2) --> false
+        @test haskey(m, 1)
+        @test !haskey(m, 2)
     end
 
-    context("map") do
+    @testset "map" begin
         m = PHM((1, 1), (2, 2), (3, 3))
-        @fact map((kv) -> (kv[1], kv[2]+1), m) --> PHM((1, 2), (2, 3), (3, 4))
+        @test map((kv) -> (kv[1], kv[2]+1), m) == PHM((1, 2), (2, 3), (3, 4))
     end
 
-    context("filter") do
-        @fact filter((kv) -> iseven(kv[2]), PHM((1, 1), (2, 2))) --> PHM((2, 2))
+    @testset "filter" begin
+        @test filter((kv) -> iseven(kv[2]), PHM((1, 1), (2, 2))) == PHM((2, 2))
     end
 
-    context("merge") do
-        @fact merge(PHM((1, 1), (2, 2)), PHM((2, 3), (3, 4))) -->
+    @testset "merge" begin
+        @test merge(PHM((1, 1), (2, 2)), PHM((2, 3), (3, 4))) ==
                 PHM((1,1), (2, 3), (3, 4))
     end
 end
