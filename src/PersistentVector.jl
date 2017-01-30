@@ -26,7 +26,7 @@ function boundscheck!(v::PersistentVector, i::Int)
     0 < i <= v.length || error(BoundsError(), " :: Index $i out of bounds ($(v.length))")
 end
 
-Base.size(   v::PersistentVector) = v.length
+Base.size(   v::PersistentVector) = (v.length,)
 Base.length( v::PersistentVector) = v.length
 Base.isempty(v::PersistentVector) = length(v) == 0
 Base.endof(  v::PersistentVector) = length(v)
