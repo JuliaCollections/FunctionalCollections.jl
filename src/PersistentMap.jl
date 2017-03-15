@@ -1,13 +1,12 @@
-abstract PersistentMap{K, V} <: Associative{K, V}
+@compat abstract type PersistentMap{K, V} <: Associative{K, V} end
 
 type NotFound end
 
 immutable PersistentArrayMap{K, V} <: PersistentMap{K, V}
     kvs::Vector{Pair{K, V}}
-
-    PersistentArrayMap(kvs::Vector{Pair{K, V}}) = new(kvs)
-    PersistentArrayMap() = new(Pair{K, V}[])
 end
+(::Type{PersistentArrayMap{K, V}}){K, V}() =
+    PersistentArrayMap{K, V}(Pair{K, V}[])
 PersistentArrayMap{K, V}(kvs::(Tuple{K, V})...) =
     PersistentArrayMap{K, V}(Pair{K, V}[Pair(k, v) for (k, v) in kvs])
 PersistentArrayMap(; kwargs...) = PersistentArrayMap(kwargs...)
@@ -72,10 +71,9 @@ Base.show{K, V}(io::IO, ::MIME"text/plain", m::PersistentArrayMap{K, V}) =
 immutable PersistentHashMap{K, V} <: PersistentMap{K, V}
     trie::SparseBitmappedTrie{PersistentArrayMap{K, V}}
     length::Int
-
-    PersistentHashMap(trie, length) = new(trie, length)
-    PersistentHashMap() = new(SparseNode(PersistentArrayMap{K, V}), 0)
 end
+(::Type{PersistentHashMap{K, V}}){K, V}() =
+    PersistentHashMap{K, V}(SparseNode(PersistentArrayMap{K, V}), 0)
 
 function PersistentHashMap(itr)
     if length(itr) == 0

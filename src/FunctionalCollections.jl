@@ -1,12 +1,13 @@
 module FunctionalCollections
 
 import Base.==
+using Compat
 
 include("BitmappedVectorTrie.jl")
 
 include("PersistentVector.jl")
 
-typealias pvec PersistentVector
+const pvec = PersistentVector
 
 export PersistentVector, pvec,
        append, push,
@@ -16,7 +17,7 @@ export PersistentVector, pvec,
 
 include("PersistentMap.jl")
 
-typealias phmap PersistentHashMap
+const phmap = PersistentHashMap
 
 export PersistentArrayMap,
        PersistentHashMap, phmap,
@@ -25,14 +26,14 @@ export PersistentArrayMap,
 
 include("PersistentSet.jl")
 
-typealias pset PersistentSet
+const pset = PersistentSet
 
 export PersistentSet, pset,
        disj
 
 include("PersistentList.jl")
 
-typealias plist PersistentList
+const plist = PersistentList
 
 export PersistentList, plist,
        EmptyList,
@@ -50,19 +51,18 @@ export @Persistent
 fromexpr(ex::Expr, ::Type{pvec}) = :(pvec($(esc(ex))))
 fromexpr(ex::Expr, ::Type{pset}) = :(pset($(map(esc, ex.args[2:end])...)))
 function fromexpr(ex::Expr, ::Type{phmap})
-    kvtuples = [Expr(:tuple, map(esc, kv.args)...)
-                for kv in (ex.head == :dict ? ex.args : ex.args[2:end])]
+    kvtuples = [:($(esc(kv.args[end-1])), $(esc(kv.args[end])))
+                for kv in ex.args[2:end]]
     :(phmap($(kvtuples...)))
 end
 
+using Base.Meta: isexpr
 macro Persistent(ex)
-    hd = ex.head
-
-    if (hd === :vcat) || (hd === :cell1d) || (hd === :vect)
+    if isexpr(ex, [:vcat, :vect])
         fromexpr(ex, pvec)
-    elseif (hd === :call) && (ex.args[1] === :Set)
+    elseif isexpr(ex, :call) && ex.args[1] === :Set
         fromexpr(ex, pset)
-    elseif (hd === :dict) || ((hd === :call) && (ex.args[1] === :Dict))
+    elseif isexpr(ex, :call) && ex.args[1] === :Dict
         fromexpr(ex, phmap)
     else
         error("Unsupported @Persistent syntax")

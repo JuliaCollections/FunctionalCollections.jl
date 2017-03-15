@@ -1,17 +1,16 @@
 immutable PersistentSet{T}
     dict::PersistentHashMap{T, Void}
-
-    PersistentSet(d::PersistentHashMap{T, Void}) = new(d)
-    PersistentSet() = new(PersistentHashMap{T, Void}())
-    PersistentSet(itr) = _union(new(PersistentHashMap{T, Void}()), itr)
+    # TODO: this constructor is inconsistent with everything else
+    # and with Set in base; probably good to deprecate.
+    (::Type{PersistentSet{T}}){T}(d::PersistentHashMap{T, Void}) = new{T}(d)
+    (::Type{PersistentSet{T}}){T}() = new{T}(PersistentHashMap{T, Void}())
 end
+(::Type{PersistentSet{T}}){T}(itr) = _union(PersistentSet{T}(), itr)
 PersistentSet() = PersistentSet{Any}()
 PersistentSet(itr) = PersistentSet{eltype(itr)}(itr)
 
-# TODO: Depricate this invocation
-PersistentSet{T}(x1::T, x2::T, xs::T...) =
-    PersistentSet{T}(PersistentHashMap((x1, nothing), (x2, nothing),
-                                        [(x, nothing) for x in xs]...))
+Base.@deprecate(PersistentSet{T}(x1::T, x2::T, xs::T...),
+                PersistentSet{T}(T[x1, x2, xs...]))
 
 Base.hash(s::PersistentSet,h::UInt) =
     hash(s.dict, h+(UInt(0xf7dca1a5fd7090be)))

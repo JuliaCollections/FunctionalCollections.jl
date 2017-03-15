@@ -1,4 +1,4 @@
-abstract AbstractList{T}
+@compat abstract type AbstractList{T} end
 
 immutable EmptyList{T} <: AbstractList{T} end
 EmptyList() = EmptyList{Any}()
@@ -7,17 +7,15 @@ immutable PersistentList{T} <: AbstractList{T}
     head::T
     tail::AbstractList{T}
     length::Int
-    PersistentList(head::T, tail::AbstractList{T}, length) =
-        new(head, tail, length)
-    PersistentList() = EmptyList{Any}()
-    function PersistentList(v)
-        v = reverse(v)
-        list = EmptyList{T}()
-        for el in v
-            list = cons(el, list)
-        end
-        list
+end
+(::Type{PersistentList{T}}){T}() = EmptyList{Any}()
+function (::Type{PersistentList{T}}){T}(v)
+    v = reverse(v)
+    list = EmptyList{T}()
+    for el in v
+        list = cons(el, list)
     end
+    list
 end
 PersistentList(itr) = PersistentList{eltype(itr)}(itr)
 

@@ -1,7 +1,7 @@
 using FunctionalCollections
 using Base.Test
 
-typealias PAM PersistentArrayMap
+const PAM = PersistentArrayMap
 
 @testset "Persistent Array Maps" begin
 
@@ -79,7 +79,7 @@ typealias PAM PersistentArrayMap
     end
 end
 
-typealias PHM PersistentHashMap
+const PHM = PersistentHashMap
 
 @testset "Persistent Hash Maps" begin
 
