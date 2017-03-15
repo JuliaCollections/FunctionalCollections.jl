@@ -5,16 +5,14 @@ immutable PersistentVector{T} <: AbstractArray{T,1}
     trie::DenseBitmappedTrie{Vector{T}}
     tail::Vector{T}
     length::Int
-
-    PersistentVector(trie::DenseBitmappedTrie, tail, length::Int) =
-        new(trie, tail, length)
-    PersistentVector() = new(DenseLeaf{Vector{T}}(), T[], 0)
-    function PersistentVector(arr)
-        if length(arr) <= trielen
-            new(DenseLeaf{Vector{T}}(), arr, length(arr))
-        else
-            append(new(DenseLeaf{Vector{T}}(), T[], 0), arr)
-        end
+end
+(::Type{PersistentVector{T}}){T}() =
+    PersistentVector{T}(DenseLeaf{Vector{T}}(), T[], 0)
+function (::Type{PersistentVector{T}}){T}(arr)
+    if length(arr) <= trielen
+        PersistentVector{T}(DenseLeaf{Vector{T}}(), arr, length(arr))
+    else
+        append(PersistentVector{T}(DenseLeaf{Vector{T}}(), T[], 0), arr)
     end
 end
 PersistentVector() = PersistentVector{Any}()

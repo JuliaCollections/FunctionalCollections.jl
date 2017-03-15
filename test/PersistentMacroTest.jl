@@ -12,7 +12,7 @@ using FunctionalCollections
     end
 
     @testset "Persistent Set" begin
-        @test @Persistent(Set(1, 2, 3, 3)) == pset(1, 2, 3, 3)
+        @test @Persistent(Set([1, 2, 3, 3])) == pset([1, 2, 3, 3])
     end
 
 end

@@ -7,7 +7,7 @@
 const shiftby = 5
 const trielen = 2^shiftby
 
-abstract BitmappedTrie{T}
+@compat abstract type BitmappedTrie{T} end
 
 # Copy elements from one Array to another, up to `n` elements.
 #
@@ -49,7 +49,7 @@ end
 # Dense Bitmapped Tries
 # =====================
 
-abstract DenseBitmappedTrie{T} <: BitmappedTrie{T}
+@compat abstract type DenseBitmappedTrie{T} <: BitmappedTrie{T} end
 
 # Why is the shift value of a DenseLeaf 5 instead of 0, and why does
 # the shift value of a DenseNode start at 10?
@@ -77,10 +77,8 @@ end
 
 immutable DenseLeaf{T} <: DenseBitmappedTrie{T}
     arr::Vector{T}
-
-    DenseLeaf(arr::Vector) = new(arr)
-    DenseLeaf() = new(T[])
 end
+(::Type{DenseLeaf{T}}){T}() = DenseLeaf{T}(T[])
 
 arrayof(    node::DenseNode) = node.arr
 shift(      node::DenseNode) = node.shift
@@ -176,7 +174,7 @@ end
 # Sparse Bitmapped Tries
 # ======================
 
-abstract SparseBitmappedTrie{T} <: BitmappedTrie{T}
+@compat abstract type SparseBitmappedTrie{T} <: BitmappedTrie{T} end
 
 immutable SparseNode{T} <: SparseBitmappedTrie{T}
     arr::Vector{SparseBitmappedTrie{T}}
@@ -190,10 +188,8 @@ SparseNode(T::Type) = SparseNode{T}(SparseBitmappedTrie{T}[], shiftby*7, 0, trie
 immutable SparseLeaf{T} <: SparseBitmappedTrie{T}
     arr::Vector{T}
     bitmap::Int
-
-    SparseLeaf(arr::Vector, bitmap::Int) = new(arr, bitmap)
-    SparseLeaf() = new(T[], 0)
 end
+(::Type{SparseLeaf{T}}){T}() = SparseLeaf{T}(T[], 0)
 
 arrayof(    n::SparseNode) = n.arr
 shift(      n::SparseNode) = n.shift

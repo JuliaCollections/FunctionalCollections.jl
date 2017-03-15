@@ -2,13 +2,10 @@ immutable PersistentQueue{T}
     in::AbstractList{T}
     out::AbstractList{T}
     length::Int
-
-    PersistentQueue(in::AbstractList{T}, out::AbstractList{T}, length::Int) =
-        new(in, out, length)
-
-    PersistentQueue() = new(EmptyList{T}(), EmptyList{T}(), 0)
 end
 
+(::Type{PersistentQueue{T}}){T}() =
+    PersistentQueue{T}(EmptyList{T}(), EmptyList{T}(), 0)
 PersistentQueue{T}(v::AbstractVector{T}) =
     PersistentQueue{T}(EmptyList{T}(), reverse(PersistentList(v)), length(v))
 
