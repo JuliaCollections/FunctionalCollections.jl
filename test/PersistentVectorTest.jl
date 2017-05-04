@@ -88,15 +88,15 @@ end
     @testset "map" begin
         v1 = vec(1:5)
         @test map((x)->x+1, v1) == PersistentVector([2, 3, 4, 5, 6])
-	v2 = PersistentVector{Tuple{Int,Int}}([(1,2),(4,3)])
-	@test map((x)->(x[2],x[1]), v2) == PersistentVector{Tuple{Int,Int}}([(2,1),(3,4)])
+        v2 = PersistentVector{Tuple{Int,Int}}([(1,2),(4,3)])
+        @test map((x)->(x[2],x[1]), v2) == PersistentVector{Tuple{Int,Int}}([(2,1),(3,4)])
     end
 
     @testset "filter" begin
         v1 = vec(1:5)
         @test filter(iseven, v1) == PersistentVector([2, 4])
-	v2 = PersistentVector{Tuple{Int,Int}}([(1,2),(4,3)])
-	@test filter((x)->x[2] > x[1], v2) == PersistentVector{Tuple{Int,Int}}([(1,2)])
+        v2 = PersistentVector{Tuple{Int,Int}}([(1,2),(4,3)])
+        @test filter((x)->x[2] > x[1], v2) == PersistentVector{Tuple{Int,Int}}([(1,2)])
     end
 
     @testset "hash" begin
