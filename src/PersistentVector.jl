@@ -108,7 +108,7 @@ function Base.map{T}(f::Function, pv::PersistentVector{T})
     first = f(pv[1])
     v = PersistentVector{typeof(first)}([first])
     for i = 2:length(pv)
-        v = append(v, f(pv[i]))
+        v = push(v, f(pv[i]))
     end
     v
 end
@@ -117,7 +117,7 @@ function Base.filter{T}(f::Function, pv::PersistentVector{T})
     v = PersistentVector{T}()
     for el in pv
         if f(el)
-            v = append(v, el)
+            v = push(v, el)
         end
     end
     v
