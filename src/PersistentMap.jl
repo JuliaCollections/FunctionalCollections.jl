@@ -79,11 +79,7 @@ function PersistentHashMap(itr)
     if length(itr) == 0
         return PersistentHashMap()
     end
-    if VERSION >= v"0.4.0-dev"
-        K, V = typejoin(map(typeof, itr)...).types
-    else
-        K, V = typejoin(map(typeof, itr)...)
-    end
+    K, V = typejoin(map(typeof, itr)...).types
     m = PersistentHashMap{K, V}()
     for (k, v) in itr
         m = assoc(m, k, v)
