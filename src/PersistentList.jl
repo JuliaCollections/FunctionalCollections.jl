@@ -50,7 +50,7 @@ Base.done(::AbstractList, ::PersistentList)      = false
 Base.next(::AbstractList, l::PersistentList) = (head(l), tail(l))
 
 Base.iteratorsize(::Type{L}) where {L<:AbstractList} = Base.HasLength()
-Base.iteratoreltype(::Type{L}) where {L<:AbstracList} = Base.HasEltype()
+Base.iteratoreltype(::Type{L}) where {L<:AbstractList} = Base.HasEltype()
 Base.eltype(::Type{PersistentList{T}}) where T = T
 Base.eltype(::Type{EmptyList{T}}) where T = T
 

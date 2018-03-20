@@ -63,4 +63,14 @@ using Base.Test
         @test !isempty(PersistentList([1]))
     end
 
+    @testset "iterator interface" begin
+        T1 = typeof(plist([1,2,3]))
+        T2 = typeof(plist(Int[]))
+        @test Base.iteratorsize(T1) == Base.HasLength()
+        @test Base.iteratorsize(T2) == Base.HasLength()
+        @test Base.iteratoreltype(T1) == Base.HasEltype()
+        @test Base.iteratoreltype(T2) == Base.HasEltype()
+        @test Base.eltype(T1) == Int
+        @test Base.eltype(T2) == Int
+    end
 end
