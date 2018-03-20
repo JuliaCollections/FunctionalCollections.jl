@@ -64,13 +64,19 @@ using Base.Test
     end
 
     @testset "iterator interface" begin
-        T1 = typeof(plist([1,2,3]))
-        T2 = typeof(plist(Int[]))
+        l1 = plist([1,2,3])
+        l2 = plist(Int[])
+        T1 = typeof(l1)
+        T2 = typeof(l2)
+
         @test Base.iteratorsize(T1) == Base.HasLength()
         @test Base.iteratorsize(T2) == Base.HasLength()
         @test Base.iteratoreltype(T1) == Base.HasEltype()
         @test Base.iteratoreltype(T2) == Base.HasEltype()
         @test Base.eltype(T1) == Int
         @test Base.eltype(T2) == Int
+
+        @test Base.eltype(typeof(collect(l1))) == Int
+        @test Base.eltype(typeof(collect(l2))) == Int
     end
 end
