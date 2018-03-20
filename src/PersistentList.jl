@@ -49,6 +49,11 @@ Base.done(::AbstractList, ::EmptyList) = true
 Base.done(::AbstractList, ::PersistentList)      = false
 Base.next(::AbstractList, l::PersistentList) = (head(l), tail(l))
 
+Base.iteratorsize(::Type{AbstractList}) = Base.HasLength()
+Base.iteratoreltype(::Type{AbstractList}) = Base.HasEltype()
+Base.eltype(::Type{PersistentList{T}}) where T = T
+Base.eltype(::Type{EmptyList{T}}) where T = T
+
 Base.isequal(a::AbstractArray, l::PersistentList) = isequal(l, a)
 Base.isequal(l::PersistentList, a::AbstractArray) =
     isequal(length(l), length(a)) && all((el) -> el[1] == el[2], zipd(l, a))
