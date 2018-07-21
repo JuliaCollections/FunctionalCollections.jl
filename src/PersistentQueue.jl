@@ -1,4 +1,4 @@
-immutable PersistentQueue{T}
+struct PersistentQueue{T}
     in::AbstractList{T}
     out::AbstractList{T}
     length::Int

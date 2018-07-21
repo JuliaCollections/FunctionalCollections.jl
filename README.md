@@ -1,6 +1,6 @@
 # FunctionalCollections
 
-[![Build Status](https://travis-ci.org/JuliaLang/FunctionalCollections.jl.svg)](https://travis-ci.org/JuliaLang/FunctionalCollections.jl)
+[![Build Status](https://travis-ci.org/JuliaCollections/FunctionalCollections.jl.svg)](https://travis-ci.org/JuliaCollections/FunctionalCollections.jl)
 [![FunctionalCollections](http://pkg.julialang.org/badges/FunctionalCollections_0.3.svg)](http://pkg.julialang.org/?pkg=FunctionalCollections&ver=0.3)
 
 Functional and persistent data structures for Julia. This is a work in

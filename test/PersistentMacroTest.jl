@@ -1,4 +1,4 @@
-using Base.Test
+using Test
 using FunctionalCollections
 
 @testset "@Persistent constructor macro" begin

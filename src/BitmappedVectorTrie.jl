@@ -11,7 +11,7 @@ const trielen = 2^shiftby
 
 # Copy elements from one Array to another, up to `n` elements.
 #
-function copy_to{T}(from::Array{T}, to::Array{T}, n::Int)
+function copy_to(from::Array{T}, to::Array{T}, n::Int) where {T}
     for i=1:n
         to[i] = from[i]
     end
@@ -20,7 +20,7 @@ end
 
 # Copies elements from one Array to another of size `len`.
 #
-copy_to_len{T}(from::Array{T}, len::Int) =
+copy_to_len(from::Array{T}, len::Int) where {T} =
     copy_to(from, Array{T,1}(len), min(len, length(from)))
 
 mask(t::BitmappedTrie, i::Int) = (((i - 1) >>> shift(t)) & (trielen - 1)) + 1
@@ -49,7 +49,7 @@ end
 # Dense Bitmapped Tries
 # =====================
 
-@compat abstract type DenseBitmappedTrie{T} <: BitmappedTrie{T} end
+abstract type DenseBitmappedTrie{T} <: BitmappedTrie{T} end
 
 # Why is the shift value of a DenseLeaf 5 instead of 0, and why does
 # the shift value of a DenseNode start at 10?
@@ -68,17 +68,17 @@ end
 # index into the array returned from the trie. (This also means that a
 # DenseNode has to start at shiftby*2.)
 
-immutable DenseNode{T} <: DenseBitmappedTrie{T}
+struct DenseNode{T} <: DenseBitmappedTrie{T}
     arr::Vector{DenseBitmappedTrie{T}}
     shift::Int
     length::Int
     maxlength::Int
 end
 
-immutable DenseLeaf{T} <: DenseBitmappedTrie{T}
+struct DenseLeaf{T} <: DenseBitmappedTrie{T}
     arr::Vector{T}
 end
-(::Type{DenseLeaf{T}}){T}() = DenseLeaf{T}(T[])
+(::Type{DenseLeaf{T}})() where {T} = DenseLeaf{T}(T[])
 
 arrayof(    node::DenseNode) = node.arr
 shift(      node::DenseNode) = node.shift
@@ -176,7 +176,7 @@ end
 
 @compat abstract type SparseBitmappedTrie{T} <: BitmappedTrie{T} end
 
-immutable SparseNode{T} <: SparseBitmappedTrie{T}
+struct SparseNode{T} <: SparseBitmappedTrie{T}
     arr::Vector{SparseBitmappedTrie{T}}
     shift::Int
     length::Int
@@ -185,7 +185,7 @@ immutable SparseNode{T} <: SparseBitmappedTrie{T}
 end
 SparseNode(T::Type) = SparseNode{T}(SparseBitmappedTrie{T}[], shiftby*7, 0, trielen^7, 0)
 
-immutable SparseLeaf{T} <: SparseBitmappedTrie{T}
+struct SparseLeaf{T} <: SparseBitmappedTrie{T}
     arr::Vector{T}
     bitmap::Int
 end

@@ -1,9 +1,9 @@
 @compat abstract type AbstractList{T} end
 
-immutable EmptyList{T} <: AbstractList{T} end
+struct EmptyList{T} <: AbstractList{T} end
 EmptyList() = EmptyList{Any}()
 
-immutable PersistentList{T} <: AbstractList{T}
+struct PersistentList{T} <: AbstractList{T}
     head::T
     tail::AbstractList{T}
     length::Int

@@ -1,7 +1,7 @@
 # Persistent Vectors
 # ==================
 
-immutable PersistentVector{T} <: AbstractArray{T,1}
+struct PersistentVector{T} <: AbstractArray{T,1}
     trie::DenseBitmappedTrie{Vector{T}}
     tail::Vector{T}
     length::Int
@@ -83,7 +83,7 @@ function pop{T}(v::PersistentVector{T})
     end
 end
 
-immutable ItrState{T}
+struct ItrState{T}
     index::Int
     leaf::Vector{T}
 end

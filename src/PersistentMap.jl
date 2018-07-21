@@ -2,7 +2,7 @@
 
 type NotFound end
 
-immutable PersistentArrayMap{K, V} <: PersistentMap{K, V}
+struct PersistentArrayMap{K, V} <: PersistentMap{K, V}
     kvs::Vector{Pair{K, V}}
 end
 (::Type{PersistentArrayMap{K, V}}){K, V}() =
@@ -68,7 +68,7 @@ Base.show{K, V}(io::IO, ::MIME"text/plain", m::PersistentArrayMap{K, V}) =
 # Persistent Hash Maps
 # ====================
 
-immutable PersistentHashMap{K, V} <: PersistentMap{K, V}
+struct PersistentHashMap{K, V} <: PersistentMap{K, V}
     trie::SparseBitmappedTrie{PersistentArrayMap{K, V}}
     length::Int
 end

@@ -1,5 +1,5 @@
 using FunctionalCollections
-using Base.Test
+using Test
 
 const PAM = PersistentArrayMap
 

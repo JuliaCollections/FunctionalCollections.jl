@@ -1,5 +1,5 @@
 using FunctionalCollections
-using Base.Test
+using Test
 import Base.vec
 
 function vec(r::UnitRange)
