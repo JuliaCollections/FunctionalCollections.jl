@@ -1,5 +1,5 @@
-using Test
 using FunctionalCollections
+using Test
 
 import FunctionalCollections: SparseBitmappedTrie, SparseNode, SparseLeaf,
     bitpos, index, hasindex, arrayof, update

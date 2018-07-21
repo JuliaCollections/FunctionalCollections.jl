@@ -1,5 +1,5 @@
-using Test
 using FunctionalCollections
+using Test
 
 const PS = PersistentSet
 

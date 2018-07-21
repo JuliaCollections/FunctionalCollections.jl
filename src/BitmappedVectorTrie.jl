@@ -21,7 +21,7 @@ end
 # Copies elements from one Array to another of size `len`.
 #
 copy_to_len(from::Array{T}, len::Int) where {T} =
-    copy_to(from, Array{T,1}(len), min(len, length(from)))
+    copy_to(from, Array{T,1}(undef, len), min(len, length(from)))
 
 mask(t::BitmappedTrie, i::Int) = (((i - 1) >>> shift(t)) & (trielen - 1)) + 1
 

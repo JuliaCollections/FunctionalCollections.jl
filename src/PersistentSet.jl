@@ -9,8 +9,8 @@ PersistentSet{T}(itr) where {T} = _union(PersistentSet{T}(), itr)
 PersistentSet() = PersistentSet{Any}()
 PersistentSet(itr) = PersistentSet{eltype(itr)}(itr)
 
-Base.@deprecate(PersistentSet{T}(x1::T, x2::T, xs::T...),
-                PersistentSet{T}(T[x1, x2, xs...]))
+Base.@deprecate(PersistentSet(x1::T, x2::T, xs::T...) where {T},
+                PersistentSet(T[x1, x2, xs...]))
 
 Base.hash(s::PersistentSet,h::UInt) =
     hash(s.dict, h+(UInt(0xf7dca1a5fd7090be)))
@@ -65,7 +65,7 @@ join_eltype(v1, vs...) = typejoin(eltype(v1), join_eltype(vs...))
 
 Base.union(s::PersistentSet) = s
 Base.union(x::PersistentSet, xs::PersistentSet...) =
-    reduce(_union, PersistentSet{join_eltype(x, xs...)}(), [x, xs...])
+    reduce(_union, [x, xs...], init=PersistentSet{join_eltype(x, xs...)}())
 
 function Base.isless(s1::PersistentSet, s2::PersistentSet)
     length(s1) < length(s2) &&

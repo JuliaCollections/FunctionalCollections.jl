@@ -58,7 +58,7 @@ function push(v::PersistentVector{T}, el) where T
         PersistentVector{T}(append(v.trie, v.tail), arr, 1 + v.length)
     end
 end
-append(v::PersistentVector{T}, itr) where {T} = foldl(push, v, itr)
+append(v::PersistentVector{T}, itr) where {T} = foldl(push, itr, init=v)
 
 function assoc(v::PersistentVector{T}, i::Int, el) where T
     boundscheck!(v, i)

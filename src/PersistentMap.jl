@@ -1,13 +1,13 @@
 abstract type PersistentMap{K, V} <: AbstractDict{K, V} end
 
-mutable struct NotFound end
+struct NotFound end
 
 struct PersistentArrayMap{K, V} <: PersistentMap{K, V}
     kvs::Vector{Pair{K, V}}
 end
 PersistentArrayMap{K, V}() where {K, V} =
     PersistentArrayMap{K, V}(Pair{K, V}[])
-PersistentArrayMap(kvs::(Tuple{K, V})...) where {K, V} =
+PersistentArrayMap(kvs::(Union{Tuple{K, V}, Pair{K, V}})...) where {K, V} =
     PersistentArrayMap{K, V}(Pair{K, V}[Pair(k, v) for (k, v) in kvs])
 PersistentArrayMap(; kwargs...) = PersistentArrayMap(kwargs...)
 
@@ -38,7 +38,7 @@ Base.haskey(m::PersistentArrayMap, k) = get(m, k, NotFound()) != NotFound()
 
 function assoc(m::PersistentArrayMap{K, V}, k, v) where {K, V}
     idx = findkeyidx(m, k)
-    idx == 0 && return PersistentArrayMap{K, V}(push!(m.kvs[1:end], Pair{K,V}(k, v)))
+    idx === nothing && return PersistentArrayMap{K, V}(push!(m.kvs[1:end], Pair{K,V}(k, v)))
 
     kvs = m.kvs[1:end]
     kvs[idx] = Pair{K,V}(k, v)
@@ -47,7 +47,7 @@ end
 
 function dissoc(m::PersistentArrayMap{K, V}, k) where {K, V}
     idx = findkeyidx(m, k)
-    idx == 0 && return m
+    idx === nothing && return m
 
     kvs = m.kvs[1:end]
     splice!(kvs, idx)
