@@ -28,7 +28,7 @@ end
 @bench "Getting (small)" 20 [getting(PersistentHashMap((1, 1)), unos)
                              getting([1 => 1], unos)]
 
-function updating{T}(::Type{PersistentHashMap}, keys::Vector{T})
+function updating(::Type{PersistentHashMap}, keys::Vector{T}) where T
     pmap = PersistentHashMap{T, T}()
     function ()
         for i=keys
@@ -36,7 +36,7 @@ function updating{T}(::Type{PersistentHashMap}, keys::Vector{T})
         end
     end
 end
-function updating{T}(::Type{Dict}, keys::Vector{T})
+function updating(::Type{Dict}, keys::Vector{T}) where T
     dict = Dict{T, T}()
     function ()
         for i=keys

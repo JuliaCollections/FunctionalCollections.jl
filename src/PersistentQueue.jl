@@ -4,9 +4,9 @@ struct PersistentQueue{T}
     length::Int
 end
 
-(::Type{PersistentQueue{T}}){T}() =
+PersistentQueue{T}() where {T} =
     PersistentQueue{T}(EmptyList{T}(), EmptyList{T}(), 0)
-PersistentQueue{T}(v::AbstractVector{T}) =
+PersistentQueue(v::AbstractVector{T}) where {T} =
     PersistentQueue{T}(EmptyList{T}(), reverse(PersistentList(v)), length(v))
 
 queue = PersistentQueue
@@ -16,14 +16,14 @@ Base.isempty(q::PersistentQueue) = (q.length === 0)
 
 peek(q::PersistentQueue) = isempty(q.out) ? head(reverse(q.in)) : head(q.out)
 
-pop{T}(q::PersistentQueue{T}) =
+pop(q::PersistentQueue{T}) where {T} =
     if isempty(q.out)
         PersistentQueue{T}(EmptyList{T}(), tail(reverse(q.in)), length(q) - 1)
     else
         PersistentQueue{T}(q.in, tail(q.out), length(q) - 1)
     end
 
-enq{T}(q::PersistentQueue{T}, val) =
+enq(q::PersistentQueue{T}, val) where {T} =
     if isempty(q.in) && isempty(q.out)
         PersistentQueue{T}(q.in, val..EmptyList{T}(), 1)
     else
@@ -31,16 +31,16 @@ enq{T}(q::PersistentQueue{T}, val) =
     end
 
 Base.start(q::PersistentQueue) = (q.in, q.out)
-Base.done{T}(::PersistentQueue{T}, state::(Tuple{EmptyList{T}, EmptyList{T}})) = true
+Base.done(::PersistentQueue{T}, state::(Tuple{EmptyList{T}, EmptyList{T}})) where {T} = true
 Base.done(::PersistentQueue, state) = false
 
-function Base.next{T}(::PersistentQueue{T}, state::(Tuple{AbstractList{T},
-                                                                  PersistentList{T}}))
+function Base.next(::PersistentQueue{T}, state::(Tuple{AbstractList{T},
+                                                               PersistentList{T}})) where T
     in, out = state
     (head(out), (in, tail(out)))
 end
-function Base.next{T}(q::PersistentQueue{T}, state::(Tuple{PersistentList{T},
-                                                                   EmptyList{T}}))
+function Base.next(q::PersistentQueue{T}, state::(Tuple{PersistentList{T},
+                                                                EmptyList{T}})) where T
     in, out = state
     next(q, (EmptyList{T}(), reverse(in)))
 end

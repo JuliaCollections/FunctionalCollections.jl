@@ -7,7 +7,7 @@
 const shiftby = 5
 const trielen = 2^shiftby
 
-@compat abstract type BitmappedTrie{T} end
+abstract type BitmappedTrie{T} end
 
 # Copy elements from one Array to another, up to `n` elements.
 #
@@ -78,7 +78,7 @@ end
 struct DenseLeaf{T} <: DenseBitmappedTrie{T}
     arr::Vector{T}
 end
-(::Type{DenseLeaf{T}})() where {T} = DenseLeaf{T}(T[])
+DenseLeaf{T}() where {T} = DenseLeaf{T}(T[])
 
 arrayof(    node::DenseNode) = node.arr
 shift(      node::DenseNode) = node.shift
@@ -90,14 +90,14 @@ shift(          ::DenseLeaf) = shiftby
 maxlength(  leaf::DenseLeaf) = trielen
 Base.length(leaf::DenseLeaf) = length(arrayof(leaf))
 
-function promoted{T}(node::DenseBitmappedTrie{T})
+function promoted(node::DenseBitmappedTrie{T}) where T
     DenseNode{T}(DenseBitmappedTrie{T}[node],
                  shift(node) + shiftby,
                  length(node),
                  maxlength(node) * trielen)
 end
 
-function demoted{T}(node::DenseNode{T})
+function demoted(node::DenseNode{T}) where T
     if shift(node) == shiftby * 2
         DenseLeaf{T}(T[])
     else
@@ -108,10 +108,10 @@ function demoted{T}(node::DenseNode{T})
     end
 end
 
-function witharr{T}(node::DenseNode{T}, arr::Array, lenshift::Int=0)
+function witharr(node::DenseNode{T}, arr::Array, lenshift::Int=0) where T
     DenseNode{T}(arr, shift(node), length(node) + lenshift, maxlength(node))
 end
-witharr{T}(leaf::DenseLeaf{T}, arr::Array) = DenseLeaf{T}(arr)
+witharr(leaf::DenseLeaf{T}, arr::Array) where {T} = DenseLeaf{T}(arr)
 
 function append(leaf::DenseLeaf, el)
     if length(leaf) < maxlength(leaf)
@@ -122,7 +122,7 @@ function append(leaf::DenseLeaf, el)
         append(promoted(leaf), el)
     end
 end
-function append{T}(node::DenseNode{T}, el)
+function append(node::DenseNode{T}, el) where T
     if length(node) == 0
         child = append(demoted(node), el)
         witharr(node, DenseBitmappedTrie{T}[child], 1)
@@ -146,7 +146,7 @@ push(node::DenseNode, el) = append(node, el)
 Base.getindex(leaf::DenseLeaf, i::Int) = arrayof(leaf)[mask(leaf, i)]
 Base.getindex(node::DenseNode, i::Int) = arrayof(node)[mask(node, i)][i]
 
-function assoc{T}(leaf::DenseLeaf{T}, i::Int, el)
+function assoc(leaf::DenseLeaf{T}, i::Int, el) where T
     newarr = arrayof(leaf)[:]
     newarr[mask(leaf, i)] = el
     DenseLeaf{T}(newarr)
@@ -174,7 +174,7 @@ end
 # Sparse Bitmapped Tries
 # ======================
 
-@compat abstract type SparseBitmappedTrie{T} <: BitmappedTrie{T} end
+abstract type SparseBitmappedTrie{T} <: BitmappedTrie{T} end
 
 struct SparseNode{T} <: SparseBitmappedTrie{T}
     arr::Vector{SparseBitmappedTrie{T}}
@@ -189,7 +189,7 @@ struct SparseLeaf{T} <: SparseBitmappedTrie{T}
     arr::Vector{T}
     bitmap::Int
 end
-(::Type{SparseLeaf{T}}){T}() = SparseLeaf{T}(T[], 0)
+SparseLeaf{T}() where {T} = SparseLeaf{T}(T[], 0)
 
 arrayof(    n::SparseNode) = n.arr
 shift(      n::SparseNode) = n.shift
@@ -201,7 +201,7 @@ shift(       ::SparseLeaf) = 0
 maxlength(  l::SparseLeaf) = trielen
 Base.length(l::SparseLeaf) = length(arrayof(l))
 
-function demoted{T}(n::SparseNode{T})
+function demoted(n::SparseNode{T}) where T
     shift(n) == shiftby ?
     SparseLeaf{T}(T[], 0) :
     SparseNode{T}(SparseBitmappedTrie{T}[],
@@ -215,7 +215,7 @@ hasindex(t::SparseBitmappedTrie, i::Int) = t.bitmap & bitpos(t, i) != 0
 index(   t::SparseBitmappedTrie, i::Int) =
     1 + count_ones(t.bitmap & (bitpos(t, i) - 1))
 
-function update{T}(l::SparseLeaf{T}, i::Int, el::T)
+function update(l::SparseLeaf{T}, i::Int, el::T) where T
     hasi = hasindex(l, i)
     bitmap = bitpos(l, i) | l.bitmap
     idx = index(l, i)
@@ -227,7 +227,7 @@ function update{T}(l::SparseLeaf{T}, i::Int, el::T)
     end
     (SparseLeaf{T}(newarr, bitmap), !hasi)
 end
-function update{T}(n::SparseNode{T}, i::Int, el::T)
+function update(n::SparseNode{T}, i::Int, el::T) where T
     bitmap = bitpos(n, i) | n.bitmap
     idx = index(n, i)
     if hasindex(n, i)

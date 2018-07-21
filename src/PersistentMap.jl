@@ -1,13 +1,13 @@
-@compat abstract type PersistentMap{K, V} <: Associative{K, V} end
+abstract type PersistentMap{K, V} <: AbstractDict{K, V} end
 
-type NotFound end
+mutable struct NotFound end
 
 struct PersistentArrayMap{K, V} <: PersistentMap{K, V}
     kvs::Vector{Pair{K, V}}
 end
-(::Type{PersistentArrayMap{K, V}}){K, V}() =
+PersistentArrayMap{K, V}() where {K, V} =
     PersistentArrayMap{K, V}(Pair{K, V}[])
-PersistentArrayMap{K, V}(kvs::(Tuple{K, V})...) =
+PersistentArrayMap(kvs::(Tuple{K, V})...) where {K, V} =
     PersistentArrayMap{K, V}(Pair{K, V}[Pair(k, v) for (k, v) in kvs])
 PersistentArrayMap(; kwargs...) = PersistentArrayMap(kwargs...)
 
@@ -36,7 +36,7 @@ Base.getindex(m::PersistentArrayMap, k) = get(m, k)
 
 Base.haskey(m::PersistentArrayMap, k) = get(m, k, NotFound()) != NotFound()
 
-function assoc{K, V}(m::PersistentArrayMap{K, V}, k, v)
+function assoc(m::PersistentArrayMap{K, V}, k, v) where {K, V}
     idx = findkeyidx(m, k)
     idx == 0 && return PersistentArrayMap{K, V}(push!(m.kvs[1:end], Pair{K,V}(k, v)))
 
@@ -45,7 +45,7 @@ function assoc{K, V}(m::PersistentArrayMap{K, V}, k, v)
     PersistentArrayMap{K, V}(kvs)
 end
 
-function dissoc{K, V}(m::PersistentArrayMap{K, V}, k)
+function dissoc(m::PersistentArrayMap{K, V}, k) where {K, V}
     idx = findkeyidx(m, k)
     idx == 0 && return m
 
@@ -61,7 +61,7 @@ Base.next(m::PersistentArrayMap, i) = (m.kvs[i], i+1)
 Base.map(f::( Union{DataType, Function}), m::PersistentArrayMap) =
     PersistentArrayMap([f(kv) for kv in m]...)
 
-Base.show{K, V}(io::IO, ::MIME"text/plain", m::PersistentArrayMap{K, V}) =
+Base.show(io::IO, ::MIME"text/plain", m::PersistentArrayMap{K, V}) where {K, V} =
     print(io, "Persistent{$K, $V}$(m.kvs)")
 
 
@@ -72,7 +72,7 @@ struct PersistentHashMap{K, V} <: PersistentMap{K, V}
     trie::SparseBitmappedTrie{PersistentArrayMap{K, V}}
     length::Int
 end
-(::Type{PersistentHashMap{K, V}}){K, V}() =
+PersistentHashMap{K, V}() where {K, V} =
     PersistentHashMap{K, V}(SparseNode(PersistentArrayMap{K, V}), 0)
 
 function PersistentHashMap(itr)
@@ -112,7 +112,7 @@ tup_eq(x) = x[1] == x[2]
 ==(m1::PersistentHashMap, m2::PersistentHashMap) =
     length(m1) == length(m2) && all(x -> x[1] == x[2], zipd(m1, m2))
 
-function _update{K, V}(f::Function, m::PersistentHashMap{K, V}, key)
+function _update(f::Function, m::PersistentHashMap{K, V}, key) where {K, V}
     keyhash = reinterpret(Int, hash(key))
     arraymap = get(m.trie, keyhash, PersistentArrayMap{K, V}())
     newmap = f(arraymap)
@@ -123,7 +123,7 @@ function _update{K, V}(f::Function, m::PersistentHashMap{K, V}, key)
                                         0))
 end
 
-function assoc{K, V}(m::PersistentHashMap{K, V}, key, value)
+function assoc(m::PersistentHashMap{K, V}, key, value) where {K, V}
     _update(m, key) do arraymap
         assoc(arraymap, key, value)
     end
@@ -175,8 +175,8 @@ function Base.map(f::( Union{Function, DataType}), m::PersistentHashMap)
     PersistentHashMap([f(kv) for kv in m]...)
 end
 
-function Base.filter{K, V}(f::Function, m::PersistentHashMap{K, V})
-    arr = Array{Pair{K, V},1}(0)
+function Base.filter(f::Function, m::PersistentHashMap{K, V}) where {K, V}
+    arr = Array{Pair{K, V},1}()
     for el in m
         f(el) && push!(arr, el)
     end
@@ -195,12 +195,12 @@ function _merge(d::PersistentHashMap, others...)
 end
 
 # This definition suppresses ambiguity warning
-Base.merge(d::PersistentHashMap, others::Associative...) =
+Base.merge(d::PersistentHashMap, others::AbstractDict...) =
     _merge(d, others...)
 Base.merge(d::PersistentHashMap, others...) =
     _merge(d, others...)
 
- function Base.show{K, V}(io::IO, ::MIME"text/plain", m::PersistentHashMap{K, V})
+ function Base.show(io::IO, ::MIME"text/plain", m::PersistentHashMap{K, V}) where {K, V}
     print(io, "Persistent{$K, $V}[")
     print(io, join(["$k => $v" for (k, v) in m], ", "))
     print(io, "]")
