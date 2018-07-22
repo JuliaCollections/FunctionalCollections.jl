@@ -1,5 +1,5 @@
-using Base.Test
 using FunctionalCollections
+using Test
 
 @testset "@Persistent constructor macro" begin
 

@@ -1,14 +1,14 @@
 # Persistent Vectors
 # ==================
 
-immutable PersistentVector{T} <: AbstractArray{T,1}
+struct PersistentVector{T} <: AbstractArray{T,1}
     trie::DenseBitmappedTrie{Vector{T}}
     tail::Vector{T}
     length::Int
 end
-(::Type{PersistentVector{T}}){T}() =
+PersistentVector{T}() where {T} =
     PersistentVector{T}(DenseLeaf{Vector{T}}(), T[], 0)
-function (::Type{PersistentVector{T}}){T}(arr)
+function PersistentVector{T}(arr) where T
     if length(arr) <= trielen
         PersistentVector{T}(DenseLeaf{Vector{T}}(), arr, length(arr))
     else
@@ -45,7 +45,7 @@ end
 
 peek(v::PersistentVector) = v[end]
 
-function push{T}(v::PersistentVector{T}, el)
+function push(v::PersistentVector{T}, el) where T
     if length(v.tail) < trielen
         newtail = copy_to_len(v.tail, 1 + length(v.tail))
         newtail[end] = el
@@ -53,14 +53,14 @@ function push{T}(v::PersistentVector{T}, el)
     else
         # T[el] will give an error when T is an tuple type in v0.3
         # workaround:
-        arr = Array{T,1}(1)
+        arr = Array{T,1}(undef, 1)
         arr[1] = convert(T, el)
         PersistentVector{T}(append(v.trie, v.tail), arr, 1 + v.length)
     end
 end
-append{T}(v::PersistentVector{T}, itr) = foldl(push, v, itr)
+append(v::PersistentVector{T}, itr) where {T} = foldl(push, itr, init=v)
 
-function assoc{T}(v::PersistentVector{T}, i::Int, el)
+function assoc(v::PersistentVector{T}, i::Int, el) where T
     boundscheck!(v, i)
     if i > v.length - length(v.tail)
         newtail = v.tail[1:end]
@@ -73,7 +73,7 @@ function assoc{T}(v::PersistentVector{T}, i::Int, el)
     end
 end
 
-function pop{T}(v::PersistentVector{T})
+function pop(v::PersistentVector{T}) where T
     if isempty(v.tail)
         newtail = peek(v.trie)[1:end-1]
         PersistentVector{T}(pop(v.trie), newtail, v.length - 1)
@@ -83,15 +83,15 @@ function pop{T}(v::PersistentVector{T})
     end
 end
 
-immutable ItrState{T}
+struct ItrState{T}
     index::Int
     leaf::Vector{T}
 end
 
-Base.start{T}(v::PersistentVector{T}) = ItrState(1, v.length <= 32 ? v.tail : v.trie[1])
-Base.done{T}(v::PersistentVector{T}, state::ItrState{T}) = state.index > v.length
+Base.start(v::PersistentVector{T}) where {T} = ItrState(1, v.length <= 32 ? v.tail : v.trie[1])
+Base.done(v::PersistentVector{T}, state::ItrState{T}) where {T} = state.index > v.length
 
-function Base.next{T}(v::PersistentVector{T}, state::ItrState{T})
+function Base.next(v::PersistentVector{T}, state::ItrState{T}) where T
     i, leaf = state.index, state.leaf
     m = mask(i)
     value = leaf[m]
@@ -102,7 +102,7 @@ function Base.next{T}(v::PersistentVector{T}, state::ItrState{T})
     return value, ItrState(i, leaf)
 end
 
-function Base.map{T}(f::Function, pv::PersistentVector{T})
+function Base.map(f::Function, pv::PersistentVector{T}) where T
     if length(pv) == 0 return PersistentVector{T}() end
 
     first = f(pv[1])
@@ -113,7 +113,7 @@ function Base.map{T}(f::Function, pv::PersistentVector{T})
     v
 end
 
-function Base.filter{T}(f::Function, pv::PersistentVector{T})
+function Base.filter(f::Function, pv::PersistentVector{T}) where T
     v = PersistentVector{T}()
     for el in pv
         if f(el)
@@ -123,7 +123,7 @@ function Base.filter{T}(f::Function, pv::PersistentVector{T})
     v
 end
 
-function Base.hash{T}(pv::PersistentVector{T})
+function Base.hash(pv::PersistentVector{T}) where T
     h = hash(length(pv))
     for el in pv
         h = Base.hash(el, h)
@@ -153,5 +153,5 @@ function print_vec(io::IO, t, head::String)
     end
 end
 
- Base.show{T}(io::IO, ::MIME"text/plain", pv::PersistentVector{T}) =
+ Base.show(io::IO, ::MIME"text/plain", pv::PersistentVector{T}) where {T} =
     print_vec(io, pv, "Persistent{$T}")

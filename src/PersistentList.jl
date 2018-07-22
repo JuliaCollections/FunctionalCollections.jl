@@ -1,15 +1,15 @@
-@compat abstract type AbstractList{T} end
+abstract type AbstractList{T} end
 
-immutable EmptyList{T} <: AbstractList{T} end
+struct EmptyList{T} <: AbstractList{T} end
 EmptyList() = EmptyList{Any}()
 
-immutable PersistentList{T} <: AbstractList{T}
+struct PersistentList{T} <: AbstractList{T}
     head::T
     tail::AbstractList{T}
     length::Int
 end
-(::Type{PersistentList{T}}){T}() = EmptyList{Any}()
-function (::Type{PersistentList{T}}){T}(v)
+PersistentList{T}() where {T} = EmptyList{Any}()
+function PersistentList{T}(v) where T
     v = reverse(v)
     list = EmptyList{T}()
     for el in v
@@ -32,8 +32,8 @@ Base.length(l::PersistentList) = l.length
 Base.isempty(::EmptyList) = true
 Base.isempty(::PersistentList)      = false
 
-cons{T}(val, ::EmptyList{T}) = PersistentList{T}(val, EmptyList{T}(), 1)
-cons{T}(val, l::PersistentList{T})  = PersistentList{T}(val, l, length(l) + 1)
+cons(val, ::EmptyList{T}) where {T} = PersistentList{T}(val, EmptyList{T}(), 1)
+cons(val, l::PersistentList{T}) where {T}  = PersistentList{T}(val, l, length(l) + 1)
 ..(val, l::AbstractList) = cons(val, l)
 
 Base.isequal(::EmptyList, ::EmptyList) = true
@@ -59,7 +59,7 @@ Base.map(f::( Union{Function, DataType}), e::EmptyList) = e
 Base.map(f::( Union{Function, DataType}), l::PersistentList) = cons(f(head(l)), map(f, tail(l)))
 
 Base.reverse(e::EmptyList) = e
-function Base.reverse{T}(l::PersistentList{T})
+function Base.reverse(l::PersistentList{T}) where T
     reversed = EmptyList{T}()
     for val in l
         reversed = val..reversed
@@ -68,7 +68,7 @@ function Base.reverse{T}(l::PersistentList{T})
 end
 
  Base.show(io::IO, ::MIME"text/plain", ::EmptyList) = print(io, "()")
- function Base.show{T}(io::IO, ::MIME"text/plain", l::PersistentList{T})
+ function Base.show(io::IO, ::MIME"text/plain", l::PersistentList{T}) where T
     print(io, "$T($(head(l))")
     for val in tail(l)
         print(io, ", $val")

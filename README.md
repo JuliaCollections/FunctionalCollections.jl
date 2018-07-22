@@ -1,10 +1,12 @@
 # FunctionalCollections
 
-[![Build Status](https://travis-ci.org/JuliaLang/FunctionalCollections.jl.svg)](https://travis-ci.org/JuliaLang/FunctionalCollections.jl)
+[![Build Status](https://travis-ci.org/JuliaCollections/FunctionalCollections.jl.svg)](https://travis-ci.org/JuliaCollections/FunctionalCollections.jl)
 [![FunctionalCollections](http://pkg.julialang.org/badges/FunctionalCollections_0.3.svg)](http://pkg.julialang.org/?pkg=FunctionalCollections&ver=0.3)
 
 Functional and persistent data structures for Julia. This is a work in
 progress and is currently not optimized for performance.
+
+**NOTE:** The `master` branch of `FunctionalCollections` is for Julia v0.7 and up. For earlier Julia versions please use FunctionalCollections v0.3.x.
 
 ### Installation
 
@@ -100,7 +102,7 @@ bar
 baz
 
 julia> map(x -> x * 2, v)
-Persistent{Int64}[1, 4, 6, 8, 10]
+Persistent{Int64}[2, 4, 6, 8, 10]
 
 julia> filter(iseven, v)
 Persistent{Int64}[2, 4]
@@ -113,7 +115,7 @@ similar to the built-in `Dict` type.
 
 ```.jl
 julia> name = @Persistent Dict(:first => "Zach", :last => "Allaun")
-Persistent{Symbol, ASCIIString}[:last => "Allaun", :first => "Zach"]
+Persistent{Symbol, String}[last => Allaun, first => Zach]
 ```
 
 They can be queried in a manner similar to the dictionaries.
@@ -132,10 +134,10 @@ an arbitrary key. To dissociate a key/value pair, use `dissoc`.
 
 ```.jl
 julia> fullname = assoc(name, :middle, "Randall")
-Persistent{Symbol, ASCIIString}[:last => "Allaun", :first => "Zach", :middle => "Randall"]
+Persistent{Symbol, String}[last => Allaun, first => Zach, middle => Randall]
 
 julia> dissoc(fullname, :middle)
-Persistent{Symbol, ASCIIString}[:last => "Allaun", :first => "Zach"]
+Persistent{Symbol, String}[last => Allaun, first => Zach]
 ```
 
 `Base.map` is defined for persistent hash maps. The function argument
@@ -148,7 +150,7 @@ julia> mapkeys(f, m::PersistentHashMap) =
 	       map(kv -> (f(kv[1]), kv[2]), m)
 
 julia> mapkeys(string, fullname)
-Persistent{ASCIIString, ASCIIString}["last" => "Allaun", "first" => "Zach", "middle" => "Randall"]
+Persistent{String, String}[last => Allaun, middle => Randall, first => Zach]
 ```
 
 ### PersistentArrayMap
@@ -159,19 +161,17 @@ on them is O(n). They can be quickly created, though, and useful at
 small sizes.
 
 ```.jl
-julia> using PersistentDataStructures
-
 julia> m = PersistentArrayMap((1, "one"))
-Persistent{Int64, ASCIIString}[1 => one]
+Persistent{Int64, String}Pair{Int64,String}[1=>"one"]
 
 julia> m2 = assoc(m, 2, "two")
-Persistent{Int64, ASCIIString}[1 => one, 2 => two]
+Persistent{Int64, String}Pair{Int64,String}[1=>"one", 2=>"two"]
 
 julia> m == m2
 false
 
 julia> dissoc(m2, 2)
-Persistent{Int64, ASCIIString}[1 => one]
+Persistent{Int64, String}Pair{Int64,String}[1 => one]
 
 julia> m == dissoc(m2, 2)
 true

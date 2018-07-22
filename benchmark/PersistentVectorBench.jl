@@ -51,14 +51,14 @@ end
 @bench "Iterating" 20 [iterating(PersistentVector),
                        iterating(Array)]
 
-function indexing{T}(v::PersistentVector{T})
+function indexing(v::PersistentVector{T}) where T
     function ()
         for idx in rands
             v[idx]
         end
     end
 end
-function indexing{T}(a::Array{T})
+function indexing(a::Array{T}) where T
     function ()
         for idx in rands
             a[idx]
