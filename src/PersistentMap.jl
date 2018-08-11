@@ -54,9 +54,13 @@ function dissoc(m::PersistentArrayMap{K, V}, k) where {K, V}
     PersistentArrayMap{K, V}(kvs)
 end
 
-Base.start(m::PersistentArrayMap)   = 1
-Base.done(m::PersistentArrayMap, i) = i > length(m)
-Base.next(m::PersistentArrayMap, i) = (m.kvs[i], i+1)
+function Base.iterate(m::PersistentArrayMap, i = 1)
+    if i > length(m)
+        return nothing
+    else
+        return (m.kvs[i], i + 1)
+    end
+end
 
 Base.map(f::( Union{DataType, Function}), m::PersistentArrayMap) =
     PersistentArrayMap([f(kv) for kv in m]...)
@@ -152,22 +156,27 @@ function Base.haskey(m::PersistentHashMap, key)
     get(m.trie, reinterpret(Int, hash(key)), NotFound()) != NotFound()
 end
 
-function Base.start(m::PersistentHashMap)
-    state = start(m.trie)
-    done(m.trie, state) && return (Any[], state)
-    arrmap, triestate = next(m.trie, state)
-    (arrmap.kvs, triestate)
-end
-Base.done(m::PersistentHashMap, state) =
-    isempty(state[1]) && done(m.trie, state[2])
-
-function Base.next(m::PersistentHashMap, state)
-    kvs, triestate = state
-    if isempty(kvs)
-        arrmap, triestate = next(m.trie, triestate)
-        next(m, (arrmap.kvs, triestate))
+function Base.iterate(m::PersistentHashMap)
+    trie_iter_result = iterate(m.trie)
+    if trie_iter_result === nothing
+        return nothing
     else
-        (kvs[1], (kvs[2:end], triestate))
+        arrmap, triestate = trie_iter_result
+        kvs = arrmap.kvs
+        return iterate(m, (kvs, triestate))
+    end
+end
+
+function Base.iterate(m::PersistentHashMap, (kvs, triestate))
+    if isempty(kvs) && isempty(triestate)
+        return nothing
+    else
+        if isempty(kvs)
+            arrmap, triestate = iterate(m.trie, triestate)
+            return iterate(m, (arrmap.kvs, triestate))
+        else
+            return (kvs[1], (kvs[2:end], triestate))
+        end
     end
 end
 

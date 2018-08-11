@@ -30,17 +30,10 @@ enq(q::PersistentQueue{T}, val) where {T} =
         PersistentQueue{T}(val..q.in, q.out, length(q) + 1)
     end
 
-Base.start(q::PersistentQueue) = (q.in, q.out)
-Base.done(::PersistentQueue{T}, state::(Tuple{EmptyList{T}, EmptyList{T}})) where {T} = true
-Base.done(::PersistentQueue, state) = false
 
-function Base.next(::PersistentQueue{T}, state::(Tuple{AbstractList{T},
-                                                               PersistentList{T}})) where T
-    in, out = state
-    (head(out), (in, tail(out)))
-end
-function Base.next(q::PersistentQueue{T}, state::(Tuple{PersistentList{T},
-                                                                EmptyList{T}})) where T
-    in, out = state
-    next(q, (EmptyList{T}(), reverse(in)))
-end
+Base.iterate(q::PersistentQueue) = iterate(q, (q.in, q.out))
+Base.iterate(::PersistentQueue{T}, ::Tuple{EmptyList{T}, EmptyList{T}}) where {T} = nothing
+Base.iterate(::PersistentQueue{T}, (in, out)::Tuple{AbstractList{T}, PersistentList{T}}) where {T} =
+    head(out), (in, tail(out))
+Base.iterate(q::PersistentQueue{T}, (in, out)::Tuple{PersistentList{T}, EmptyList{T}}) where {T} =
+    iterate(q, (EmptyList{T}(), reverse(in)))

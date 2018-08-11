@@ -44,10 +44,9 @@ Base.isequal(l1::PersistentList, l2::PersistentList) =
     head(l1) == head(l2) && tail(l1) == tail(l2)
 
 
-Base.start(l::AbstractList) = l
-Base.done(::AbstractList, ::EmptyList) = true
-Base.done(::AbstractList, ::PersistentList)      = false
-Base.next(::AbstractList, l::PersistentList) = (head(l), tail(l))
+Base.iterate(l::AbstractList) = iterate(l, l)
+Base.iterate(::AbstractList, ::EmptyList) = nothing
+Base.iterate(::AbstractList, l::PersistentList) = (head(l), tail(l))
 
 Base.isequal(a::AbstractArray, l::PersistentList) = isequal(l, a)
 Base.isequal(l::PersistentList, a::AbstractArray) =

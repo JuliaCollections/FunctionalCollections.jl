@@ -88,18 +88,19 @@ struct ItrState{T}
     leaf::Vector{T}
 end
 
-Base.start(v::PersistentVector{T}) where {T} = ItrState(1, v.length <= 32 ? v.tail : v.trie[1])
-Base.done(v::PersistentVector{T}, state::ItrState{T}) where {T} = state.index > v.length
-
-function Base.next(v::PersistentVector{T}, state::ItrState{T}) where T
-    i, leaf = state.index, state.leaf
-    m = mask(i)
-    value = leaf[m]
-    i += 1
-    if m == 32
-        leaf = i > v.length - length(v.tail) ? v.tail : v.trie[i]
+function Base.iterate(v::PersistentVector, state = ItrState(1, v.length <= 32 ? v.tail : v.trie[1]))
+    if state.index > v.length
+        return nothing
+    else
+        i, leaf = state.index, state.leaf
+        m = mask(i)
+        value = leaf[m]
+        i += 1
+        if m == 32
+            leaf = i > v.length - length(v.tail) ? v.tail : v.trie[i]
+        end
+        return value, ItrState(i, leaf)
     end
-    return value, ItrState(i, leaf)
 end
 
 function Base.map(f::Function, pv::PersistentVector{T}) where T

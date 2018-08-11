@@ -31,12 +31,9 @@ Base.isequal(s1::PersistentSet, s2::PersistentSet) = isequal(s1.dict, s2.dict)
 
 Base.in(val, s::PersistentSet) = haskey(s.dict, val)
 
-Base.start(s::PersistentSet) = start(s.dict)
-Base.done(s::PersistentSet, state) = done(s.dict, state)
-function Base.next(s::PersistentSet, state)
-    kv, state = next(s.dict, state)
-    (kv[1], state)
-end
+Base.iterate(s::PersistentSet) = iterate(s, iterate(s.dict))
+Base.iterate(s::PersistentSet, ::Nothing) = nothing
+Base.iterate(s::PersistentSet, (kv, dict_state)) = (kv[1], iterate(s.dict, dict_state))
 
 function Base.filter(f::Function, s::PersistentSet{T}) where T
     filtered = filter((kv) -> f(kv[1]), s.dict)
