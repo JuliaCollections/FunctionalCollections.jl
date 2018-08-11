@@ -27,7 +27,7 @@ end
 Base.size(   v::PersistentVector) = (v.length,)
 Base.length( v::PersistentVector) = v.length
 Base.isempty(v::PersistentVector) = length(v) == 0
-Base.endof(  v::PersistentVector) = length(v)
+Base.lastindex(  v::PersistentVector) = length(v)
 
 Base.isequal(v1::PersistentVector, v2::PersistentVector) =
     isequal(v1.tail, v2.tail) && isequal(v1.trie, v2.trie)
@@ -88,18 +88,19 @@ struct ItrState{T}
     leaf::Vector{T}
 end
 
-Base.start(v::PersistentVector{T}) where {T} = ItrState(1, v.length <= 32 ? v.tail : v.trie[1])
-Base.done(v::PersistentVector{T}, state::ItrState{T}) where {T} = state.index > v.length
-
-function Base.next(v::PersistentVector{T}, state::ItrState{T}) where T
-    i, leaf = state.index, state.leaf
-    m = mask(i)
-    value = leaf[m]
-    i += 1
-    if m == 32
-        leaf = i > v.length - length(v.tail) ? v.tail : v.trie[i]
+function Base.iterate(v::PersistentVector, state = ItrState(1, v.length <= 32 ? v.tail : v.trie[1]))
+    if state.index > v.length
+        return nothing
+    else
+        i, leaf = state.index, state.leaf
+        m = mask(i)
+        value = leaf[m]
+        i += 1
+        if m == 32
+            leaf = i > v.length - length(v.tail) ? v.tail : v.trie[i]
+        end
+        return value, ItrState(i, leaf)
     end
-    return value, ItrState(i, leaf)
 end
 
 function Base.map(f::Function, pv::PersistentVector{T}) where T

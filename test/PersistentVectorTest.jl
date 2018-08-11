@@ -33,6 +33,7 @@ end
 
     @testset "accessing elements" begin
         pv = vec(1:5000)
+        @test length(pv) == lastindex(pv) == 5000
 
         @test pv[1]    == 1
         @test pv[32]   == 32
@@ -63,7 +64,9 @@ end
 
     @testset "structural sharing" begin
         pv = vec(1:32)
+        @test length(pv) == lastindex(pv) == 32
         pv2 = append(pv, 33)
+        @test length(pv2) == lastindex(pv2) == 33
         @test pv2.trie[1] === pv.tail
     end
 

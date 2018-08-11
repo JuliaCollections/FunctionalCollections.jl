@@ -129,7 +129,7 @@ const PHM = PersistentHashMap
         @test try m[1]; false catch e true end
 
         m = PHM((1, "one"), (2, "two"))
-        @test_broken dissoc(m, 1) == PHM((2, "two"))
+        @test dissoc(m, 1) == PHM((2, "two"))
     end
 
     @testset "get" begin

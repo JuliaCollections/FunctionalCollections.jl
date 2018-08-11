@@ -25,7 +25,7 @@ copy_to_len(from::Array{T}, len::Int) where {T} =
 
 mask(t::BitmappedTrie, i::Int) = (((i - 1) >>> shift(t)) & (trielen - 1)) + 1
 
-Base.endof(t::BitmappedTrie) = length(t)
+Base.lastindex(t::BitmappedTrie) = length(t)
 
 Base.length(t::BitmappedTrie) =
     error("$(typeof(t)) does not implement Base.length")
@@ -250,9 +250,28 @@ Base.get(n::SparseLeaf, i::Int, default) =
 Base.get(n::SparseNode, i::Int, default) =
     hasindex(n, i) ? get(arrayof(n)[index(n, i)], i, default) : default
 
-function Base.start(t::SparseBitmappedTrie)
-    t.length == 0 && return []
-    ones(Int, 1 + round(Int, t.shift / shiftby)) # state
+function initial_state(t::SparseBitmappedTrie)
+    t.length == 0 && return Int[]
+    ones(Int, 1 + round(Int, t.shift / shiftby))
+end
+
+function Base.iterate(t::SparseBitmappedTrie, state = initial_state(t))
+    if isempty(state)
+        return nothing
+    else
+        item = directindex(t, state)
+        while true
+            index = pop!(state)
+            node = directindex(t, state)
+            if length(node) > index
+                push!(state, index + 1)
+                return item, vcat(state, ones(Int, 1 + round(Int, t.shift / shiftby) -
+                                                   length(state)))
+            elseif node === arrayof(t)
+                return item, Int[]
+            end
+        end
+    end
 end
 
 function directindex(t::SparseBitmappedTrie, v::Vector{Int})
@@ -263,21 +282,4 @@ function directindex(t::SparseBitmappedTrie, v::Vector{Int})
         node = isa(node, SparseBitmappedTrie) ? arrayof(node) : node
     end
     node
-end
-
-Base.done(t::SparseBitmappedTrie, state) = isempty(state)
-
-function Base.next(t::SparseBitmappedTrie, state::Vector{Int})
-    item = directindex(t, state)
-    while true
-        index = pop!(state)
-        node = directindex(t, state)
-        if length(node) > index
-            push!(state, index + 1)
-            return item, vcat(state, ones(Int, 1 + round(Int, t.shift / shiftby) -
-                                               length(state)))
-        elseif node === arrayof(t)
-            return item, []
-        end
-    end
 end
