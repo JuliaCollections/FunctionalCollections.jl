@@ -70,7 +70,7 @@ import FunctionalCollections: SparseBitmappedTrie, SparseNode, SparseLeaf,
         for i=1:1000
             n, _ = update(n, i, i)
         end
-        @test length(n) == 1000
+        @test lastindex(n) == length(n) == 1000
         @test [i for i=n] == collect(1:1000)
     end
 
