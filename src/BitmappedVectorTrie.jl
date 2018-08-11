@@ -268,7 +268,7 @@ function Base.iterate(t::SparseBitmappedTrie, state = initial_state(t))
                 return item, vcat(state, ones(Int, 1 + round(Int, t.shift / shiftby) -
                                                    length(state)))
             elseif node === arrayof(t)
-                return item, []
+                return item, Int[]
             end
         end
     end
