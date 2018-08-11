@@ -27,7 +27,7 @@ end
 Base.size(   v::PersistentVector) = (v.length,)
 Base.length( v::PersistentVector) = v.length
 Base.isempty(v::PersistentVector) = length(v) == 0
-Base.endof(  v::PersistentVector) = length(v)
+Base.lastindex(  v::PersistentVector) = length(v)
 
 Base.isequal(v1::PersistentVector, v2::PersistentVector) =
     isequal(v1.tail, v2.tail) && isequal(v1.trie, v2.trie)

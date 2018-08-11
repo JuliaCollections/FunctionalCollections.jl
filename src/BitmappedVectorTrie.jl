@@ -25,7 +25,7 @@ copy_to_len(from::Array{T}, len::Int) where {T} =
 
 mask(t::BitmappedTrie, i::Int) = (((i - 1) >>> shift(t)) & (trielen - 1)) + 1
 
-Base.endof(t::BitmappedTrie) = length(t)
+Base.lastindex(t::BitmappedTrie) = length(t)
 
 Base.length(t::BitmappedTrie) =
     error("$(typeof(t)) does not implement Base.length")
