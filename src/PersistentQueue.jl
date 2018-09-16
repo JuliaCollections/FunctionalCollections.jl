@@ -11,8 +11,8 @@ PersistentQueue(v::AbstractVector{T}) where {T} =
 
 queue = PersistentQueue
 
-Base.length(q::PersistentQueue) = q.length
-Base.isempty(q::PersistentQueue) = (q.length === 0)
+length(q::PersistentQueue) = q.length
+isempty(q::PersistentQueue) = (q.length === 0)
 
 peek(q::PersistentQueue) = isempty(q.out) ? head(reverse(q.in)) : head(q.out)
 
@@ -31,9 +31,9 @@ enq(q::PersistentQueue{T}, val) where {T} =
     end
 
 
-Base.iterate(q::PersistentQueue) = iterate(q, (q.in, q.out))
-Base.iterate(::PersistentQueue{T}, ::Tuple{EmptyList{T}, EmptyList{T}}) where {T} = nothing
-Base.iterate(::PersistentQueue{T}, (in, out)::Tuple{AbstractList{T}, PersistentList{T}}) where {T} =
+iterate(q::PersistentQueue) = iterate(q, (q.in, q.out))
+iterate(::PersistentQueue{T}, ::Tuple{EmptyList{T}, EmptyList{T}}) where {T} = nothing
+iterate(::PersistentQueue{T}, (in, out)::Tuple{AbstractList{T}, PersistentList{T}}) where {T} =
     head(out), (in, tail(out))
-Base.iterate(q::PersistentQueue{T}, (in, out)::Tuple{PersistentList{T}, EmptyList{T}}) where {T} =
+iterate(q::PersistentQueue{T}, (in, out)::Tuple{PersistentList{T}, EmptyList{T}}) where {T} =
     iterate(q, (EmptyList{T}(), reverse(in)))

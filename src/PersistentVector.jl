@@ -24,17 +24,17 @@ function boundscheck!(v::PersistentVector, i::Int)
     0 < i <= v.length || error(BoundsError(), " :: Index $i out of bounds ($(v.length))")
 end
 
-Base.size(   v::PersistentVector) = (v.length,)
-Base.length( v::PersistentVector) = v.length
-Base.isempty(v::PersistentVector) = length(v) == 0
-Base.lastindex(  v::PersistentVector) = length(v)
+size(   v::PersistentVector) = (v.length,)
+length( v::PersistentVector) = v.length
+isempty(v::PersistentVector) = length(v) == 0
+lastindex(  v::PersistentVector) = length(v)
 
-Base.isequal(v1::PersistentVector, v2::PersistentVector) =
+isequal(v1::PersistentVector, v2::PersistentVector) =
     isequal(v1.tail, v2.tail) && isequal(v1.trie, v2.trie)
 ==(v1::PersistentVector, v2::PersistentVector) =
     v1.tail == v2.tail && v1.trie == v2.trie
 
-function Base.getindex(v::PersistentVector, i::Int)
+function getindex(v::PersistentVector, i::Int)
     boundscheck!(v, i)
     if i > v.length - length(v.tail)
         v.tail[mask(i)]
@@ -88,7 +88,7 @@ struct ItrState{T}
     leaf::Vector{T}
 end
 
-function Base.iterate(v::PersistentVector, state = ItrState(1, v.length <= 32 ? v.tail : v.trie[1]))
+function iterate(v::PersistentVector, state = ItrState(1, v.length <= 32 ? v.tail : v.trie[1]))
     if state.index > v.length
         return nothing
     else
@@ -103,7 +103,7 @@ function Base.iterate(v::PersistentVector, state = ItrState(1, v.length <= 32 ? 
     end
 end
 
-function Base.map(f::Function, pv::PersistentVector{T}) where T
+function map(f::Function, pv::PersistentVector{T}) where T
     if length(pv) == 0 return PersistentVector{T}() end
 
     first = f(pv[1])
@@ -114,7 +114,7 @@ function Base.map(f::Function, pv::PersistentVector{T}) where T
     v
 end
 
-function Base.filter(f::Function, pv::PersistentVector{T}) where T
+function filter(f::Function, pv::PersistentVector{T}) where T
     v = PersistentVector{T}()
     for el in pv
         if f(el)
@@ -124,10 +124,10 @@ function Base.filter(f::Function, pv::PersistentVector{T}) where T
     v
 end
 
-function Base.hash(pv::PersistentVector{T}) where T
+function hash(pv::PersistentVector{T}) where T
     h = hash(length(pv))
     for el in pv
-        h = Base.hash(el, h)
+        h = hash(el, h)
     end
      UInt(h)
 end
@@ -154,5 +154,5 @@ function print_vec(io::IO, t, head::String)
     end
 end
 
- Base.show(io::IO, ::MIME"text/plain", pv::PersistentVector{T}) where {T} =
+ show(io::IO, ::MIME"text/plain", pv::PersistentVector{T}) where {T} =
     print_vec(io, pv, "Persistent{$T}")
