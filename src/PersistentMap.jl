@@ -146,7 +146,7 @@ function getindex(m::PersistentHashMap, key)
 end
 
 get(m::PersistentHashMap, key) = m[key]
-function Base.get(m::PersistentHashMap, key, default)
+function get(m::PersistentHashMap, key, default)
     val = get(m.trie, reinterpret(Int, hash(key)), NotFound())
     (val === NotFound()) && return default
     val[key]

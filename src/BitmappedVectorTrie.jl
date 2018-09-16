@@ -28,7 +28,7 @@ mask(t::BitmappedTrie, i::Int) = (((i - 1) >>> shift(t)) & (trielen - 1)) + 1
 lastindex(t::BitmappedTrie) = length(t)
 
 length(t::BitmappedTrie) =
-    error("$(typeof(t)) does not implement Base.length")
+    error("$(typeof(t)) does not implement length")
 shift(t::BitmappedTrie) =
     error("$(typeof(t)) does not implement FunctionalCollections.shift")
 maxlength(t::BitmappedTrie) =

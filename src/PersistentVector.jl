@@ -127,7 +127,7 @@ end
 function hash(pv::PersistentVector{T}) where T
     h = hash(length(pv))
     for el in pv
-        h = Base.hash(el, h)
+        h = hash(el, h)
     end
      UInt(h)
 end
