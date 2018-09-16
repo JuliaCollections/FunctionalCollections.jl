@@ -11,13 +11,13 @@ PersistentArrayMap(kvs::(Union{Tuple{K, V}, Pair{K, V}})...) where {K, V} =
     PersistentArrayMap{K, V}(Pair{K, V}[Pair(k, v) for (k, v) in kvs])
 PersistentArrayMap(; kwargs...) = PersistentArrayMap(kwargs...)
 
-Base.isequal(m1::PersistentArrayMap, m2::PersistentArrayMap) =
+isequal(m1::PersistentArrayMap, m2::PersistentArrayMap) =
     isequal(Set(m1.kvs), Set(m2.kvs))
 ==(m1::PersistentArrayMap, m2::PersistentArrayMap) =
     Set(m1.kvs) == Set(m2.kvs)
 
-Base.length(m::PersistentArrayMap)  = length(m.kvs)
-Base.isempty(m::PersistentArrayMap) = length(m) == 0
+length(m::PersistentArrayMap)  = length(m.kvs)
+isempty(m::PersistentArrayMap) = length(m) == 0
 
 findkeyidx(m::PersistentArrayMap, k) = findfirst(kv -> kv[1] == k, m.kvs)
 
@@ -28,13 +28,13 @@ function _get(m::PersistentArrayMap, k, default, hasdefault::Bool)
     hasdefault ? default : default()
 end
 
-Base.get(m::PersistentArrayMap, k) =
+get(m::PersistentArrayMap, k) =
     _get(m, k, ()->error("key not found: $k"), false)
-Base.get(m::PersistentArrayMap, k, default) =
+get(m::PersistentArrayMap, k, default) =
     _get(m, k, default, true)
-Base.getindex(m::PersistentArrayMap, k) = get(m, k)
+getindex(m::PersistentArrayMap, k) = get(m, k)
 
-Base.haskey(m::PersistentArrayMap, k) = get(m, k, NotFound()) != NotFound()
+haskey(m::PersistentArrayMap, k) = get(m, k, NotFound()) != NotFound()
 
 function assoc(m::PersistentArrayMap{K, V}, k, v) where {K, V}
     idx = findkeyidx(m, k)
@@ -54,7 +54,7 @@ function dissoc(m::PersistentArrayMap{K, V}, k) where {K, V}
     PersistentArrayMap{K, V}(kvs)
 end
 
-function Base.iterate(m::PersistentArrayMap, i = 1)
+function iterate(m::PersistentArrayMap, i = 1)
     if i > length(m)
         return nothing
     else
@@ -62,10 +62,10 @@ function Base.iterate(m::PersistentArrayMap, i = 1)
     end
 end
 
-Base.map(f::( Union{DataType, Function}), m::PersistentArrayMap) =
+map(f::( Union{DataType, Function}), m::PersistentArrayMap) =
     PersistentArrayMap([f(kv) for kv in m]...)
 
-Base.show(io::IO, ::MIME"text/plain", m::PersistentArrayMap{K, V}) where {K, V} =
+show(io::IO, ::MIME"text/plain", m::PersistentArrayMap{K, V}) where {K, V} =
     print(io, "Persistent{$K, $V}$(m.kvs)")
 
 
@@ -105,11 +105,11 @@ function PersistentHashMap(; kwargs...)
     PersistentHashMap(kwargs...)
 end
 
-Base.length(m::PersistentHashMap) = m.length
-Base.isempty(m::PersistentHashMap) = length(m) == 0
+length(m::PersistentHashMap) = m.length
+isempty(m::PersistentHashMap) = length(m) == 0
 
 zipd(x,y) = map(p -> p[1] => p[2], zip(x,y))
-Base.isequal(m1::PersistentHashMap, m2::PersistentHashMap) =
+isequal(m1::PersistentHashMap, m2::PersistentHashMap) =
     length(m1) == length(m2) && all(x -> isequal(x...), zipd(m1, m2))
 
 tup_eq(x) = x[1] == x[2]
@@ -139,24 +139,24 @@ function dissoc(m::PersistentHashMap, key)
     end
 end
 
-function Base.getindex(m::PersistentHashMap, key)
+function getindex(m::PersistentHashMap, key)
     val = get(m.trie, reinterpret(Int, hash(key)), NotFound())
     (val === NotFound()) && error("key not found")
     val[key]
 end
 
-Base.get(m::PersistentHashMap, key) = m[key]
+get(m::PersistentHashMap, key) = m[key]
 function Base.get(m::PersistentHashMap, key, default)
     val = get(m.trie, reinterpret(Int, hash(key)), NotFound())
     (val === NotFound()) && return default
     val[key]
 end
 
-function Base.haskey(m::PersistentHashMap, key)
+function haskey(m::PersistentHashMap, key)
     get(m.trie, reinterpret(Int, hash(key)), NotFound()) != NotFound()
 end
 
-function Base.iterate(m::PersistentHashMap)
+function iterate(m::PersistentHashMap)
     trie_iter_result = iterate(m.trie)
     if trie_iter_result === nothing
         return nothing
@@ -167,7 +167,7 @@ function Base.iterate(m::PersistentHashMap)
     end
 end
 
-function Base.iterate(m::PersistentHashMap, (kvs, triestate))
+function iterate(m::PersistentHashMap, (kvs, triestate))
     if isempty(kvs) && isempty(triestate)
         return nothing
     else
@@ -180,11 +180,11 @@ function Base.iterate(m::PersistentHashMap, (kvs, triestate))
     end
 end
 
-function Base.map(f::( Union{Function, DataType}), m::PersistentHashMap)
+function map(f::( Union{Function, DataType}), m::PersistentHashMap)
     PersistentHashMap([f(kv) for kv in m]...)
 end
 
-function Base.filter(f::Function, m::PersistentHashMap{K, V}) where {K, V}
+function filter(f::Function, m::PersistentHashMap{K, V}) where {K, V}
     arr = Array{Pair{K, V},1}()
     for el in m
         f(el) && push!(arr, el)
@@ -204,12 +204,12 @@ function _merge(d::PersistentHashMap, others...)
 end
 
 # This definition suppresses ambiguity warning
-Base.merge(d::PersistentHashMap, others::AbstractDict...) =
+merge(d::PersistentHashMap, others::AbstractDict...) =
     _merge(d, others...)
-Base.merge(d::PersistentHashMap, others...) =
+merge(d::PersistentHashMap, others...) =
     _merge(d, others...)
 
- function Base.show(io::IO, ::MIME"text/plain", m::PersistentHashMap{K, V}) where {K, V}
+ function show(io::IO, ::MIME"text/plain", m::PersistentHashMap{K, V}) where {K, V}
     print(io, "Persistent{$K, $V}[")
     print(io, join(["$k => $v" for (k, v) in m], ", "))
     print(io, "]")

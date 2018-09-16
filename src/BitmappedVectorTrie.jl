@@ -25,9 +25,9 @@ copy_to_len(from::Array{T}, len::Int) where {T} =
 
 mask(t::BitmappedTrie, i::Int) = (((i - 1) >>> shift(t)) & (trielen - 1)) + 1
 
-Base.lastindex(t::BitmappedTrie) = length(t)
+lastindex(t::BitmappedTrie) = length(t)
 
-Base.length(t::BitmappedTrie) =
+length(t::BitmappedTrie) =
     error("$(typeof(t)) does not implement Base.length")
 shift(t::BitmappedTrie) =
     error("$(typeof(t)) does not implement FunctionalCollections.shift")
@@ -36,7 +36,7 @@ maxlength(t::BitmappedTrie) =
 arrayof(t::BitmappedTrie) =
     error("$(typeof(t)) does not implement FunctionalCollections.arrayof")
 
-function Base.isequal(t1::BitmappedTrie, t2::BitmappedTrie)
+function isequal(t1::BitmappedTrie, t2::BitmappedTrie)
     length(t1)    == length(t2)    &&
     shift(t1)     == shift(t2)     &&
     maxlength(t1) == maxlength(t2) &&
@@ -83,12 +83,12 @@ DenseLeaf{T}() where {T} = DenseLeaf{T}(T[])
 arrayof(    node::DenseNode) = node.arr
 shift(      node::DenseNode) = node.shift
 maxlength(  node::DenseNode) = node.maxlength
-Base.length(node::DenseNode) = node.length
+length(node::DenseNode) = node.length
 
 arrayof(    leaf::DenseLeaf) = leaf.arr
 shift(          ::DenseLeaf) = shiftby
 maxlength(  leaf::DenseLeaf) = trielen
-Base.length(leaf::DenseLeaf) = length(arrayof(leaf))
+length(leaf::DenseLeaf) = length(arrayof(leaf))
 
 function promoted(node::DenseBitmappedTrie{T}) where T
     DenseNode{T}(DenseBitmappedTrie{T}[node],
@@ -143,8 +143,8 @@ end
 push(leaf::DenseLeaf, el) = append(leaf, el)
 push(node::DenseNode, el) = append(node, el)
 
-Base.getindex(leaf::DenseLeaf, i::Int) = arrayof(leaf)[mask(leaf, i)]
-Base.getindex(node::DenseNode, i::Int) = arrayof(node)[mask(node, i)][i]
+getindex(leaf::DenseLeaf, i::Int) = arrayof(leaf)[mask(leaf, i)]
+getindex(node::DenseNode, i::Int) = arrayof(node)[mask(node, i)][i]
 
 function assoc(leaf::DenseLeaf{T}, i::Int, el) where T
     newarr = arrayof(leaf)[:]
@@ -194,12 +194,12 @@ SparseLeaf{T}() where {T} = SparseLeaf{T}(T[], 0)
 arrayof(    n::SparseNode) = n.arr
 shift(      n::SparseNode) = n.shift
 maxlength(  n::SparseNode) = n.maxlength
-Base.length(n::SparseNode) = n.length
+length(n::SparseNode) = n.length
 
 arrayof(    l::SparseLeaf) = l.arr
 shift(       ::SparseLeaf) = 0
 maxlength(  l::SparseLeaf) = trielen
-Base.length(l::SparseLeaf) = length(arrayof(l))
+length(l::SparseLeaf) = length(arrayof(l))
 
 function demoted(n::SparseNode{T}) where T
     shift(n) == shiftby ?
@@ -245,9 +245,9 @@ function update(n::SparseNode{T}, i::Int, el::T) where T
      inc)
 end
 
-Base.get(n::SparseLeaf, i::Int, default) =
+get(n::SparseLeaf, i::Int, default) =
     hasindex(n, i) ? arrayof(n)[index(n, i)] : default
-Base.get(n::SparseNode, i::Int, default) =
+get(n::SparseNode, i::Int, default) =
     hasindex(n, i) ? get(arrayof(n)[index(n, i)], i, default) : default
 
 function initial_state(t::SparseBitmappedTrie)
@@ -255,7 +255,7 @@ function initial_state(t::SparseBitmappedTrie)
     ones(Int, 1 + round(Int, t.shift / shiftby))
 end
 
-function Base.iterate(t::SparseBitmappedTrie, state = initial_state(t))
+function iterate(t::SparseBitmappedTrie, state = initial_state(t))
     if isempty(state)
         return nothing
     else
