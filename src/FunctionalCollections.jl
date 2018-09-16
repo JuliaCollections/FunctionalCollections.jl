@@ -1,7 +1,8 @@
 __precompile__()
 module FunctionalCollections
 
-import Base: ==, first, length, isempty, isequal, iterate, map, reverse, show
+import Base: ==, first, length, isempty, isequal, iterate, map, reverse, show,
+             filter
 
 include("BitmappedVectorTrie.jl")
 
@@ -39,7 +40,7 @@ export PersistentList, plist,
        EmptyList,
        cons, ..,
        head,
-       tail
+       tail,
 
 include("PersistentQueue.jl")
 
