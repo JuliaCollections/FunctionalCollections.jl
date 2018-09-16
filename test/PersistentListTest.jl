@@ -50,6 +50,10 @@ using Test
         @test map(x->x+1, PersistentList([1,2,3,4,5])) == PersistentList([2,3,4,5,6])
     end
 
+    @testset "filter" begin
+        @test filter(x->x%2==0, PersistentList([1,2,3,4,5,6])) == PersistentList([2,4,6])
+    end
+
     @testset "reverse" begin
         @test reverse(PersistentList(1:10)) == 10:-1:1
     end
