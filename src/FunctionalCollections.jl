@@ -40,7 +40,7 @@ export PersistentList, plist,
        EmptyList,
        cons, ..,
        head,
-       tail,
+       tail
 
 include("PersistentQueue.jl")
 
