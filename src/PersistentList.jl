@@ -57,8 +57,8 @@ Base.isequal(l::PersistentList, a::AbstractArray) =
 Base.map(f::( Union{Function, DataType}), e::EmptyList) = e
 Base.map(f::( Union{Function, DataType}), l::PersistentList) = cons(f(head(l)), map(f, tail(l)))
 
-filter(f::Function, e::EmptyList) = e
-function filter(f::Function, l::PersistentList{T}) where T
+Base.filter(f::Function, e::EmptyList) = e
+function Base.filter(f::Function, l::PersistentList{T}) where T
     list = EmptyList{T}()
     for el in l
         if f(el)
