@@ -1,7 +1,3 @@
-import Base: -, ==, <=, conj, eltype, first, filter, get, getindex,
-             hash, haskey, in, isempty, isequal, isless, iterate, lastindex,
-             length, map, merge, reverse, setdiff, size, show, union
-
 # implements Tries
 
 # `shiftby` is equal to the number of bits required to represent index information
