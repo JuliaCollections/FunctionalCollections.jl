@@ -9,9 +9,6 @@ PersistentSet{T}(itr) where {T} = _union(PersistentSet{T}(), itr)
 PersistentSet() = PersistentSet{Any}()
 PersistentSet(itr) = PersistentSet{eltype(itr)}(itr)
 
-@deprecate(PersistentSet(x1::T, x2::T, xs::T...) where {T},
-                PersistentSet(T[x1, x2, xs...]))
-
 hash(s::PersistentSet,h::UInt) =
     hash(s.dict, h+(UInt(0xf7dca1a5fd7090be)))
 
