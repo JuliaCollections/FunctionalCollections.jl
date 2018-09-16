@@ -45,7 +45,6 @@ function setdiff(l::PersistentSet, r::( Union{PersistentSet, Set}))
     filter(notinr, l)
 end
 
-import -
 -(l::PersistentSet, r::( Union{PersistentSet, Set})) = setdiff(l, r)
 
 isempty(s::PersistentSet) = length(s.dict) == 0
@@ -69,7 +68,6 @@ function isless(s1::PersistentSet, s2::PersistentSet)
     all(el -> el in s2, s1)
 end
 
-import <=
 <=(s1::PersistentSet, s2::PersistentSet) = all(el -> el in s2, s1)
 
 function show(io::IO, s::PersistentSet{T}) where T
