@@ -1,5 +1,3 @@
-import Base: ==, first, length, isempty, isequal, iterate, map, reverse, show
-
 abstract type AbstractList{T} end
 
 struct EmptyList{T} <: AbstractList{T} end
@@ -58,6 +56,17 @@ isequal(l::PersistentList, a::AbstractArray) =
 
 map(f::Base.Callable, e::EmptyList) = e
 map(f::Base.Callable, l::PersistentList) = cons(f(head(l)), map(f, tail(l)))
+
+filter(f::Function, e::EmptyList) = e
+function filter(f::Function, l::PersistentList{T}) where T
+    list = EmptyList{T}()
+    for el in l
+        if f(el)
+            list = cons(el, list)
+        end
+    end
+    reverse(list)
+end
 
 reverse(e::EmptyList) = e
 function reverse(l::PersistentList{T}) where T
