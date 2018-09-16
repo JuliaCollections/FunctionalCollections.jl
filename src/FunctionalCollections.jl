@@ -1,7 +1,8 @@
 __precompile__()
 module FunctionalCollections
 
-import Base.==
+import Base: ==, first, length, isempty, isequal, iterate, map, reverse, show,
+             filter
 
 include("BitmappedVectorTrie.jl")
 
