@@ -62,7 +62,7 @@ function Base.filter(f::Function, l::PersistentList{T}) where T
     list = EmptyList{T}()
     for el in l
         if f(el)
-            list = cons(el, list)
+            list = el..list
         end
     end
     reverse(list)
