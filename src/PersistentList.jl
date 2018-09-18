@@ -1,5 +1,3 @@
-import Base.==
-
 abstract type AbstractList{T} end
 
 struct EmptyList{T} <: AbstractList{T} end
