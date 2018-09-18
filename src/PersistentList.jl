@@ -1,3 +1,5 @@
+import Base.==
+
 abstract type AbstractList{T} end
 
 struct EmptyList{T} <: AbstractList{T} end
@@ -59,13 +61,14 @@ Base.map(f::( Union{Function, DataType}), l::PersistentList) = cons(f(head(l)), 
 
 Base.filter(f::Function, e::EmptyList) = e
 function Base.filter(f::Function, l::PersistentList{T}) where T
+    l = reverse(l)
     list = EmptyList{T}()
     for el in l
         if f(el)
             list = el..list
         end
     end
-    reverse(list)
+    list
 end
 
 Base.reverse(e::EmptyList) = e
