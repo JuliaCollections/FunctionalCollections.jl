@@ -51,6 +51,7 @@ Base.iterate(::AbstractList, l::PersistentList) = (head(l), tail(l))
 Base.isequal(a::AbstractArray, l::PersistentList) = isequal(l, a)
 Base.isequal(l::PersistentList, a::AbstractArray) =
     isequal(length(l), length(a)) && all((el) -> el[1] == el[2], zipd(l, a))
+import Base.==
 ==(a::AbstractArray, l::PersistentList) = isequal(l, a)
 ==(l::PersistentList, a::AbstractArray) = isequal(l, a)
 
@@ -58,14 +59,8 @@ Base.map(f::( Union{Function, DataType}), e::EmptyList) = e
 Base.map(f::( Union{Function, DataType}), l::PersistentList) = cons(f(head(l)), map(f, tail(l)))
 
 Base.filter(f::Function, e::EmptyList) = e
-function Base.filter(f::Function, l::PersistentList{T}) where T
-    list = EmptyList{T}()
-    for el in l
-        if f(el)
-            list = el..list
-        end
-    end
-    reverse(list)
+function Base.filter(f::Function, l::PersistentList)
+    f(head(l)) ? cons(head(l), filter(f, tail(l))) : filter(f, tail(l))
 end
 
 Base.reverse(e::EmptyList) = e
