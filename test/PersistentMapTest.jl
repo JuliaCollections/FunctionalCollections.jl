@@ -150,6 +150,13 @@ const PHM = PersistentHashMap
         @test !haskey(m, 2)
     end
 
+    @testset "haskey dissoc" begin
+        m = PHM{Int, String}()
+        m = assoc(m, 1, "one")
+        m = dissoc(m, 1)
+        @test !haskey(m, 1)
+    end
+
     @testset "map" begin
         m = PHM((1, 1), (2, 2), (3, 3))
         @test map((kv) -> (kv[1], kv[2]+1), m) == PHM((1, 2), (2, 3), (3, 4))

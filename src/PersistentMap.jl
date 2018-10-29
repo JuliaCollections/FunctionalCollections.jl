@@ -153,7 +153,8 @@ function Base.get(m::PersistentHashMap, key, default)
 end
 
 function Base.haskey(m::PersistentHashMap, key)
-    get(m.trie, reinterpret(Int, hash(key)), NotFound()) != NotFound()
+    val = get(m.trie, reinterpret(Int, hash(key)), NotFound())
+    (val != NotFound()) && haskey(val, key)
 end
 
 function Base.iterate(m::PersistentHashMap)
