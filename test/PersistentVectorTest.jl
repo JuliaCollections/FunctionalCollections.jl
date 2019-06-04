@@ -111,4 +111,9 @@ end
         @test !isempty(PersistentVector([1]))
     end
 
+    @testset "identity constructor" begin
+        pv = vec(1:10)
+        @test pv === PersistentVector(pv)
+    end
+
 end

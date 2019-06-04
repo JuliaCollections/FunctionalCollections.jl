@@ -15,6 +15,7 @@ function PersistentVector{T}(arr) where T
         append(PersistentVector{T}(DenseLeaf{Vector{T}}(), T[], 0), arr)
     end
 end
+PersistentVector{T}(v::PersistentVector{T}) where {T} = v
 PersistentVector() = PersistentVector{Any}()
 PersistentVector(itr) = PersistentVector{eltype(itr)}(itr)
 
