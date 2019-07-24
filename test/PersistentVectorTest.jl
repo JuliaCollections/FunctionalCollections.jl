@@ -111,4 +111,25 @@ end
         @test !isempty(PersistentVector([1]))
     end
 
+    @testset "identity constructor" begin
+        pv = vec(1:10)
+        @test pv === PersistentVector(pv)
+        @test pv === PersistentVector{Int}(pv)
+        @test typeof(PersistentVector{Any}(pv)) == PersistentVector{Any}
+    end
+
+    @testset "convert" begin
+        @test convert(PersistentVector, [1, 2, 3]) == PersistentVector([1, 2, 3])
+        @test convert(PersistentVector{Int}, [1, 2, 3]) == PersistentVector([1, 2, 3])
+
+        @test typeof(convert(PersistentVector{Any}, [1, 2, 3])) == PersistentVector{Any}
+        @test convert(PersistentVector{Float64}, [1, 2, 3]) == [1.0, 2.0, 3.0]
+
+        # Test identity conversion
+        pv = vec(1:10)
+        @test convert(PersistentVector, pv) === pv
+        @test convert(PersistentVector{Int}, pv) === pv
+        @test typeof(convert(PersistentVector{Float64}, pv)) == PersistentVector{Float64}
+    end
+
 end

@@ -15,8 +15,15 @@ function PersistentVector{T}(arr) where T
         append(PersistentVector{T}(DenseLeaf{Vector{T}}(), T[], 0), arr)
     end
 end
+PersistentVector(v::PersistentVector) = v
+PersistentVector{T}(v::PersistentVector{T}) where {T} = v
 PersistentVector() = PersistentVector{Any}()
 PersistentVector(itr) = PersistentVector{eltype(itr)}(itr)
+
+Base.convert(::Type{PersistentVector}, x) = PersistentVector(x)
+Base.convert(::Type{PersistentVector{T}}, x) where {T} = PersistentVector{T}(x)
+Base.convert(::Type{PersistentVector}, x::PersistentVector{T}) where {T} = x
+Base.convert(::Type{PersistentVector{T}}, x::PersistentVector{T}) where {T} = x
 
 mask(i::Int) = ((i - 1) & (trielen - 1)) + 1
 
