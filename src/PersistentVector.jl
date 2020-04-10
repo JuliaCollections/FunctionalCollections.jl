@@ -50,7 +50,7 @@ function Base.getindex(v::PersistentVector, i::Int)
     end
 end
 
-peek(v::PersistentVector) = v[end]
+pop(v::PersistentVector) = v[end]
 
 function push(v::PersistentVector{T}, el) where T
     if length(v.tail) < trielen
@@ -80,10 +80,10 @@ function assoc(v::PersistentVector{T}, i::Int, el) where T
     end
 end
 
-function pop(v::PersistentVector{T}) where T
+function butlast(v::PersistentVector{T}) where T
     if isempty(v.tail)
-        newtail = peek(v.trie)[1:end-1]
-        PersistentVector{T}(pop(v.trie), newtail, v.length - 1)
+        newtail = pop(v.trie)[1:end-1]
+        PersistentVector{T}(butlast(v.trie), newtail, v.length - 1)
     else
         newtail = v.tail[1:end-1]
         PersistentVector{T}(v.trie, newtail, v.length - 1)

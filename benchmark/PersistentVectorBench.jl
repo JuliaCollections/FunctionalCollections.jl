@@ -10,7 +10,7 @@ const rands = rand(1:1000000, 100000)
 function appending(::Type{PersistentVector})
     function ()
         v = PersistentVector{Int}()
-        for i=1:250000
+        for i = 1:250000
             v = append(v, i)
         end
     end
@@ -18,7 +18,7 @@ end
 function appending(::Type{Array})
     function ()
         a = Int[]
-        for i=1:250000
+        for i = 1:250000
             a = push!(a, i)
         end
     end
@@ -73,7 +73,7 @@ function popping(::Type{PersistentVector})
     function ()
         v2 = v
         for _ in 1:length(v2)
-            v2 = pop(v2)
+            v2 = butlast(v2)
         end
     end
 end

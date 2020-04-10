@@ -12,7 +12,7 @@ abstract type BitmappedTrie{T} end
 # Copy elements from one Array to another, up to `n` elements.
 #
 function copy_to(from::Array{T}, to::Array{T}, n::Int) where {T}
-    for i=1:n
+    for i = 1:n
         to[i] = from[i]
     end
     to
@@ -80,14 +80,14 @@ struct DenseLeaf{T} <: DenseBitmappedTrie{T}
 end
 DenseLeaf{T}() where {T} = DenseLeaf{T}(T[])
 
-arrayof(    node::DenseNode) = node.arr
-shift(      node::DenseNode) = node.shift
-maxlength(  node::DenseNode) = node.maxlength
+arrayof(node::DenseNode) = node.arr
+shift(node::DenseNode) = node.shift
+maxlength(node::DenseNode) = node.maxlength
 Base.length(node::DenseNode) = node.length
 
-arrayof(    leaf::DenseLeaf) = leaf.arr
-shift(          ::DenseLeaf) = shiftby
-maxlength(  leaf::DenseLeaf) = trielen
+arrayof(leaf::DenseLeaf) = leaf.arr
+shift(::DenseLeaf) = shiftby
+maxlength(leaf::DenseLeaf) = trielen
 Base.length(leaf::DenseLeaf) = length(arrayof(leaf))
 
 function promoted(node::DenseBitmappedTrie{T}) where T
@@ -108,7 +108,7 @@ function demoted(node::DenseNode{T}) where T
     end
 end
 
-function witharr(node::DenseNode{T}, arr::Array, lenshift::Int=0) where T
+function witharr(node::DenseNode{T}, arr::Array, lenshift::Int = 0) where T
     DenseNode{T}(arr, shift(node), length(node) + lenshift, maxlength(node))
 end
 witharr(leaf::DenseLeaf{T}, arr::Array) where {T} = DenseLeaf{T}(arr)
@@ -158,14 +158,14 @@ function assoc(node::DenseNode, i::Int, el)
     witharr(node, newarr)
 end
 
-peek(bt::DenseBitmappedTrie) = bt[end]
+pop(bt::DenseBitmappedTrie) = bt[end]
 
-# Pop is usually destructive, but that doesn't make sense for an immutable
-# structure, so `pop` is defined to return a Trie without its last
-# element. Use `peek` to access the last element.
+# butlast is usually destructive, but that doesn't make sense for an immutable
+# structure, so `butlast` is defined to return a Trie without its last
+# element. Use `pop` to access the last element.
 #
-pop(leaf::DenseLeaf) = witharr(leaf, arrayof(leaf)[1:end-1])
-function pop(node::DenseNode)
+butlast(leaf::DenseLeaf) = witharr(leaf, arrayof(leaf)[1:end - 1])
+function butlast(node::DenseNode)
     newarr = arrayof(node)[:]
     newarr[end] = pop(newarr[end])
     witharr(node, newarr, -1)
@@ -183,7 +183,7 @@ struct SparseNode{T} <: SparseBitmappedTrie{T}
     maxlength::Int
     bitmap::Int
 end
-SparseNode(T::Type) = SparseNode{T}(SparseBitmappedTrie{T}[], shiftby*7, 0, trielen^7, 0)
+SparseNode(T::Type) = SparseNode{T}(SparseBitmappedTrie{T}[], shiftby * 7, 0, trielen^7, 0)
 
 struct SparseLeaf{T} <: SparseBitmappedTrie{T}
     arr::Vector{T}
@@ -191,14 +191,14 @@ struct SparseLeaf{T} <: SparseBitmappedTrie{T}
 end
 SparseLeaf{T}() where {T} = SparseLeaf{T}(T[], 0)
 
-arrayof(    n::SparseNode) = n.arr
-shift(      n::SparseNode) = n.shift
-maxlength(  n::SparseNode) = n.maxlength
+arrayof(n::SparseNode) = n.arr
+shift(n::SparseNode) = n.shift
+maxlength(n::SparseNode) = n.maxlength
 Base.length(n::SparseNode) = n.length
 
-arrayof(    l::SparseLeaf) = l.arr
-shift(       ::SparseLeaf) = 0
-maxlength(  l::SparseLeaf) = trielen
+arrayof(l::SparseLeaf) = l.arr
+shift(::SparseLeaf) = 0
+maxlength(l::SparseLeaf) = trielen
 Base.length(l::SparseLeaf) = length(arrayof(l))
 
 function demoted(n::SparseNode{T}) where T
@@ -210,9 +210,9 @@ function demoted(n::SparseNode{T}) where T
                   round(Int, maxlength(n) / trielen), 0)
 end
 
-bitpos(  t::SparseBitmappedTrie, i::Int) = 1 << (mask(t, i) - 1)
+bitpos(t::SparseBitmappedTrie, i::Int) = 1 << (mask(t, i) - 1)
 hasindex(t::SparseBitmappedTrie, i::Int) = t.bitmap & bitpos(t, i) != 0
-index(   t::SparseBitmappedTrie, i::Int) =
+index(t::SparseBitmappedTrie, i::Int) =
     1 + count_ones(t.bitmap & (bitpos(t, i) - 1))
 
 function update(l::SparseLeaf{T}, i::Int, el::T) where T
@@ -223,7 +223,7 @@ function update(l::SparseLeaf{T}, i::Int, el::T) where T
         newarr = arrayof(l)[:]
         newarr[idx] = el
     else
-        newarr = vcat(arrayof(l)[1:idx-1], [el], arrayof(l)[idx:end])
+        newarr = vcat(arrayof(l)[1:idx - 1], [el], arrayof(l)[idx:end])
     end
     (SparseLeaf{T}(newarr, bitmap), !hasi)
 end
@@ -236,7 +236,7 @@ function update(n::SparseNode{T}, i::Int, el::T) where T
         newarr[idx] = updated
     else
         child, inc = update(demoted(n), i, el)
-        newarr = vcat(arrayof(n)[1:idx-1], [child], arrayof(n)[idx:end])
+        newarr = vcat(arrayof(n)[1:idx - 1], [child], arrayof(n)[idx:end])
     end
     (SparseNode{T}(newarr,
                    n.shift,
@@ -277,7 +277,7 @@ end
 function directindex(t::SparseBitmappedTrie, v::Vector{Int})
     isempty(v) && return arrayof(t)
     local node = arrayof(t)
-    for i=v
+    for i = v
         node = node[i]
         node = isa(node, SparseBitmappedTrie) ? arrayof(node) : node
     end

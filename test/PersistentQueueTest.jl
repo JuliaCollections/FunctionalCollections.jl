@@ -13,20 +13,20 @@ using Test
         @test !isempty(PersistentQueue([1]))
     end
 
-    @testset "peek" begin
-        @test peek(PersistentQueue(1:100)) == 100
-        @test try peek(PersistentQueue{Int}()); false catch e true end
+    @testset "pop" begin
+        @test pop(PersistentQueue(1:100)) == 100
+        @test try pop(PersistentQueue{Int}()); false catch e true end
     end
 
-    @testset "pop" begin
-        @test pop(PersistentQueue(1:100)) == PersistentQueue(1:99)
-        @test try pop(PersistentQueue{Int}()); false catch e true end
+    @testset "butlast" begin
+        @test butlast(PersistentQueue(1:100)) == PersistentQueue(1:99)
+        @test try butlast(PersistentQueue{Int}()); false catch e true end
     end
 
     @testset "enq" begin
         q = PersistentQueue{Int}()
-        @test peek(enq(q, 1)) == 1
-        @test peek(pop(pop(enq(enq(enq(q, 1), 2), 3)))) == 3
+        @test pop(enq(q, 1)) == 1
+        @test pop(butlast(butlast(enq(enq(enq(q, 1), 2), 3)))) == 3
     end
 
     @testset "iteration" begin
@@ -45,7 +45,7 @@ using Test
         @test length(PersistentQueue([1, 2, 3])) == 3
         @test length(PersistentQueue{Int}()) == 0
 
-        @test length(pop(PersistentQueue([1, 2, 3]))) == 2
+        @test length(butlast(PersistentQueue([1, 2, 3]))) == 2
     end
 
 end

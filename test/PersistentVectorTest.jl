@@ -5,7 +5,7 @@ import Base.vec
 function vec(r::UnitRange)
     v = PersistentVector{Int}()
     for i in r
-      v = push(v, i)
+        v = push(v, i)
     end
     v
 end
@@ -13,7 +13,7 @@ end
 function Base.Array(r::UnitRange)
     arr = Array(Int, r)
     for i in r
-      arr[i] = i
+        arr[i] = i
     end
     arr
 end
@@ -22,13 +22,13 @@ end
 
     @testset "range constructor" begin
         @test typeof(vec(1:1000)) == PersistentVector{Int}
-        @test typeof(pop(vec(1:1000))) == PersistentVector{Int}
+        @test typeof(butlast(vec(1:1000))) == PersistentVector{Int}
     end
 
     @testset "length" begin
         @test length(vec(1:32)) == 32
         @test length(vec(1:10000)) == 10000
-        @test length(pop(vec(1:1000))) == 999
+        @test length(butlast(vec(1:1000))) == 999
     end
 
     @testset "accessing elements" begin
@@ -46,7 +46,7 @@ end
     end
 
     @testset "accessing last" begin
-        @test peek(vec(1:1000)) == 1000
+        @test pop(vec(1:1000)) == 1000
         @test vec(1:1000)[end]  == 1000
     end
 
@@ -90,16 +90,16 @@ end
 
     @testset "map" begin
         v1 = vec(1:5)
-        @test map((x)->x+1, v1) == PersistentVector([2, 3, 4, 5, 6])
-        v2 = PersistentVector{Tuple{Int,Int}}([(1,2),(4,3)])
-        @test map((x)->(x[2],x[1]), v2) == PersistentVector{Tuple{Int,Int}}([(2,1),(3,4)])
+        @test map((x)->x + 1, v1) == PersistentVector([2, 3, 4, 5, 6])
+        v2 = PersistentVector{Tuple{Int,Int}}([(1, 2),(4, 3)])
+        @test map((x)->(x[2], x[1]), v2) == PersistentVector{Tuple{Int,Int}}([(2, 1),(3, 4)])
     end
 
     @testset "filter" begin
         v1 = vec(1:5)
         @test filter(iseven, v1) == PersistentVector([2, 4])
-        v2 = PersistentVector{Tuple{Int,Int}}([(1,2),(4,3)])
-        @test filter((x)->x[2] > x[1], v2) == PersistentVector{Tuple{Int,Int}}([(1,2)])
+        v2 = PersistentVector{Tuple{Int,Int}}([(1, 2),(4, 3)])
+        @test filter((x)->x[2] > x[1], v2) == PersistentVector{Tuple{Int,Int}}([(1, 2)])
     end
 
     @testset "hash" begin
