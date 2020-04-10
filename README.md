@@ -83,10 +83,10 @@ vector _without_ the last element.
 julia> push(v, 6)
 Persistent{Int64}[1, 2, 3, 4, 5, 6]
 
-julia> peek(v)
+julia> pop(v)
 5
 
-julia> pop(v)
+julia> butlast(v)
 Persistent{Int64}[1, 2, 3, 4]
 ```
 
@@ -192,7 +192,6 @@ element removed (disjoined).
 - `children` instead of `arrayof`
 - standardize "short-fn" interfaces:
 - `lastchild` instead of `arrayof(node)[end]`
-- `peek` should become `pop`, `pop` should become `butlast`
 - What is Base doing for Arrays w.r.t. `boundscheck!`, can we drop boundcheck for iteration
 
 ```jl

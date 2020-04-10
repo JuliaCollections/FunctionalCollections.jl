@@ -11,9 +11,8 @@ const pvec = PersistentVector
 
 export PersistentVector, pvec,
        append, push,
-       assoc,
-       peek,
-       pop
+       assoc, pop,
+       butlast
 
 include("PersistentMap.jl")
 
@@ -51,7 +50,7 @@ export @Persistent
 fromexpr(ex::Expr, ::Type{pvec}) = :(pvec($(esc(ex))))
 fromexpr(ex::Expr, ::Type{pset}) = :(pset($(map(esc, ex.args[2:end])...)))
 function fromexpr(ex::Expr, ::Type{phmap})
-    kvtuples = [:($(esc(kv.args[end-1])), $(esc(kv.args[end])))
+    kvtuples = [:($(esc(kv.args[end - 1])), $(esc(kv.args[end])))
                 for kv in ex.args[2:end]]
     :(phmap($(kvtuples...)))
 end
