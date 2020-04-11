@@ -33,14 +33,14 @@ shift(t::BitmappedTrie) =
     error("$(typeof(t)) does not implement FunctionalCollections.shift")
 maxlength(t::BitmappedTrie) =
     error("$(typeof(t)) does not implement FunctionalCollections.maxlength")
-arrayof(t::BitmappedTrie) =
-    error("$(typeof(t)) does not implement FunctionalCollections.arrayof")
+children(t::BitmappedTrie) =
+    error("$(typeof(t)) does not implement FunctionalCollections.children")
 
 function Base.isequal(t1::BitmappedTrie, t2::BitmappedTrie)
     length(t1)    == length(t2)    &&
     shift(t1)     == shift(t2)     &&
     maxlength(t1) == maxlength(t2) &&
-    arrayof(t1)   == arrayof(t2)
+    children(t1)   == children(t2)
 end
 
 ==(t1::BitmappedTrie, t2::BitmappedTrie) = isequal(t1, t2)
@@ -80,15 +80,17 @@ struct DenseLeaf{T} <: DenseBitmappedTrie{T}
 end
 DenseLeaf{T}() where {T} = DenseLeaf{T}(T[])
 
-arrayof(    node::DenseNode) = node.arr
+children(    node::DenseNode) = node.arr
 shift(      node::DenseNode) = node.shift
 maxlength(  node::DenseNode) = node.maxlength
+lastchild(  node::DenseNode) = children(node)[end]
 Base.length(node::DenseNode) = node.length
 
-arrayof(    leaf::DenseLeaf) = leaf.arr
+children(   leaf::DenseLeaf) = leaf.arr
 shift(          ::DenseLeaf) = shiftby
 maxlength(  leaf::DenseLeaf) = trielen
-Base.length(leaf::DenseLeaf) = length(arrayof(leaf))
+Base.length(leaf::DenseLeaf) = length(children(leaf))
+
 
 function promoted(node::DenseBitmappedTrie{T}) where T
     DenseNode{T}(DenseBitmappedTrie{T}[node],
@@ -115,7 +117,7 @@ witharr(leaf::DenseLeaf{T}, arr::Array) where {T} = DenseLeaf{T}(arr)
 
 function append(leaf::DenseLeaf, el)
     if length(leaf) < maxlength(leaf)
-        newarr = copy_to_len(arrayof(leaf), 1 + length(leaf))
+        newarr = copy_to_len(children(leaf), 1 + length(leaf))
         newarr[end] = el
         witharr(leaf, newarr)
     else
@@ -127,12 +129,12 @@ function append(node::DenseNode{T}, el) where T
         child = append(demoted(node), el)
         witharr(node, DenseBitmappedTrie{T}[child], 1)
     elseif length(node) < maxlength(node)
-        if length(arrayof(node)[end]) == maxlength(arrayof(node)[end])
-            newarr = copy_to_len(arrayof(node), 1 + length(arrayof(node)))
+        if length(lastchild(node)) == maxlength(lastchild(node))
+            newarr = copy_to_len(children(node), 1 + length(children(node)))
             newarr[end] = append(demoted(node), el)
             witharr(node, newarr, 1)
         else
-            newarr = arrayof(node)[:]
+            newarr = children(node)[:]
             newarr[end] = append(newarr[end], el)
             witharr(node, newarr, 1)
         end
@@ -143,16 +145,16 @@ end
 push(leaf::DenseLeaf, el) = append(leaf, el)
 push(node::DenseNode, el) = append(node, el)
 
-Base.getindex(leaf::DenseLeaf, i::Int) = arrayof(leaf)[mask(leaf, i)]
-Base.getindex(node::DenseNode, i::Int) = arrayof(node)[mask(node, i)][i]
+Base.getindex(leaf::DenseLeaf, i::Int) = children(leaf)[mask(leaf, i)]
+Base.getindex(node::DenseNode, i::Int) = children(node)[mask(node, i)][i]
 
 function assoc(leaf::DenseLeaf{T}, i::Int, el) where T
-    newarr = arrayof(leaf)[:]
+    newarr = children(leaf)[:]
     newarr[mask(leaf, i)] = el
     DenseLeaf{T}(newarr)
 end
 function assoc(node::DenseNode, i::Int, el)
-    newarr = arrayof(node)[:]
+    newarr = children(node)[:]
     idx = mask(node, i)
     newarr[idx] = assoc(newarr[idx], i, el)
     witharr(node, newarr)
@@ -164,9 +166,9 @@ peek(bt::DenseBitmappedTrie) = bt[end]
 # structure, so `pop` is defined to return a Trie without its last
 # element. Use `peek` to access the last element.
 #
-pop(leaf::DenseLeaf) = witharr(leaf, arrayof(leaf)[1:end-1])
+pop(leaf::DenseLeaf) = witharr(leaf, children(leaf)[1:end-1])
 function pop(node::DenseNode)
-    newarr = arrayof(node)[:]
+    newarr = children(node)[:]
     newarr[end] = pop(newarr[end])
     witharr(node, newarr, -1)
 end
@@ -191,15 +193,16 @@ struct SparseLeaf{T} <: SparseBitmappedTrie{T}
 end
 SparseLeaf{T}() where {T} = SparseLeaf{T}(T[], 0)
 
-arrayof(    n::SparseNode) = n.arr
+children(    n::SparseNode) = n.arr
 shift(      n::SparseNode) = n.shift
 maxlength(  n::SparseNode) = n.maxlength
+lastchild(  n::SparseNode) = children(n)[end]
 Base.length(n::SparseNode) = n.length
 
-arrayof(    l::SparseLeaf) = l.arr
+children(    l::SparseLeaf) = l.arr
 shift(       ::SparseLeaf) = 0
 maxlength(  l::SparseLeaf) = trielen
-Base.length(l::SparseLeaf) = length(arrayof(l))
+Base.length(l::SparseLeaf) = length(children(l))
 
 function demoted(n::SparseNode{T}) where T
     shift(n) == shiftby ?
@@ -220,10 +223,10 @@ function update(l::SparseLeaf{T}, i::Int, el::T) where T
     bitmap = bitpos(l, i) | l.bitmap
     idx = index(l, i)
     if hasi
-        newarr = arrayof(l)[:]
+        newarr = children(l)[:]
         newarr[idx] = el
     else
-        newarr = vcat(arrayof(l)[1:idx-1], [el], arrayof(l)[idx:end])
+        newarr = vcat(children(l)[1:idx-1], [el], children(l)[idx:end])
     end
     (SparseLeaf{T}(newarr, bitmap), !hasi)
 end
@@ -231,12 +234,12 @@ function update(n::SparseNode{T}, i::Int, el::T) where T
     bitmap = bitpos(n, i) | n.bitmap
     idx = index(n, i)
     if hasindex(n, i)
-        newarr = arrayof(n)[:]
+        newarr = children(n)[:]
         updated, inc = update(newarr[idx], i, el)
         newarr[idx] = updated
     else
         child, inc = update(demoted(n), i, el)
-        newarr = vcat(arrayof(n)[1:idx-1], [child], arrayof(n)[idx:end])
+        newarr = vcat(children(n)[1:idx-1], [child], children(n)[idx:end])
     end
     (SparseNode{T}(newarr,
                    n.shift,
@@ -246,9 +249,9 @@ function update(n::SparseNode{T}, i::Int, el::T) where T
 end
 
 Base.get(n::SparseLeaf, i::Int, default) =
-    hasindex(n, i) ? arrayof(n)[index(n, i)] : default
+    hasindex(n, i) ? children(n)[index(n, i)] : default
 Base.get(n::SparseNode, i::Int, default) =
-    hasindex(n, i) ? get(arrayof(n)[index(n, i)], i, default) : default
+    hasindex(n, i) ? get(children(n)[index(n, i)], i, default) : default
 
 function initial_state(t::SparseBitmappedTrie)
     t.length == 0 && return Int[]
@@ -267,7 +270,7 @@ function Base.iterate(t::SparseBitmappedTrie, state = initial_state(t))
                 push!(state, index + 1)
                 return item, vcat(state, ones(Int, 1 + round(Int, t.shift / shiftby) -
                                                    length(state)))
-            elseif node === arrayof(t)
+            elseif node === children(t)
                 return item, Int[]
             end
         end
@@ -275,11 +278,11 @@ function Base.iterate(t::SparseBitmappedTrie, state = initial_state(t))
 end
 
 function directindex(t::SparseBitmappedTrie, v::Vector{Int})
-    isempty(v) && return arrayof(t)
-    local node = arrayof(t)
+    isempty(v) && return children(t)
+    local node = children(t)
     for i=v
         node = node[i]
-        node = isa(node, SparseBitmappedTrie) ? arrayof(node) : node
+        node = isa(node, SparseBitmappedTrie) ? children(node) : node
     end
     node
 end

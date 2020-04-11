@@ -2,7 +2,7 @@ using FunctionalCollections
 using Test
 
 import FunctionalCollections: SparseBitmappedTrie, SparseNode, SparseLeaf,
-    bitpos, index, hasindex, arrayof, update
+    bitpos, index, hasindex, children, update
 
 @testset "Sparse Bitmapped Vector Tries" begin
 
@@ -32,7 +32,7 @@ import FunctionalCollections: SparseBitmappedTrie, SparseNode, SparseLeaf,
 
         l = SparseLeaf{Int}([1, 5], 2^0 | 2^4)
         l, _ = update(l, 2, 2)
-        @test arrayof(l) == [1, 2, 5]
+        @test children(l) == [1, 2, 5]
         @test length(l) == 3
         @test hasindex(l, 1)
         @test hasindex(l, 2)
@@ -41,21 +41,21 @@ import FunctionalCollections: SparseBitmappedTrie, SparseNode, SparseLeaf,
         @test hasindex(l, 5)
         @test !hasindex(l, 6)
 
-        @test arrayof(update(l, 2, 100)[1]) == [1, 100, 5]
+        @test children(update(l, 2, 100)[1]) == [1, 100, 5]
     end
 
     @testset "SparseNode update" begin
         n, _ = update(SparseNode(String), 1, "foo")
-        @test length(arrayof(n)) == 1
+        @test length(children(n)) == 1
 
-        leaf = arrayof(n)[1].arr[1].arr[1].arr[1].arr[1].arr[1].arr[1]
+        leaf = children(n)[1].arr[1].arr[1].arr[1].arr[1].arr[1].arr[1]
         @test hasindex(leaf, 1)
         @test leaf.arr[1] == "foo"
 
         n2, _ = update(n, 33, "bar")
         leaf2 = n2.arr[1].arr[1].arr[1].arr[1].arr[1].arr[1].arr[2]
         @test hasindex(leaf2, 33)
-        @test arrayof(leaf2)[1] == "bar"
+        @test children(leaf2)[1] == "bar"
     end
 
     @testset "SparseBitmappedTrie get" begin
@@ -67,11 +67,11 @@ import FunctionalCollections: SparseBitmappedTrie, SparseNode, SparseLeaf,
 
     @testset "SparseBitmappedTrie length & items" begin
         n = SparseNode(Int)
-        for i=1:1000
+        for i = 1:1000
             n, _ = update(n, i, i)
         end
         @test lastindex(n) == length(n) == 1000
-        @test [i for i=n] == collect(1:1000)
+        @test [i for i = n] == collect(1:1000)
     end
 
 end
