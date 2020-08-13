@@ -135,6 +135,12 @@ end
     @testset "pop" begin
         p = pvec(1:33)
         @test length(pop(p).tail) == 32
+        
+        p = pvec(1:100)
+        for _=1:100
+            p = pop(p)
+        end
+        @test p == pvec{Int}()
     end
 
 end
