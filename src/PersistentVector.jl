@@ -81,6 +81,9 @@ function assoc(v::PersistentVector{T}, i::Int, el) where T
 end
 
 function pop(v::PersistentVector{T}) where T
+    if length(v) == 1
+        return PersistentVector{T}()
+    end
     taillen = length(v.tail)
     if taillen == 1
         newtail = peek(v.trie)
