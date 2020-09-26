@@ -131,5 +131,16 @@ end
         @test convert(PersistentVector{Int}, pv) === pv
         @test typeof(convert(PersistentVector{Float64}, pv)) == PersistentVector{Float64}
     end
+    
+    @testset "pop" begin
+        p = pvec(1:33)
+        @test length(pop(p).tail) == 32
+        
+        p = pvec(1:100)
+        for _=1:100
+            p = pop(p)
+        end
+        @test p == pvec{Int}()
+    end
 
 end

@@ -1,4 +1,4 @@
-struct PersistentSet{T}
+struct PersistentSet{T} <: AbstractSet{T}
     dict::PersistentHashMap{T, Nothing}
     # TODO: this constructor is inconsistent with everything else
     # and with Set in base; probably good to deprecate.
