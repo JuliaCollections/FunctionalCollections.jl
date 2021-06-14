@@ -43,8 +43,11 @@ Base.isequal(l1::PersistentList, l2::PersistentList) =
 ==(l1::PersistentList, l2::PersistentList) =
     head(l1) == head(l2) && tail(l1) == tail(l2)
 
-
 Base.eltype(::Type{<:AbstractList{T}}) where {T} = T
+Base.IteratorEltype(::Type{<:AbstractList{T}}) where {T} = Base.HasEltype()
+Base.IteratorSize(::Type{<:EmptyList}) = Base.HasLength()
+Base.IteratorSize(::Type{<:PersistentList}) = Base.HasLength()
+
 Base.iterate(l::AbstractList) = iterate(l, l)
 Base.iterate(::AbstractList, ::EmptyList) = nothing
 Base.iterate(::AbstractList, l::PersistentList) = (head(l), tail(l))
