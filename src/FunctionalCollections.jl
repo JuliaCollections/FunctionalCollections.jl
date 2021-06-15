@@ -46,6 +46,10 @@ include("PersistentQueue.jl")
 export PersistentQueue, queue,
        enq
 
+include("PersistentDisjointSet.jl")
+
+export PersistentDisjointSet
+
 export @Persistent
 
 fromexpr(ex::Expr, ::Type{pvec}) = :(pvec($(esc(ex))))
