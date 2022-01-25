@@ -189,9 +189,7 @@ element removed (disjoined).
 #### General
 
 - Ints vs Uints w.r.t. bitwise operations
-- `children` instead of `arrayof`
 - standardize "short-fn" interfaces:
-- `lastchild` instead of `arrayof(node)[end]`
 - `peek` should become `pop`, `pop` should become `butlast`
 - What is Base doing for Arrays w.r.t. `boundscheck!`, can we drop boundcheck for iteration
 
