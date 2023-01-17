@@ -158,7 +158,8 @@ function assoc(node::DenseNode, i::Int, el)
     witharr(node, newarr)
 end
 
-peek(bt::DenseBitmappedTrie) = bt[end]
+peek(node::DenseNode) = peek(arrayof(node)[end])
+peek(leaf::DenseLeaf) = arrayof(leaf)[end]
 
 # Pop is usually destructive, but that doesn't make sense for an immutable
 # structure, so `pop` is defined to return a Trie without its last
@@ -167,7 +168,11 @@ peek(bt::DenseBitmappedTrie) = bt[end]
 pop(leaf::DenseLeaf) = witharr(leaf, arrayof(leaf)[1:end-1])
 function pop(node::DenseNode)
     newarr = arrayof(node)[:]
-    newarr[end] = pop(newarr[end])
+    if length(newarr[end]) == 1
+        pop!(newarr)
+    else
+        newarr[end] = pop(newarr[end])
+    end
     witharr(node, newarr, -1)
 end
 

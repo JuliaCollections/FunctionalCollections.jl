@@ -1,6 +1,6 @@
 using FunctionalCollections
+using FunctionalCollections: peek
 using Test
-import Base.vec
 
 function vec(r::UnitRange)
     v = PersistentVector{Int}()
@@ -136,9 +136,11 @@ end
         p = pvec(1:33)
         @test length(pop(p).tail) == 32
         
-        p = pvec(1:100)
-        for _=1:100
+        N = 10000
+        p = pvec(1:N)
+        for i=1:N
             p = pop(p)
+            @test all(p .== pvec(1:N-i))
         end
         @test p == pvec{Int}()
     end
