@@ -19,10 +19,10 @@ const PS = PersistentSet
         @test PS{String}() == PS{Int}()
     end
 
-    @testset "conj" begin
-        @test conj(PS([1, 2, 3]), 4) == PS([1, 2, 3, 4])
-        @test conj(PS([1, 2, 3]), 1) == PS([1, 2, 3])
-        @test conj(PS([1, 2, 3]), 4) == PS([4, 3, 2, 1])
+    @testset "push" begin
+        @test push(PS([1, 2, 3]), 4) == PS([1, 2, 3, 4])
+        @test push(PS([1, 2, 3]), 1) == PS([1, 2, 3])
+        @test push(PS([1, 2, 3]), 4) == PS([4, 3, 2, 1])
     end
 
     @testset "disj" begin

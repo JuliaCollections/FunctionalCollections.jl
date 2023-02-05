@@ -15,10 +15,8 @@ Base.@deprecate(PersistentSet(x1::T, x2::T, xs::T...) where {T},
 Base.hash(s::PersistentSet,h::UInt) =
     hash(s.dict, h+(UInt(0xf7dca1a5fd7090be)))
 
-Base.conj(s::PersistentSet{T}, val) where {T} =
+push(s::PersistentSet{T}, val) where {T} =
     PersistentSet{T}(assoc(s.dict, val, nothing))
-
-push(s::PersistentSet, val) = conj(s, val)
 
 disj(s::PersistentSet{T}, val) where {T} =
     PersistentSet{T}(dissoc(s.dict, val))
@@ -52,7 +50,7 @@ Base.isempty(s::PersistentSet) = length(s.dict) == 0
 
 function _union(s::PersistentSet, xs)
     for x in xs
-        s = conj(s, x)
+        s = push(s, x)
     end
     s
 end
